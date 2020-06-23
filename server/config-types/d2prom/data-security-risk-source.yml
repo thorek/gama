@@ -1,0 +1,222 @@
+entity:
+
+  PersonCategory:
+    attributes:
+      name: key
+    assocToMany: Industry
+    seeds:
+      vn:
+        name: Versicherungsnehmer
+        Industry: finance
+      vp:
+        name: Versicherte Person
+        Industry: finance
+      bz:
+        name: Beitragszahler
+        Industry: finance
+      bbr:
+        name: Bezugsberechtigter
+        Industry: finance
+
+  DataCategory:
+    attributes:
+      name: key
+    assocToMany: Industry
+    seeds:
+      personal:
+        name: Personendaten
+      vertrag:
+        name: Vertragsdaten
+      empl:
+        name: Mitarbeiterdaten
+      health:
+        name: Gesundheitsdaten
+        Industry:
+          - finance
+          - health
+      identifikationsDaten:
+        name: Identifikations-Daten
+      gwg-risiko-hoehe:
+        name: GWG Risiko Höhe
+
+  DataSecurityRiskSource:
+    union:
+      - DataAtom
+      - ProcessingActivity
+      - OrganisationalUnit
+      - Organisation
+
+  DataAtom:
+    rootQuery: false
+    attributes:
+      description: string
+    assocTo: ProcessingActivity
+    assocToMany:
+      - PersonCategory
+      - DataCategory
+    seeds:
+      "1":
+        ProcessingActivity: BeratungHP
+        PersonCategory:
+          - vn
+        DataCategory:
+          - personal
+      "2":
+        ProcessingActivity: BeratungHP
+        PersonCategory:
+          - vp
+        DataCategory:
+          - personal
+      "3":
+        ProcessingActivity: BeratungHP
+        PersonCategory:
+          - vn
+        DataCategory:
+          - vertrag
+      "4":
+        ProcessingActivity: BeratungHP
+        PersonCategory:
+          - vp
+        DataCategory:
+          - vertrag
+
+  ProcessingActivity:
+    attributes:
+      name:
+        type: string
+        required: true
+        unique: Organisation
+      purpose: string
+      description: string
+    assocTo: Organisation
+    assocToMany: OrganisationalUnit
+    assocFrom: DataAtom
+    seeds:
+      BeratungHP:
+        name: Beratung Haftpflichtversicherung
+        Organisation: mtp
+        OrganisationalUnit:
+          - mtpInnen
+          - mtpVertrieb
+
+      GwG:
+        name: Erfüllung der GwG-Sorgfaltspflichten
+        Organisation: mtp
+        OrganisationalUnit:
+          - mtpInnen
+          - mtpVertrieb
+        DataAtom:
+          - PersonCategory:
+              - vn
+            DataCategory:
+              - identifikationsDaten
+            description: Ausweiskopien der VN
+          - PersonCategory:
+              - vn
+            DataCategory:
+              - gwg-risiko-hoehe
+
+
+  OrganisationalUnit:
+    attributes:
+      name:
+        key: Organisation
+        validation:
+          length:
+            minimum: 2
+            maximum: 50
+      description: string
+    assocTo: Organisation
+    assocFrom: ProcessingActivity
+    seeds:
+      verkaufPapyr:
+        name: Verkauf
+        Organisation: papyr
+      hrPapyr:
+        name: Personal
+        Organisation: papyr
+      hrLogotech:
+        name: Personal
+        Organisation: logotech
+      mtpInnen:
+        name: Bestandsverwaltung / Innendienst
+        Organisation: mtp
+      mtpVertrieb:
+        name: Vertrieb
+        Organisation: mtp
+      mtpTraining:
+        name: Schulungsabteilung
+        OrganisationalUnit: mtp
+
+  Organisation:
+    attributes:
+      name:
+        key: Client
+        validation:
+          length:
+            minimum: 2
+            maximum: 50
+      description: string
+    assocTo: Client
+    assocToMany: Industry
+    assocFrom:
+      - OrganisationalUnit
+      - ProcessingActivity
+    seeds:
+      papyr:
+        name: Papyr, eine Marke der Karl Brand GmbH & Co KG
+        Client: kb
+        Industry:
+          - retail
+      logotech:
+        name: Logotec GmbH
+        Client: kb
+        Industry:
+          - retail
+      mtp:
+        name: MTP Assekuranz GmbH
+        Client: mtp
+        Industry:
+          - finance
+          - retail
+      kanzlei:
+        name: Kanzlei Schmidt & Kollegen
+        Client: kanzlei
+        Industry:
+          - legal
+
+  Client:
+    attributes:
+      name: key
+      description: string
+      dsb: string
+      city: string!
+      zip: string!
+      address1: string!
+      address2: string
+      country:
+        - type: string!
+          default: DE
+    assocFrom:
+      - Organisation
+    seeds:
+      kb:
+        name: Karl Brand GmbH & Co. KG
+        city: Hamburg
+        zip: 20354
+        address1: Jungfernstieg 1
+        address2: c/o WeWork
+        dsb: Max Meier (externer DSB)
+      mtp:
+        name: MTP Assekuranz GmbH
+        city: München
+        zip: 80999
+        address1: Maximilianstraße 278
+        dsb: Hans Rosen
+      kanzlei:
+        name: Kanzlei Schmidt & Kollegen
+        city: Berlin
+        zip: 10322
+        address1: Alexanderplatz 2b
+
+

@@ -1,0 +1,8 @@
+query AllClients {
+  clients {
+    id
+    name
+    city
+    dsb
+  }
+}

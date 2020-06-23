@@ -1,0 +1,67 @@
+enum:
+  MeasureApplicationStatus:
+    - current
+    - planned
+    - required
+
+entity:
+  MeasureApplication:
+    attributes:
+      status: MeasureApplicationStatus!
+      impact: Priority
+      description: string
+    assocTo: DataSecurityMeasure!
+    seeds:
+      Alarmanlage:
+        DataSecurityMeasure:
+          id: Alarmanlage
+          type: ConfidentialityMeasure
+          impact: 30
+          MeasureApplicationStatus: current
+      Schliessanlage:
+        DataSecurityMeasure:
+          id: Schliessanlage
+          type: ConfidentialityMeasure
+          MeasureApplicationStatus: required
+      Verschluesselung:
+        DataSecurityMeasure:
+          id: Verschluesselung
+          type: ConfidentialityMeasure
+          MeasureApplicationStatus: current
+      E-Mail-Verschluesselung:
+        DataSecurityMeasure:
+          id: E-Mail-Verschluesselung
+          type: ConfidentialityMeasure
+          impact: 30
+          MeasureApplicationStatus: current
+      VPN-Tunnel:
+        DataSecurityMeasure:
+          id: VPN-Tunnel
+          type: ConfidentialityMeasure
+          MeasureApplicationStatus: planned
+      Verschluesselte-Datenuebertragung:
+        DataSecurityMeasure:
+          id: Verschluesselte-Datenuebertragung
+          type: ConfidentialityMeasure
+          MeasureApplicationStatus: planned
+      Zugriffsrechte:
+        DataSecurityMeasure:
+          id: Zugriffsrechte
+          type: IntegrityMeasure
+          MeasureApplicationStatus: required
+      Antivirensoftware:
+        DataSecurityMeasure:
+          id: Antivirensoftware
+          type: AvailabilityMeasure
+          MeasureApplicationStatus: planned
+      Datenwiederherstellungen:
+        DataSecurityMeasure:
+          id: Datenwiederherstellungen
+          type: AvailabilityMeasure
+        MeasureApplicationStatus: required
+      Auswahl:
+        DataSecurityMeasure:
+          id: Auswahl
+          type: FormalMeasure
+        MeasureApplicationStatus: current
+

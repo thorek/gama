@@ -1,0 +1,19 @@
+query OrganisationOverview( $id: ID!) {
+  organisation( id: $id ) {
+    id
+    name
+    description
+    industries {
+      name
+    }
+    client {
+      name
+      city
+      dsb
+    }
+    organisationalUnits {
+      id
+      name
+    }
+  }
+}

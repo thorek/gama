@@ -1,0 +1,16 @@
+entity:
+  Person:
+    attributes:
+      firstname: String
+      lastname: String
+      birthdate: String
+      gender: Gender
+      age: Int
+    assocFrom:
+      - type: Address
+      - type: Car
+  enum:
+    Gender:
+      MALE: male
+      FEMALE: female
+      DIVERSE: diverse

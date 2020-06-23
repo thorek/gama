@@ -1,0 +1,18 @@
+entity:
+  Delta:
+    attributes:
+      name: string
+    assocTo:
+      - Gamma
+    assocFrom:
+      - Alpha
+    seeds:
+      d1:
+        name: d1
+        Gamma: g1
+      d2:
+        name: d2
+        Gamma: g1
+      d3:
+        name: d3
+        Gamma: g2

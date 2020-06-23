@@ -1,0 +1,140 @@
+enum:
+  ConfidentialityMeasureCategory:
+    - access_control
+    - transport_control
+    - pseudonymization
+    - encryption
+
+  IntegrityMeasureCategory:
+    - input_control
+
+  AvailabilityMeasureCategory:
+    - availability
+    - recovery
+
+  FormalMeasureCategory:
+    - agreement
+    - management
+    - intervenibility
+    - transparency
+    - data_minimisation
+    - unlinked_purposes
+
+entity:
+  DataSecurityMeasureCategory:
+    attributes:
+      name: key
+    assocToMany: Industry
+    seeds:
+      Einbruchsicherheit:
+        name: Einbruchsicherheit
+      Brandschutz:
+        name: Brandschutz
+      IT-Sicherheit:
+        name: IT-Sicherheit
+      Organisationssicherheit:
+        name: Organisations-sicherheit
+      Vertragsgestaltung:
+        name: Vertragsgestaltung
+      Prozesse:
+        name: Prozesse
+
+  DataSecurityMeasure:
+    interface: true
+    attributes:
+      name: string!
+      impact: Priority
+      description: string
+    assocToMany: DataSecurityMeasureCategory
+    assocFrom: MeasureApplication
+
+  AvailabilityMeasure:
+    implements: DataSecurityMeasure
+    attributes:
+      category: AvailabilityMeasureCategory!
+    seeds:
+      Antivirensoftware:
+        name: Antivirensoftware
+        description: Einsatz von Antivirensoftware zum Schutz vor Malware
+        impact: 10
+        category: availability
+        DataSecurityMeasureCategory: IT-Sicherheit
+      Datenwiederherstellungen:
+        name: Datenwiederherstellungen
+        description: Regelmäßige und dokumentierte Datenwiederherstellungen
+        impact: 20
+        category: recovery
+        DataSecurityMeasureCategory: IT-Sicherheit
+
+  FormalMeasure:
+    implements: DataSecurityMeasure
+    attributes:
+      category: FormalMeasureCategory!
+    seeds:
+      Auswahl:
+        name: Auswahl des Auftragnehmers
+        description: Auswahl des Auftragnehmers unter Sorgfaltsgesichtspunkten (insbesondere hinsichtlich Datensicherheit)
+        impact: 10
+        category: agreement
+        DataSecurityMeasureCategory: Vertragsgestaltung
+
+  ConfidentialityMeasure:
+    implements: DataSecurityMeasure
+    attributes:
+      category: ConfidentialityMeasureCategory!
+    seeds:
+      Alarmanlage:
+        name: Alarmanlage
+        description: Einsatz einer Alarmanlage (evtl. mit Meldung an Sicherheitsdienst)
+        impact: 20
+        category: access_control
+        DataSecurityMeasureCategory: Einbruchsicherheit
+      Schliessanlage:
+        name: Schließanlage
+        description: Einsatz einer Schließanlage
+        impact: 10
+        category: access_control
+        DataSecurityMeasureCategory: Einbruchsicherheit
+      Verschluesselung:
+        name: Verschlüsselung von Datenträgern
+        description: Verschlüsselung von Datenträgern mit dem Stand der Technik entsprechenden Verfahren
+        impact: 10
+        category: access_control
+        DataSecurityMeasureCategory: IT-Sicherheit
+      E-Mail-Verschluesselung:
+        name: E-Mail-Verschlüsselung
+        description: E-Mail-Verschlüsselung mit S/MIME oder PGP Verfahren (oder anderen, dem Stand der Technik entsprechenden Verfahren)
+        impact: 20
+        category: transport_control
+        DataSecurityMeasureCategory: IT-Sicherheit
+      VPN-Tunnel:
+        name: VPN-Tunnel
+        description: Einrichtungen von VPN-Tunneln zur Einwahl ins Netzwerk von außen
+        impact: 20
+        category: transport_control
+        DataSecurityMeasureCategory: IT-Sicherheit
+      Verschluesselte-Datenuebertragung:
+        name: Verschlüsselte Datenübertragung
+        description: >
+          Verschlüsselte Datenübertragung (z.B. E-Mailverschlüsselung nach PGP oder S/Mime,
+          VPN, verschlüsselte Internetverbindungen mittels TLS/SSL, Einsatz FTAPI - Datentransfertool)
+        impact: 20
+        category: encryption
+        DataSecurityMeasureCategory: IT-Sicherheit
+
+  IntegrityMeasure:
+    implements: DataSecurityMeasure
+    attributes:
+      category: IntegrityMeasureCategory!
+    seeds:
+      Zugriffsrechte:
+        name: Personenbezogene Zugriffsrechte
+        description: Personenbezogene Zugriffsrechte zur Nachvollziehbarkeit der Zugriffe.
+        impact: 10
+        category: input_control
+        DataSecurityMeasureCategory: Organisationssicherheit
+
+
+
+
+

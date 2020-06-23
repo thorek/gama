@@ -1,0 +1,17 @@
+entity:
+  Beta:
+    attributes:
+      name: string
+    assocTo:
+      - type: Delta
+        required: true
+    seeds:
+      b1:
+        name: b1
+        Delta: d1
+      b2:
+        name: b2
+        Delta: d1
+      b3:
+        name: b3
+        Delta: d1

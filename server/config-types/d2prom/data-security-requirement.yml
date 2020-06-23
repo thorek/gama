@@ -1,0 +1,153 @@
+enum:
+  SecuritySpecifics:
+    - confidantality
+    - integrity
+    - availability
+    - formal
+
+
+entity:
+
+  RiskAssessment:
+    description: >
+      Used to asses a risk priority by the calculation: probability x damage
+        1 - 3 normal
+        4 - 8 high
+        8 ..  very high
+      Asses the risk at the absence of any of the the special measures. It is assumed that basic "measures"
+      (e.g. Password protected PC, Simple lock in doors) exist. If the assumptions are not realistic - it will
+      be documented.
+    attributes:
+      priority:
+        type: Priority
+        virtual: true
+      probability:
+        type: int
+        required: true
+        validation:
+          numericality:
+            greaterThanOrEqualTo: 1
+            lessThanOrEqualTo: 4
+      probabilityDescription:
+        type: string
+        required: false
+        description: Reasoning why a certain probability is assumed
+      damage:
+        type: int
+        required: true
+        validation:
+          numericality:
+            greaterThanOrEqualTo: 1
+            lessThanOrEqualTo: 4
+      damageDescription:
+        type: string
+        required: false
+        description: Reasoning why a certain damage is assumed
+
+  DataSecurityRequirement:
+    attributes:
+      specific: SecuritySpecifics
+      description: string
+      priority:
+        type: Priority
+        description: if set this value will override the priority from RiskAssessment
+    assocTo:
+      - RiskAssessment
+      - DataSecurityRiskSource
+    seeds:
+      "1":
+        DataSecurityRiskSource:
+          id: DataAtom:ContactData:VN
+          type: DataAtom
+        RiskAssessment:
+          probability: 2
+          damage: 1
+        specific: confidantality
+        description: Geringes Risiko
+      "2":
+        DataSecurityRiskSource:
+          id: DataAtom:HealthData:VP
+          type: DataAtom
+        RiskAssessment:
+          probability: 2
+          damage: 4
+        specific: confidantality
+        description: Hohes Risiko; Daten nach Art. 9 DSGVO
+      "3":
+        DataSecurityRiskSource:
+          id: PA:BeratungHP
+          type: ProcessingActivity
+        RiskAssessment:
+          probability: 2
+          damage: 1
+        specific: integrity
+        description: Geringes Risiko
+      "4":
+        DataSecurityRiskSource:
+          id: PA:GWG
+          type: ProcessingActivity
+        RiskAssessment:
+          probability: 3
+          probabilityDescription: >
+            da Ausweiskopie ausgedruckt wird, höhere Wahrscheinlichkeit dass der physische Aktenordner
+            entwendet wird, als ein
+          damage: 4
+        description: Hohes Risiko; Daten nach Art. 9; Gefahr eines Identitätsdiebstahls
+      "5":
+        DataSecurityRiskSource:
+          id: mtpTraining
+          type: OrganisationalUnit
+        priority: HIGH
+        specific: availability
+        description: Geringes Risiko
+      "6":
+        DataSecurityRiskSource:
+          id: hrLogotech
+          type: OrganisationalUnit
+        RiskAssessment:
+          probability: 3
+        specific: confidantality
+        description: Hohes Risiko; Daten nach Art. 9 DSGVO
+      "7":
+        DataSecurityRiskSource:
+          id: papyr
+          type: Organisation
+        priority: NORMAL
+        specific: confidantality
+        description: Geringes Risiko
+      "8":
+        DataSecurityRiskSource:
+          id: papyr
+          type: Organisation
+        priority: HIGH
+        specific: integrity
+        description: Gesetzliche Speicherungs-Vorschriften
+      "9":
+        DataSecurityRiskSource:
+          id: papyr
+          type: Organisation
+        priority: HIGH
+        specific: availability
+        description: Gesetzliche Speicherungs-Vorschriften
+      "10":
+        DataSecurityRiskSource:
+          id: kanzlei
+          type: Organisation
+        priority: VERY_HIGH
+        specific: confidantality
+        description: Hohes Risiko; Daten nach Art. 9 und nach §203 StGB
+      "11":
+        DataSecurityRiskSource:
+          id: kanzlei
+          type: Organisation
+        priority: VERY_HIGH
+        specific: integrity
+        description: Hohes Risiko; Daten nach Art. 9 und nach §203 StGB
+      "12":
+        DataSecurityRiskSource:
+          id: kanzlei
+          type: Organisation
+        priority: VERY_HIGH
+        specific: availability
+        description: Hohes Risiko; Daten nach Art. 9 und nach §203 StGB
+

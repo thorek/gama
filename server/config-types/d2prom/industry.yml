@@ -1,0 +1,16 @@
+entity:
+  industry:
+    attributes:
+      name: key
+    seeds:
+      ra:
+        name: Rechtsanwälte & Notare
+      finance:
+        name: Finanzvermittler
+      retail:
+        name: Einzelhandel
+      health:
+        name: Gesundheitsprovider
+      legal:
+        name: Rechtliche Services
+

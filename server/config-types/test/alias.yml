@@ -1,0 +1,45 @@
+entity:
+  Truck:
+    attributes:
+      name: key
+      number: int
+    assocTo:
+      - type: Person
+        as: Driver
+    assocToMany:
+      - type: Passenger
+    seeds:
+      truck1:
+        name: Truck1
+        Person: Person1
+        Passenger:
+          - Person2
+          - Person3
+      truck2:
+        name: Truck1
+        Person: Person2
+        Passenger:
+          - Person3
+          - Person4
+
+
+  Person:
+    alias:
+      - Passenger
+    attributes:
+      firstname: string!
+      lastname: string!
+    assocFrom: Truck
+    seeds:
+      Person1:
+        firstname: Max
+        lastname: Meier
+      Person2:
+        firstname: Hans
+        lastname: Meiser
+      Person3:
+        firstname: Harald
+        lastname: Töpfer
+      Person4:
+        firstname: Donald
+        lastname: Trump

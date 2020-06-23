@@ -1,0 +1,6 @@
+
+  Daten-Kateg-->   Personal  Finanz
+Personen |
+         \/
+VN                  1       2
+VP                  3       4

@@ -1,0 +1,24 @@
+entity:
+  Informable:
+    union:
+      - DataSecurityMeasure
+      - MeasureApplication
+
+  EmployeeInformation:
+    attributes:
+      name: key
+      description: string
+    assocTo:
+      - type: Informable
+        required: true
+    seeds:
+      Passwortrichtlinie:
+        name: Passwortrichtlinie
+        description: Betriebsanweisung zum Umgang mit Kennwörtern und Zugangsdaten
+      Kommunikationsrichtlinie-E-Mail:
+        name: Kommunikationsrichtlinie E-Mail
+        description: >
+          Betriebsanweisung zum Umgang mit personenbezogenen Daten in E-Mails und zur Verschlüsselung von E-Mails
+        Informable:
+          id: E-Mail-Verschlüsselung
+          type: ConfidentialityMeasure

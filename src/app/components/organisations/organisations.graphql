@@ -1,0 +1,14 @@
+query Organisations {
+  organisations {
+    id
+    name
+    industries {
+      name
+    }
+    client {
+      id
+      name
+      city
+    }
+  }
+}

@@ -1,0 +1,5 @@
+enum:
+  Eta:
+    ONE: one
+    TWOO: twoo
+    THREE: three

@@ -1,0 +1,12 @@
+entity:
+  Gamma:
+    attributes:
+      name: string
+      foo: string
+    seeds:
+      g1:
+        name: g1
+      g2:
+        name: g2
+      g3:
+        name: g3

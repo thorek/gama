@@ -1,0 +1,21 @@
+entity:
+  AlphaBeta:
+    assocTo:
+      - Alpha
+      - Beta
+    withSame:
+      Delta:
+        - Alpha
+        - Beta
+    seeds:
+      ab11:
+        Alpha: a1
+        Beta: b1
+      ab12:
+        Alpha: a1
+        Beta: b2
+      ab23:
+        Alpha: a2
+        Beta: b3
+
+

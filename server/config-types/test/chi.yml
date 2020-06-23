@@ -1,0 +1,16 @@
+entity:
+  Chi:
+    attributes:
+      name: string
+    assocFrom:
+      - Phi
+    seeds:
+      chi1:
+        name: chi1
+      chi2:
+        name: chi2
+      chi3:
+        name: chi3
+
+
+
