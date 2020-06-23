@@ -4,9 +4,11 @@ import _ from 'lodash';
 import { MongoDbDataStore } from '../../graph-on-rails-mongodb/mongodb.data-store';
 import { EnumConfig } from '../builder/enum-config-builder';
 import { FilterType } from '../builder/filter-type';
+import { MetaDataBuilder } from '../builder/meta-data-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { EntityConfig } from '../entities/config-entity';
 import { Entity } from '../entities/entity';
+import { EntityAdmin } from '../entities/entity-admin';
 import { EntityPermissions } from '../entities/entity-permissions';
 import { EntityResolver } from '../entities/entity-resolver';
 import { EntitySeeder } from '../entities/entity-seeder';
@@ -15,7 +17,6 @@ import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
 import { GraphX } from './graphx';
 import { ResolverContext } from './resolver-context';
-import { MetaDataBuilder } from '../builder/meta-data-builder';
 
 export type GorConfig = {
   name?:string
@@ -24,26 +25,35 @@ export type GorConfig = {
   entityResolver?:(entity:Entity) => EntityResolver
   entityPermissions?:(entity:Entity) => EntityPermissions
   entitySeeder?:(entity:Entity) => EntitySeeder
+  entityAdmin?:(entity:Entity) => EntityAdmin
   contextUser?:string
   contextRoles?:string
   extendSchema?:(context:Context) => void
-  virtualResolver?:{[entity:string]:{[attribute:string]: ( item:any, rctx?:ResolverContext ) => any|Promise<any> }}
+  virtualResolver?:{[entity:string]:{[attribute:string]:( item:any, rctx?:ResolverContext ) => any|Promise<any> }}
   configFolder?:string[]
   schemaBuilder?:SchemaBuilder[]
   entities?:Entity[],
   metaDataBuilder?:SchemaBuilder,
-  domainConfiguration?:{entity?: {[name:string]:EntityConfig}, enum?:{[name:string]:EnumConfig}}
+  domainConfiguration?:{entity?:{[name:string]:EntityConfig}, enum?:{[name:string]:EnumConfig}}
 }
 
 export class Context {
-
-  readonly graphx = new GraphX();
-  readonly entities:{[name:string]:Entity} = {};
-  readonly filterTypes:{[name:string]:FilterType} = {};
   get extendSchema() { return this.config.extendSchema }
   get virtualResolver() { return this.config.virtualResolver }
 
   private constructor( public readonly config:GorConfig ){}
+
+  get dataStore() {
+    if( ! this.config.dataStore ) throw new Error('Context - you must provide a dataStore' );
+    return this.config.dataStore;
+  }
+
+  readonly graphx = new GraphX();
+  readonly entities:{[name:string]:Entity} = {};
+  readonly filterTypes:{[name:string]:FilterType} = {};
+
+  readonly contextUser = this.config.contextUser;
+  readonly contextRoles = this.config.contextRoles;
 
   /**
    *
@@ -57,10 +67,11 @@ export class Context {
 
   private static getDefaultConfig():GorConfig {
     return {
-      validator: ( entity: Entity ) => new ValidateJs( entity ),
-      entityResolver: ( entity: Entity ) => new EntityResolver( entity ),
-      entityPermissions: ( entity: Entity ) => new EntityPermissions( entity ),
-      entitySeeder: ( entity: Entity ) => new EntitySeeder( entity ),
+      validator: ( entity:Entity ) => new ValidateJs( entity ),
+      entityResolver: ( entity:Entity ) => new EntityResolver( entity ),
+      entityPermissions: ( entity:Entity ) => new EntityPermissions( entity ),
+      entitySeeder: ( entity:Entity ) => new EntitySeeder( entity ),
+      entityAdmin: (entity:Entity) => new EntityAdmin( entity ),
       metaDataBuilder: new MetaDataBuilder(),
       contextUser: 'user',
       contextRoles: 'roles'
@@ -71,29 +82,29 @@ export class Context {
     return MongoDbDataStore.create( { url: 'mongodb://localhost:27017', dbName } );
   }
 
-  get dataStore() {
-    if( ! this.config.dataStore ) throw new Error("Context - you must provide a dataStore" );
-    return this.config.dataStore;
-  }
-
   validator( entity:Entity ) {
-    if( ! this.config.validator ) throw new Error("Context - you must provide a validator factory method" );
+    if( ! this.config.validator ) throw new Error('Context - you must provide a validator factory method' );
     return this.config.validator(entity);
   }
 
   entityResolver( entity:Entity ) {
-    if( ! this.config.entityResolver ) throw new Error("Context - you must provide an entityResolver factory method" );
+    if( ! this.config.entityResolver ) throw new Error('Context - you must provide an entityResolver factory method' );
     return this.config.entityResolver(entity);
   }
 
   entityPermissions( entity:Entity ) {
-    if( ! this.config.entityPermissions ) throw new Error("Context - you must provide an entityPermissions factory method" );
+    if( ! this.config.entityPermissions ) throw new Error('Context - you must provide an entityPermissions factory method' );
     return this.config.entityPermissions(entity);
   }
 
   entitySeeder( entity:Entity ) {
-    if( ! this.config.entitySeeder ) throw new Error("Context - you must provide an entitySeeder factory method" );
+    if( ! this.config.entitySeeder ) throw new Error('Context - you must provide an entitySeeder factory method' );
     return this.config.entitySeeder(entity);
+  }
+
+  entityAdmin( entity:Entity ) {
+    if( ! this.config.entityAdmin ) throw new Error('Context - you must provide an entityAdmin factory method' );
+    return this.config.entityAdmin(entity);
   }
 
   filterType( filterType:string|FilterType|false|undefined, fieldType:string|GraphQLType ):FilterType|undefined {
@@ -105,9 +116,6 @@ export class Context {
       return this.filterTypes[ filterType ];
     } else return filterType;
   }
-
-  readonly contextUser = this.config.contextUser;
-  readonly contextRoles = this.config.contextRoles;
 
 
 }

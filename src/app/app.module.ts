@@ -27,6 +27,7 @@ import { IconsProviderModule } from './icons-provider.module';
 import { OrganisationsComponent } from './components/organisations/organisations.component';
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { AboutComponent } from './components/about/about.component';
+import { IndexComponent } from './components/admin/index/index.component';
 
 registerLocaleData(en);
 
@@ -38,7 +39,8 @@ registerLocaleData(en);
     ClientComponent,
     OrganisationsComponent,
     OrganisationComponent,
-    AboutComponent
+    AboutComponent,
+    IndexComponent
   ],
   imports: [
     BrowserModule,

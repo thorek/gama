@@ -6,11 +6,18 @@ import { ClientComponent } from './components/client/client.component';
 import { OrganisationsComponent } from './components/organisations/organisations.component';
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { AboutComponent } from './components/about/about.component';
+import { IndexComponent } from './components/admin/index/index.component';
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/welcome' },
   { path: 'welcome', pathMatch: 'full', component: WelcomeComponent },
   { path: 'about', pathMatch: 'full', component: AboutComponent },
+  { path: 'admin', children: [
+    { path: ':entity', component: IndexComponent },
+    { path: ':entity:/:id', component: IndexComponent },
+    { path: 'new/:entity', component: IndexComponent },
+    { path: 'edit/:entity/:id/', component: IndexComponent }
+  ]},
   { path: 'clients', children:[
     {path: '', component: ClientsComponent},
     {path: ':id', component: ClientComponent},

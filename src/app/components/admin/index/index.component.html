@@ -1,0 +1,34 @@
+<nz-page-header class="site-page-header" nzBackIcon>
+  <nz-page-header-title>{{ name }}</nz-page-header-title>
+  <nz-page-header-extra>
+    <button (click)="newEntity()" nz-button nzType="primary">New {{name}}</button>
+  </nz-page-header-extra>
+</nz-page-header>
+
+<div *ngIf="loading">Loading...</div>
+
+<nz-table  *ngIf="entities" #basicTable [nzData]="entities">
+  <thead>
+    <tr>
+      <th *ngFor="let field of fields" >{{field}}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let entity of basicTable.data">
+      <td *ngFor="let field of fields" (click)="selectEntity( entity.id )">{{entity[field ]}}</td>
+      <td align="right">
+        <nz-space>
+          <nz-space-item>
+            <a (click)="selectEntity(entity.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
+          </nz-space-item>
+          <nz-space-item>
+            <a (click)="deleteEntity( entity.id)">
+              <i nz-icon nzType="delete" nzTheme="outline"></i>
+            </a>
+          </nz-space-item>
+        </nz-space>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>

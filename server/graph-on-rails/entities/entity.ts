@@ -10,11 +10,12 @@ import { ResolverContext } from '../core/resolver-context';
 import { EntityResolver } from './entity-resolver';
 import { EntityAccessor } from './entity-accessor';
 import { EntityItem } from './entity-item';
+import { EntityAdmin } from './entity-admin';
 
 //
 //
 export type EntityReference = {
-	type:string
+  type:string
   required?:boolean
   input?:boolean
 }
@@ -31,12 +32,14 @@ export abstract class Entity {
   get resolver() { return this._entityResolver }
   get validator() { return this._entityValidator }
   get accessor() { return this._entityAccessor }
+  get admin() { return this._entityAdmin }
 
   protected _entitySeeder!:EntitySeeder;
   protected _entityResolver!:EntityResolver;
   protected _entityPermissions!:EntityPermissions;
   protected _entityValidator!:EntityValidator;
   protected _entityAccessor!:EntityAccessor;
+  protected _entityAdmin!:EntityAdmin;
 
   /**
    *
@@ -49,6 +52,7 @@ export abstract class Entity {
     this._entityPermissions = this.context.entityPermissions( this );
     this._entityValidator = new EntityValidator( this );
     this._entityAccessor = new EntityAccessor( this );
+    this._entityAdmin = this.context.entityAdmin( this );
   }
 
   get name() { return this.getName() }
@@ -66,9 +70,6 @@ export abstract class Entity {
   get updateInputTypeName() { return this.getUpdateInputTypeName() }
   get filterName() { return this.getFilterName() }
   get collection() { return this.getCollection() }
-  get label() { return this.getLabel() }
-  get path() { return this.getPath() }
-  get parent() { return this.getParent() }
   get enum() { return this.getEnum() }
   get seeds() { return this.getSeeds() }
   get permissions() { return this.getPermissions() }
@@ -84,11 +85,10 @@ export abstract class Entity {
   get createMutationName():string { return this.getCreateMutationName() }
   get updateMutationName():string { return this.getUpdateMutationName() }
   get mutationResultName():string { return this.getMutationResultName() }
-  get rootQuery():boolean { return this.isRootQuery() }
 
   protected abstract getName():string;
-	protected getTypeName() { return inflection.camelize( this.name ) }
-	protected getSingular() { return `${_.toLower(this.typeName.substring(0,1))}${this.typeName.substring(1)}` }
+  protected getTypeName() { return inflection.camelize( this.name ) }
+  protected getSingular() { return `${_.toLower(this.typeName.substring(0,1))}${this.typeName.substring(1)}` }
   protected getPlural() { return inflection.pluralize( this.singular ) }
   protected getForeignKey() { return `${this.singular}Id` }
   protected getForeignKeys() { return `${this.singular}Ids` }
@@ -96,13 +96,10 @@ export abstract class Entity {
   protected getUpdateInputTypeName() { return `${this.typeName}UpdateInput` }
   protected getFilterName() { return `${this.typeName}Filter` }
   protected getCollection() { return this.plural }
-  protected getLabel() { return inflection.titleize(  this.plural )  }
-  protected getPath() { return this.plural }
-	protected getAttributes():{[name:string]:TypeAttribute} { return {} };
+  protected getAttributes():{[name:string]:TypeAttribute} { return {} };
   protected getAssocTo(): EntityReference[] { return [] }
   protected getAssocToMany(): EntityReference[] { return [] }
-	protected getAssocFrom(): EntityReference[] { return [] }
-  protected getParent():string | null { return null }
+  protected getAssocFrom(): EntityReference[] { return [] }
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
   protected getSeeds():{[name:string]:any} { return {} }
   protected getPermissions():undefined|EntityPermissionType { return undefined }
@@ -116,7 +113,6 @@ export abstract class Entity {
   protected getCreateMutationName():string { return `create${this.typeName}` }
   protected getUpdateMutationName():string { return `update${this.typeName}` }
   protected getMutationResultName():string { return `Save${this.typeName}MutationResult` }
-  protected isRootQuery():boolean { return true }
 
   /**
    *
@@ -150,7 +146,7 @@ export abstract class Entity {
    *
    */
   async getPermittedIds( action:CrudAction, resolverCtx:ResolverContext ):Promise<boolean|number[]> {
-    if( ! this.entityPermissions ) throw new Error("no EntityPermission provider" );
+    if( ! this.entityPermissions ) throw new Error( 'no EntityPermission provider' );
     return this.entityPermissions.getPermittedIds( action, resolverCtx );
   }
 
