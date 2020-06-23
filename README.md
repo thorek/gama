@@ -1,27 +1,44 @@
 # Gama
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.1.9.
+This is the development project for 
 
-## Development server
+#### GAMA on Rails
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+an attempt to create a framework that 
 
-## Code scaffolding
+  * allows the simple definition of an application domain in form of entities (and enums, scalars etc.) - with 
+      Convention over Configuration and DRY in mind
+  * provides a full fledged oppinionated GraphQL API - powered by https://www.apollographql.com
+  * provides a Admin UI for basic CRUD applications - based on https://angular.io and https://ng.ant.design/
+  * allows to extend any non-convention requirement with custom code
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+#### D2PROM
 
-## Build
+a prototype application for managing data protection requirements and measures for an organisation according to the
+GDPR 
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+## Repository
 
-## Running unit tests
+There are 2 applications inside this monorepo. You can run both of them concurrently via 
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```
+  npm run start:dev
+```
 
-## Running end-to-end tests
+### Angular 
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+An angular application that holds the GAMA Admin UI and D2PROM UI - this will later be seperated. You can start this
+seperately via 
 
-## Further help
+```
+  ng serve
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+### Express 
+
+An express application that generates the GraqhQL schema based on a domain configuration and starts an Apollo server.
+You can start this seperately via 
+
+```
+  npm run run
+```
