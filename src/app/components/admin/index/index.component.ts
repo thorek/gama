@@ -1,11 +1,10 @@
-import * as _ from 'lodash';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
-import { Router, ActivatedRoute } from '@angular/router';
-import { NzModalService } from 'ng-zorro-antd/modal';
-
 import gql from 'graphql-tag';
-import { MetaDataService, FieldType } from 'src/app/services/meta-data.service';
+import * as _ from 'lodash';
+import { NzModalService } from 'ng-zorro-antd/modal';
+// import { FieldType } from 'src/app/services/meta-data.service';
 
 @Component({
   selector: 'app-index',
@@ -22,7 +21,7 @@ export class IndexComponent implements OnInit {
   get fields() { return this.metaData ? this.metaData.fields : [] }
 
   constructor(
-    private metaDataService:MetaDataService,
+    // private metaDataService:MetaDataService,
     private apollo:Apollo,
     private route:ActivatedRoute,
     private router:Router,
@@ -37,10 +36,10 @@ export class IndexComponent implements OnInit {
    *
    */
   private getMetaData( path:string ){
-    const meta = _.get( this.metaDataService.adminConfig, ['entities', path, 'index' ]);
-    const q = `query { ${path} ${ this.buildFieldQuery(path, meta.fields) } }`
-    console.log({q})
-    const query = gql`${q}`;
+    // const meta = _.get( this.metaDataService.adminConfig, ['entities', path, 'index' ]);
+    // const q = `query { ${path} ${ this.buildFieldQuery(path, meta.fields) } }`
+    // console.log({q})
+    // const query = gql`${q}`;
     // const query = gql`
     // query MetaData($path: String!) {
     //   metaData(path: $path) {
@@ -58,15 +57,15 @@ export class IndexComponent implements OnInit {
     //   });
   }
 
-  private buildFieldQuery( path:string, fields:FieldType[] ):string {
-    return `${path} { ${
-      _.join( _.map( fields, field => {
-        if( _.isString( field ) ) return field;
-        if( _.has( field, 'fields' ) ) return this.buildFieldQuery( field.name, field.fields );
-        return field.name;
-      }))
-    } }`;
-  }
+  // private buildFieldQuery( path:string, fields:FieldType[] ):string {
+  //   return `${path} { ${
+  //     _.join( _.map( fields, field => {
+  //       if( _.isString( field ) ) return field;
+  //       // if( _.has( field, 'fields' ) ) return this.buildFieldQuery( field.name, field.fields );
+  //       return field.name;
+  //     }))
+  //   } }`;
+  // }
 
   /**
    *
