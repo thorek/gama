@@ -13,13 +13,14 @@ export class ClientsComponent implements OnInit {
 
   clients:any;
   loading = true;
+  fields = [ 'id', 'name', 'city', 'dsb' ]
 
   constructor(
     private allClients:AllClientsGQL,
     private router:Router,
-    private modal: NzModalService ) {}
+    private modal:NzModalService ) {}
 
-  ngOnInit(): void {
+  ngOnInit():void {
     this.allClients.watch().valueChanges.subscribe(({data, loading}) => {
       this.clients = data['clients'];
       this.loading = loading;

@@ -1,0 +1,25 @@
+<nz-table #basicTable [nzData]="entities">
+  <thead>
+    <tr>
+      <th *ngFor="let field of fields">{{ label(field) }}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let entity of basicTable.data">
+      <td *ngFor="let field of fields" (click)="onSelect(entity.id)">{{ value( entity, field ) }}</td>
+      <td align="right">
+        <nz-space>
+          <nz-space-item>
+            <a (click)="onSelect(entity.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
+          </nz-space-item>
+          <nz-space-item>
+            <a (click)="onDelete(entity.id)">
+              <i nz-icon nzType="delete" nzTheme="outline"></i>
+            </a>
+          </nz-space-item>
+        </nz-space>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>

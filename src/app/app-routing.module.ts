@@ -13,10 +13,11 @@ const routes: Routes = [
   { path: 'welcome', pathMatch: 'full', component: WelcomeComponent },
   { path: 'about', pathMatch: 'full', component: AboutComponent },
   { path: 'admin', children: [
-    { path: ':entity', component: IndexComponent },
-    { path: ':entity:/:id', component: IndexComponent },
-    { path: 'new/:entity', component: IndexComponent },
-    { path: 'edit/:entity/:id/', component: IndexComponent }
+    { path: 'clients', component: ClientsComponent },
+    { path: ':path', component: IndexComponent },
+    { path: ':path/:id', component: IndexComponent },
+    { path: 'new/:path', component: IndexComponent },
+    { path: 'edit/:path/:id/', component: IndexComponent }
   ]},
   { path: 'clients', children:[
     {path: '', component: ClientsComponent},

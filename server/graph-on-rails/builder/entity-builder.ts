@@ -13,7 +13,7 @@ import {
   GraphQLType,
   GraphQLUnionType,
 } from 'graphql';
-import _, { Dictionary, entries } from 'lodash';
+import _, { Dictionary } from 'lodash';
 
 import { Context } from '../core/context';
 import { Entity, EntityReference } from '../entities/entity';
@@ -160,7 +160,6 @@ export class EntityBuilder extends SchemaBuilder {
 	//
 	//
 	addQueries():void  {
-    if( ! this.entity.rootQuery ) return;
 		if( ! this.entity.isPolymorph ) this.addTypeQuery();
     this.addTypesQuery();
   }
@@ -364,28 +363,33 @@ export class EntityBuilder extends SchemaBuilder {
   /**
    *
    */
-	protected addTypeQuery(){
-		this.graphx.type( 'query' ).extendFields( () => {
-			return _.set( {}, this.entity.singular, {
-				type: this.graphx.type(this.entity.typeName),
-				args: { id: { type: GraphQLID } },
-				resolve: ( root:any, args:any, context:any ) => this.resolver.resolveType( {root, args, context} )
-			});
+  protected addTypeQuery(){
+    const typeQuery = this.entity.typeQuery;
+    // if( ! typeQuery ) return;
+    this.graphx.type( 'query' ).extendFields( () => {
+      return _.set( {}, this.entity.singular, {
+        type: this.graphx.type(this.entity.typeName),
+        args: { id: { type: GraphQLID } },
+        resolve: ( root:any, args:any, context:any ) => this.resolver.resolveType( {root, args, context} )
+      });
     });
-	}
+  }
 
   /**
    *
    */
   protected addTypesQuery(){
-		this.graphx.type( 'query' ).extendFields( () => {
-			return _.set( {}, this.entity.plural, {
-				type: new GraphQLList( this.graphx.type(this.entity.typeName) ),
-				args: { filter: { type: this.graphx.type(this.entity.filterName) } },
+    console.log( "addTypesQuery")
+    const typesQuery = this.entity.typesQuery;
+    // if( ! typesQuery ) return;
+    this.graphx.type( 'query' ).extendFields( () => {
+      return _.set( {}, this.entity.plural, {
+        type: new GraphQLList( this.graphx.type(this.entity.typeName) ),
+        args: { filter: { type: this.graphx.type(this.entity.filterName) } },
         resolve: (root:any, args:any, context:any) => this.resolver.resolveTypes( {root, args, context} )
-			});
-		});
-	}
+      });
+    });
+  }
 
   /**
    *

@@ -28,6 +28,8 @@ import { OrganisationsComponent } from './components/organisations/organisations
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { AboutComponent } from './components/about/about.component';
 import { IndexComponent } from './components/admin/index/index.component';
+import { HeaderComponent } from './components/shared/header/header.component';
+import { TableComponent } from './components/shared/table/table.component';
 
 registerLocaleData(en);
 
@@ -40,7 +42,9 @@ registerLocaleData(en);
     OrganisationsComponent,
     OrganisationComponent,
     AboutComponent,
-    IndexComponent
+    IndexComponent,
+    HeaderComponent,
+    TableComponent
   ],
   imports: [
     BrowserModule,

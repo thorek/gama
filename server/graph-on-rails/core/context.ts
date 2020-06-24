@@ -8,7 +8,6 @@ import { MetaDataBuilder } from '../builder/meta-data-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { EntityConfig } from '../entities/config-entity';
 import { Entity } from '../entities/entity';
-import { EntityAdmin } from '../entities/entity-admin';
 import { EntityPermissions } from '../entities/entity-permissions';
 import { EntityResolver } from '../entities/entity-resolver';
 import { EntitySeeder } from '../entities/entity-seeder';
@@ -25,7 +24,6 @@ export type GorConfig = {
   entityResolver?:(entity:Entity) => EntityResolver
   entityPermissions?:(entity:Entity) => EntityPermissions
   entitySeeder?:(entity:Entity) => EntitySeeder
-  entityAdmin?:(entity:Entity) => EntityAdmin
   contextUser?:string
   contextRoles?:string
   extendSchema?:(context:Context) => void
@@ -71,7 +69,6 @@ export class Context {
       entityResolver: ( entity:Entity ) => new EntityResolver( entity ),
       entityPermissions: ( entity:Entity ) => new EntityPermissions( entity ),
       entitySeeder: ( entity:Entity ) => new EntitySeeder( entity ),
-      entityAdmin: (entity:Entity) => new EntityAdmin( entity ),
       metaDataBuilder: new MetaDataBuilder(),
       contextUser: 'user',
       contextRoles: 'roles'
@@ -100,11 +97,6 @@ export class Context {
   entitySeeder( entity:Entity ) {
     if( ! this.config.entitySeeder ) throw new Error('Context - you must provide an entitySeeder factory method' );
     return this.config.entitySeeder(entity);
-  }
-
-  entityAdmin( entity:Entity ) {
-    if( ! this.config.entityAdmin ) throw new Error('Context - you must provide an entityAdmin factory method' );
-    return this.config.entityAdmin(entity);
   }
 
   filterType( filterType:string|FilterType|false|undefined, fieldType:string|GraphQLType ):FilterType|undefined {

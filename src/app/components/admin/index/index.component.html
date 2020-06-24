@@ -10,13 +10,13 @@
 <nz-table  *ngIf="entities" #basicTable [nzData]="entities">
   <thead>
     <tr>
-      <th *ngFor="let field of fields" >{{field}}</th>
+      <th *ngFor="let field of fields" >{{field.label}}</th>
       <th></th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let entity of basicTable.data">
-      <td *ngFor="let field of fields" (click)="selectEntity( entity.id )">{{entity[field ]}}</td>
+      <td *ngFor="let field of fields" (click)="selectEntity( entity.id )">{{entity[field.name]}}</td>
       <td align="right">
         <nz-space>
           <nz-space-item>

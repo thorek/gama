@@ -1,7 +1,9 @@
 import { GraphQLList, GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLNonNull } from 'graphql';
-import _ from 'lodash';
+import _, { entries } from 'lodash';
 
 import { SchemaBuilder } from './schema-builder';
+import { EntityAdmin } from 'graph-on-rails/entities/entity-admin';
+import { E2BIG } from 'constants';
 
 export class MetaDataBuilder extends SchemaBuilder {
 
@@ -15,7 +17,7 @@ export class MetaDataBuilder extends SchemaBuilder {
         name: {type: GraphQLNonNull( GraphQLString ) },
         label: {type: GraphQLNonNull( GraphQLString ) },
         filter: {type: GraphQLString },
-        sort: {type: GraphQLBoolean }
+        sortable: {type: GraphQLBoolean }
       }
     });
 
@@ -23,10 +25,11 @@ export class MetaDataBuilder extends SchemaBuilder {
       name: 'metaData',
       fields: {
         name: { type: GraphQLString  },
-        rootQuery: { type: GraphQLBoolean  },
         path: { type: GraphQLString },
         label: { type: GraphQLString },
         parent: { type: GraphQLString },
+        typeQuery: { type: GraphQLString },
+        typesQuery: { type: GraphQLString },
         fields: { type: GraphQLList( AdmiFieldMetaData ) }
     }});
 
@@ -39,12 +42,20 @@ export class MetaDataBuilder extends SchemaBuilder {
     });
   }
 
-  protected resolve( root:any, args:any, context:any ):any[] {
+  protected resolve( root:any, args:any, context:any ):EntityAdmin[] {
     const path = _.get( args, 'path' );
     const entities = path ?
       _.filter( this.context.entities, entity => entity.admin.path === path ) :
       _.values( this.context.entities );
 
-    return _.map( entities, entity => entity.admin );
+    return this.sort( _.map( entities, entity => entity.admin ) );
+  }
+
+  protected sort( eas:EntityAdmin[] ):EntityAdmin[] {
+    return eas.sort( (ea1, ea2) => {
+      if( ea1.orderNr && ea2.orderNr ) return ea1.orderNr - ea2.orderNr;
+      if( ea1.orderNr || ea2.orderNr ) return ea1.orderNr ? 1 : -1;
+      return ea1.name.localeCompare( ea2.name );
+    });
   }
 }

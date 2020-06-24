@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { Entity } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { EntityPermissionType } from './entity-permissions';
+import { ConfigEntityAdmin, AdminConfig } from './config-entity-admin';
 
 /**
  *
@@ -18,6 +19,9 @@ export type AttributeConfig = {
   virtual?:boolean
   input?:boolean
   default?:any
+
+  label?:string
+  sortable?:string
 }
 
 /**
@@ -31,8 +35,8 @@ export type EntityConfig  = {
   assocToMany?:string|(string|{type:string})[];
   assocFrom?:string|string[];
 
-	plural?:string
-	singular?:string;
+  plural?:string
+  singular?:string;
 
   collection?:string;
   instance?:string;
@@ -48,7 +52,8 @@ export type EntityConfig  = {
   union?:string[]
   interface?:boolean
   implements?:string|string[]
-  rootQuery?:boolean
+
+  admin?:AdminConfig
 }
 
 /**
@@ -68,7 +73,7 @@ export class ConfigEntity extends Entity {
   /**
    *
    */
-	protected  constructor(
+  protected  constructor(
       protected readonly _name:string,
       public readonly entityConfig:EntityConfig ){
    super();
@@ -84,7 +89,7 @@ export class ConfigEntity extends Entity {
     }
     return this._attributes;
   }
-	protected getAssocTo() {
+  protected getAssocTo() {
     if( ! this.entityConfig.assocTo ) return super.getAssocTo();
     if( ! _.isArray( this.entityConfig.assocTo) ) this.entityConfig.assocTo = [this.entityConfig.assocTo];
     return _.map( this.entityConfig.assocTo, assocTo => {
@@ -96,7 +101,7 @@ export class ConfigEntity extends Entity {
       return assocTo;
     });
   }
-	protected getAssocToMany() {
+  protected getAssocToMany() {
     if( ! this.entityConfig.assocToMany ) return super.getAssocToMany();
     if( ! _.isArray( this.entityConfig.assocToMany) ) this.entityConfig.assocToMany = [this.entityConfig.assocToMany];
     return _.map( this.entityConfig.assocToMany, bt => {
@@ -115,11 +120,8 @@ export class ConfigEntity extends Entity {
     });
    }
   protected getPlural() { return this.entityConfig.plural || super.getPlural() }
-	protected getSingular() { return this.entityConfig.singular || super.getSingular() }
+  protected getSingular() { return this.entityConfig.singular || super.getSingular() }
   protected getCollection() { return this.entityConfig.collection || super.getCollection() }
-  protected getLabel() { return this.entityConfig.label || super.getLabel() }
-  protected getPath() { return this.entityConfig.path || super.getPath() }
-  protected getParent() { return this.entityConfig.parent || super.getParent() }
   protected getSeeds() { return this.entityConfig.seeds || super.getSeeds() }
   protected getPermissions() { return this.entityConfig.permissions || super.getPermissions() }
   protected getEquality() {
@@ -138,10 +140,11 @@ export class ConfigEntity extends Entity {
     return _.compact( _.map( this.entityConfig.implements, entity => this.context.entities[entity] ) );
   }
   protected getIsInterface():boolean { return this.entityConfig.interface === true }
-  protected isRootQuery():boolean {
-    return _.isBoolean( this.entityConfig.rootQuery ) ?
-      this.entityConfig.rootQuery :
-      super.isRootQuery();
+
+
+  protected getAdmin() { 
+    if( ! this._entityAdmin ) this._entityAdmin = new ConfigEntityAdmin( this );
+    return this._entityAdmin;
   }
 
   /**
@@ -202,8 +205,7 @@ export class ConfigEntity extends Entity {
 
   private warnVirtual( name: string, attrConfig:AttributeConfig ):void {
     if( attrConfig.virtual ){
-      if( attrConfig.filterType )
-        console.warn( this.name, `[${name}]`, 'filterType makes no sense for virtual attribute' )
+      if( attrConfig.filterType ) console.warn( this.name, `[${name}]`, 'filterType makes no sense for virtual attribute' )
     }
   }
 

@@ -32,7 +32,7 @@ export abstract class Entity {
   get resolver() { return this._entityResolver }
   get validator() { return this._entityValidator }
   get accessor() { return this._entityAccessor }
-  get admin() { return this._entityAdmin }
+  get admin() { return this.getAdmin() }
 
   protected _entitySeeder!:EntitySeeder;
   protected _entityResolver!:EntityResolver;
@@ -52,7 +52,7 @@ export abstract class Entity {
     this._entityPermissions = this.context.entityPermissions( this );
     this._entityValidator = new EntityValidator( this );
     this._entityAccessor = new EntityAccessor( this );
-    this._entityAdmin = this.context.entityAdmin( this );
+
   }
 
   get name() { return this.getName() }
@@ -85,6 +85,8 @@ export abstract class Entity {
   get createMutationName():string { return this.getCreateMutationName() }
   get updateMutationName():string { return this.getUpdateMutationName() }
   get mutationResultName():string { return this.getMutationResultName() }
+  get typesQuery():string { return this.getTypesQuery() }
+  get typeQuery():string { return this.getTypeQuery() }
 
   protected abstract getName():string;
   protected getTypeName() { return inflection.camelize( this.name ) }
@@ -113,6 +115,13 @@ export abstract class Entity {
   protected getCreateMutationName():string { return `create${this.typeName}` }
   protected getUpdateMutationName():string { return `update${this.typeName}` }
   protected getMutationResultName():string { return `Save${this.typeName}MutationResult` }
+  protected getTypesQuery():string { return this.plural }
+  protected getTypeQuery():string { return this.singular }
+
+  protected getAdmin() { 
+    if( ! this._entityAdmin ) this._entityAdmin = new EntityAdmin( this );
+    return this._entityAdmin;
+  }
 
   /**
    *

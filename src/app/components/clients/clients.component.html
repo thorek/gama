@@ -1,38 +1,5 @@
-<nz-page-header class="site-page-header" nzBackIcon>
-  <nz-page-header-title>Clients</nz-page-header-title>
-  <nz-page-header-extra>
-    <button (click)="newClient()" nz-button nzType="primary">New client</button>
-  </nz-page-header-extra>
-</nz-page-header>
+<app-header entity="Client" (newEntity)="newClient()"></app-header>
 
 <div *ngIf="loading">Loading...</div>
 
-<nz-table #basicTable [nzData]="clients">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>City</th>
-      <th>DSB</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let client of basicTable.data">
-      <td (click)="selectClient(client.id)">{{client.name}}</td>
-      <td (click)="selectClient(client.id)">{{client.city}}</td>
-      <td (click)="selectClient(client.id)">{{client.dsb}}</td>
-      <td align="right">
-        <nz-space>
-          <nz-space-item>
-            <a (click)="selectClient(client.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
-          </nz-space-item>
-          <nz-space-item>
-            <a (click)="deleteClient(client.id)">
-              <i nz-icon nzType="delete" nzTheme="outline"></i>
-            </a>
-          </nz-space-item>
-        </nz-space>
-      </td>
-    </tr>
-  </tbody>
-</nz-table>
+<app-table [entities]="clients" [fields]="fields" (selectEntity)="selectClient($event)"></app-table>

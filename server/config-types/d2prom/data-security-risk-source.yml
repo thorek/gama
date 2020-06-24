@@ -47,7 +47,8 @@ entity:
       - Organisation
 
   DataAtom:
-    rootQuery: false
+    typesQuery: false
+    typeQuery: false
     attributes:
       description: string
     assocTo: ProcessingActivity
