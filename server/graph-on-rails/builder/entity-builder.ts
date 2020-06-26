@@ -46,11 +46,10 @@ export class EntityBuilder extends SchemaBuilder {
   get resolver() { return this.entity.resolver }
   attributes():{[name:string]:TypeAttribute} { return this.entity.attributes };
 
-	//
-	//
-	constructor( public readonly entity:Entity ){
-    super();
-  }
+  /**
+   *
+   */
+  constructor( public readonly entity:Entity ){ super() }
 
   /**
    *
@@ -60,32 +59,32 @@ export class EntityBuilder extends SchemaBuilder {
     this.entity.init( context );
   }
 
-	//
-	//
-	protected createObjectType():void {
+  //
+  //
+  protected createObjectType():void {
     if( this.entity.isUnion ) return;
     const from = this.entity.isInterface ? GraphQLInterfaceType : GraphQLObjectType;
     const name = this.entity.typeName;
-		this.graphx.type( name, {
+    this.graphx.type( name, {
       from, name,
       fields: () => {
-			  const fields = { id: { type: new GraphQLNonNull(GraphQLID) } };
-			  return _.merge( fields, this.getAttributeFields( 'type' ) );
+        const fields = { id: { type: new GraphQLNonNull(GraphQLID) } };
+        return _.merge( fields, this.getAttributeFields( 'type' ) );
       },
       description: this.entity.description
     });
   }
 
-	//
-	//
-	extendTypes():void {
+  //
+  //
+  extendTypes():void {
     this.createEntityTypesEnum();
     this.createCreateInputType();
     this.createUpdateInputType();
-		this.createFilterType();
+    this.createFilterType();
     this.addInterfaces();
-		this.addReferences();
-		this.addQueries();
+    this.addReferences();
+    this.addQueries();
     this.addMutations();
 	}
 
@@ -147,14 +146,14 @@ export class EntityBuilder extends SchemaBuilder {
 	protected addReferences():void {
     this.addAssocTo();
     this.addAssocToMany();
-		this.addAssocFrom();
+    this.addAssocFrom();
 	}
 
 	//
 	//
 	protected addMutations():void {
     this.addSaveMutations();
-		this.addDeleteMutation();
+    this.addDeleteMutation();
 	}
 
 	//
@@ -365,9 +364,9 @@ export class EntityBuilder extends SchemaBuilder {
    */
   protected addTypeQuery(){
     const typeQuery = this.entity.typeQuery;
-    // if( ! typeQuery ) return;
+    if( ! typeQuery ) return;
     this.graphx.type( 'query' ).extendFields( () => {
-      return _.set( {}, this.entity.singular, {
+      return _.set( {}, typeQuery, {
         type: this.graphx.type(this.entity.typeName),
         args: { id: { type: GraphQLID } },
         resolve: ( root:any, args:any, context:any ) => this.resolver.resolveType( {root, args, context} )
@@ -379,11 +378,10 @@ export class EntityBuilder extends SchemaBuilder {
    *
    */
   protected addTypesQuery(){
-    console.log( "addTypesQuery")
     const typesQuery = this.entity.typesQuery;
-    // if( ! typesQuery ) return;
+    if( ! typesQuery ) return;
     this.graphx.type( 'query' ).extendFields( () => {
-      return _.set( {}, this.entity.plural, {
+      return _.set( {}, typesQuery, {
         type: new GraphQLList( this.graphx.type(this.entity.typeName) ),
         args: { filter: { type: this.graphx.type(this.entity.filterName) } },
         resolve: (root:any, args:any, context:any) => this.resolver.resolveTypes( {root, args, context} )

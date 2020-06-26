@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
+import * as inflection from 'inflection';
 import * as _ from 'lodash';
 import { NzModalService } from 'ng-zorro-antd/modal';
-// import { FieldType } from 'src/app/services/meta-data.service';
+import { AdminService, EntityConfigType, ColumnConfigType } from 'src/app/services/admin.service';
 
 @Component({
   selector: 'app-index',
@@ -13,15 +14,18 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 })
 export class IndexComponent implements OnInit {
 
-  name:string;
-  metaData:any;
-  entities:any;
+  path:string;
+  items:any;
   loading = true;
+  config:EntityConfigType;
+  error:any;
 
-  get fields() { return this.metaData ? this.metaData.fields : [] }
+  get columns() { return this.config.index.columns }
+  get entitiesName() { return this.config.entitesName || inflection.humanize( this.path ) }
+  get entityName() { return this.config.entityName || inflection.humanize( inflection.singularize(this.path ) ) }
 
   constructor(
-    // private metaDataService:MetaDataService,
+    private adminService:AdminService,
     private apollo:Apollo,
     private route:ActivatedRoute,
     private router:Router,
@@ -29,71 +33,60 @@ export class IndexComponent implements OnInit {
 
 
   ngOnInit() {
-    this.route.params.subscribe( params => this.getMetaData( params['path']) );
+    this.route.params.subscribe( params => this.loadData( params['path']) );
   }
 
   /**
    *
    */
-  private getMetaData( path:string ){
-    // const meta = _.get( this.metaDataService.adminConfig, ['entities', path, 'index' ]);
-    // const q = `query { ${path} ${ this.buildFieldQuery(path, meta.fields) } }`
-    // console.log({q})
-    // const query = gql`${q}`;
-    // const query = gql`
-    // query MetaData($path: String!) {
-    //   metaData(path: $path) {
-    //     name, typesQuery, fields { name, label }
-    //   }
-    // }`;
-    // console.log({query})
-    // this.apollo.watchQuery<any>({
-    //   query, variables: { path }})
-    //   .valueChanges
-    //   .subscribe(({ data, loading }) => {
-    //     this.loading = loading;
-    //     this.metaData = _.first( data.metaData );
-    //     if( this.metaData ) this.loadData();
-    //   });
-  }
+  private async loadData( path:string ){
+    this.path = path;
+    const config = this.adminService.getEntityConfig(path);
+    this.config = this.setDefaults( config );
 
-  // private buildFieldQuery( path:string, fields:FieldType[] ):string {
-  //   return `${path} { ${
-  //     _.join( _.map( fields, field => {
-  //       if( _.isString( field ) ) return field;
-  //       // if( _.has( field, 'fields' ) ) return this.buildFieldQuery( field.name, field.fields );
-  //       return field.name;
-  //     }))
-  //   } }`;
-  // }
+    const query = gql`query{ ${ this.buildFieldQuery() } }`;
+    console.log({query})
 
-  /**
-   *
-   */
-  private loadData(){
-    const query = gql`
-      query Entities {
-        ${this.metaData.typesQuery} {
-          ${ _.join( _.map(this.metaData.fields, field => field.name ), ', ')}
-        }
-      }
-    `;
-    console.log( { query })
-    this.name = this.metaData.name;
-    this.apollo.watchQuery<any>({ query })
+    this.apollo.watchQuery<any>({
+      query, variables: { path }})
       .valueChanges
       .subscribe(({ data, loading }) => {
+        console.log({data, loading})
         this.loading = loading;
-        this.entities = _.get(data, this.metaData.typesQuery );
-      });
+        this.items = _.get( data, this.config.typesQuery );
+      }, error => this.error = error );
+  }
+
+  private buildFieldQuery():string {
+    const columnFields = _(this.config.index.columns).
+      filter( (col:ColumnConfigType) => _.includes( _.keys(this.config.fields ), col.name ) ).
+      map( (col:ColumnConfigType) => col.name ).
+      value();
+    const assocFields = _.map( this.config.index.assoc, (assoc, name) => `${name} { ${ _.join(assoc, ' ') } }` );
+    return `${this.config.typesQuery} { ${ _.join( _.concat( columnFields, assocFields ), ' ' ) } }`;
   }
 
 
-  newEntity() { console.log('new client') }
-  selectEntity(id:string) { this.router.navigate(['admin', name, id]) }
-  deleteEntity(id:string) {
+  private setDefaults( config:EntityConfigType ):EntityConfigType {
+    if( ! _.has(config, 'index') ) _.set( config, 'index', {} );
+    if( ! _.has(config, 'index.columns') ) _.set( config, 'index.columns', _.keys( config.fields ) );
+    config.index.columns = _.map( config.index.columns, col => _.isString( col ) ? { name: col } : col );
+    return config;
+  }
+
+  label( col:ColumnConfigType ):string {
+    return col.name
+  }
+
+  value(item:any, column:ColumnConfigType){
+    return _.isFunction( column.value ) ? column.value( item ) : _.get( item, column.name );
+  }
+
+  onNew() { console.log('new ', this.path ) }
+  onSelect(id:any) { this.router.navigate(['admin', this.path, id]) }
+  onDelete(id:string) {
     this.modal.confirm({
-      nzTitle: 'Are you sure delete this entity?',
+      nzTitle: 'Are you sure delete this item?',
       nzContent: '<b style="color: red;">All related entities will be deleted too!</b>',
       nzOkText: 'Yes',
       nzOkType: 'danger',

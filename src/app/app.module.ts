@@ -1,7 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import en from '@angular/common/locales/en';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -16,6 +16,7 @@ import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
@@ -30,8 +31,17 @@ import { AboutComponent } from './components/about/about.component';
 import { IndexComponent } from './components/admin/index/index.component';
 import { HeaderComponent } from './components/shared/header/header.component';
 import { TableComponent } from './components/shared/table/table.component';
+import { ShowComponent } from './components/admin/show/show.component';
+import { AdminService } from './services/admin.service';
+import { adminConfig } from './admin.config';
 
 registerLocaleData(en);
+
+export function initializeApp1(adminService:AdminService) {
+  return ():Promise<any> => {
+    return adminService.init( adminConfig );
+  }
+}
 
 @NgModule({
   declarations: [
@@ -44,7 +54,8 @@ registerLocaleData(en);
     AboutComponent,
     IndexComponent,
     HeaderComponent,
-    TableComponent
+    TableComponent,
+    ShowComponent
   ],
   imports: [
     BrowserModule,
@@ -60,12 +71,17 @@ registerLocaleData(en);
     NzDescriptionsModule,
     NzBadgeModule,
     NzDividerModule,
+    NzAlertModule,
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,
     GraphQLModule
   ],
-  providers: [{ provide: NZ_I18N, useValue: en_US }],
+  providers: [
+    AdminService,
+    { provide: APP_INITIALIZER ,useFactory: initializeApp1, deps: [AdminService], multi: true },
+    { provide: NZ_I18N, useValue: en_US }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

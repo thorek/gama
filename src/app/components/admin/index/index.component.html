@@ -1,29 +1,29 @@
 <nz-page-header class="site-page-header" nzBackIcon>
-  <nz-page-header-title>{{ name }}</nz-page-header-title>
+  <nz-page-header-title>{{ entitiesName }}</nz-page-header-title>
   <nz-page-header-extra>
-    <button (click)="newEntity()" nz-button nzType="primary">New {{name}}</button>
+    <button (click)="onNew()" nz-button nzType="primary">New {{ entityName }}</button>
   </nz-page-header-extra>
 </nz-page-header>
 
 <div *ngIf="loading">Loading...</div>
 
-<nz-table  *ngIf="entities" #basicTable [nzData]="entities">
+<nz-table #basicTable [nzData]="items">
   <thead>
     <tr>
-      <th *ngFor="let field of fields" >{{field.label}}</th>
+      <th *ngFor="let col of columns">{{ label( col ) }}</th>
       <th></th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let entity of basicTable.data">
-      <td *ngFor="let field of fields" (click)="selectEntity( entity.id )">{{entity[field.name]}}</td>
+    <tr *ngFor="let item of basicTable.data">
+      <td *ngFor="let col of columns" (click)="onSelect(item.id)">{{ value( item, col ) }}</td>
       <td align="right">
         <nz-space>
           <nz-space-item>
-            <a (click)="selectEntity(entity.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
+            <a (click)="onSelect(item.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
           </nz-space-item>
           <nz-space-item>
-            <a (click)="deleteEntity( entity.id)">
+            <a (click)="onDelete(item.id)">
               <i nz-icon nzType="delete" nzTheme="outline"></i>
             </a>
           </nz-space-item>
@@ -32,3 +32,11 @@
     </tr>
   </tbody>
 </nz-table>
+
+<nz-alert
+  *ngIf="error"
+  nzType="error"
+  nzCloseable
+  nzMessage="GraphQL Error"
+  [nzDescription]="error">
+</nz-alert>

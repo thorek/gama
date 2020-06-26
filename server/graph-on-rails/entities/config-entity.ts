@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { Entity } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { EntityPermissionType } from './entity-permissions';
-import { ConfigEntityAdmin, AdminConfig } from './config-entity-admin';
 
 /**
  *
@@ -52,8 +51,6 @@ export type EntityConfig  = {
   union?:string[]
   interface?:boolean
   implements?:string|string[]
-
-  admin?:AdminConfig
 }
 
 /**
@@ -141,12 +138,6 @@ export class ConfigEntity extends Entity {
   }
   protected getIsInterface():boolean { return this.entityConfig.interface === true }
 
-
-  protected getAdmin() { 
-    if( ! this._entityAdmin ) this._entityAdmin = new ConfigEntityAdmin( this );
-    return this._entityAdmin;
-  }
-
   /**
    *
    */
@@ -165,7 +156,7 @@ export class ConfigEntity extends Entity {
       required: attrConfig.required,
       description: attrConfig.description,
       virtual: attrConfig.virtual,
-      input: attrConfig.input,
+      // input: attrConfig.input,
       defaultValue: attrConfig.default
     }
   }

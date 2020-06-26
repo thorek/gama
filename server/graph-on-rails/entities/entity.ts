@@ -2,15 +2,14 @@ import inflection from 'inflection';
 import _ from 'lodash';
 
 import { Context } from '../core/context';
+import { ResolverContext } from '../core/resolver-context';
+import { EntityAccessor } from './entity-accessor';
+import { EntityItem } from './entity-item';
 import { CrudAction, EntityPermissions, EntityPermissionType } from './entity-permissions';
+import { EntityResolver } from './entity-resolver';
 import { EntitySeeder } from './entity-seeder';
 import { EntityValidator, ValidationViolation } from './entity-validator';
 import { TypeAttribute } from './type-attribute';
-import { ResolverContext } from '../core/resolver-context';
-import { EntityResolver } from './entity-resolver';
-import { EntityAccessor } from './entity-accessor';
-import { EntityItem } from './entity-item';
-import { EntityAdmin } from './entity-admin';
 
 //
 //
@@ -32,14 +31,13 @@ export abstract class Entity {
   get resolver() { return this._entityResolver }
   get validator() { return this._entityValidator }
   get accessor() { return this._entityAccessor }
-  get admin() { return this.getAdmin() }
 
   protected _entitySeeder!:EntitySeeder;
   protected _entityResolver!:EntityResolver;
   protected _entityPermissions!:EntityPermissions;
   protected _entityValidator!:EntityValidator;
   protected _entityAccessor!:EntityAccessor;
-  protected _entityAdmin!:EntityAdmin;
+
 
   /**
    *
@@ -52,7 +50,6 @@ export abstract class Entity {
     this._entityPermissions = this.context.entityPermissions( this );
     this._entityValidator = new EntityValidator( this );
     this._entityAccessor = new EntityAccessor( this );
-
   }
 
   get name() { return this.getName() }
@@ -87,6 +84,7 @@ export abstract class Entity {
   get mutationResultName():string { return this.getMutationResultName() }
   get typesQuery():string { return this.getTypesQuery() }
   get typeQuery():string { return this.getTypeQuery() }
+  get path() { return this.getPath() }
 
   protected abstract getName():string;
   protected getTypeName() { return inflection.camelize( this.name ) }
@@ -117,11 +115,7 @@ export abstract class Entity {
   protected getMutationResultName():string { return `Save${this.typeName}MutationResult` }
   protected getTypesQuery():string { return this.plural }
   protected getTypeQuery():string { return this.singular }
-
-  protected getAdmin() { 
-    if( ! this._entityAdmin ) this._entityAdmin = new EntityAdmin( this );
-    return this._entityAdmin;
-  }
+  protected getPath() { return inflection.underscore( this.plural ) }
 
   /**
    *

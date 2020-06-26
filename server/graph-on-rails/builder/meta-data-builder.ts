@@ -1,9 +1,8 @@
-import { GraphQLList, GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLNonNull } from 'graphql';
-import _, { entries } from 'lodash';
+import { GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import _ from 'lodash';
 
+import { Entity } from '../entities/entity';
 import { SchemaBuilder } from './schema-builder';
-import { EntityAdmin } from 'graph-on-rails/entities/entity-admin';
-import { E2BIG } from 'constants';
 
 export class MetaDataBuilder extends SchemaBuilder {
 
@@ -11,51 +10,79 @@ export class MetaDataBuilder extends SchemaBuilder {
 
   protected createObjectType():void {
 
-    const AdmiFieldMetaData = new GraphQLObjectType({
-      name: 'AdminFieldMetaData',
+    const fieldMetaData = new GraphQLObjectType({
+      name: 'fieldMetaData',
       fields: {
-        name: {type: GraphQLNonNull( GraphQLString ) },
-        label: {type: GraphQLNonNull( GraphQLString ) },
-        filter: {type: GraphQLString },
-        sortable: {type: GraphQLBoolean }
+        name: { type: GraphQLNonNull( GraphQLString ) },
+        type: { type: GraphQLString },
+        required: { type: GraphQLBoolean },
+        unique: { type: GraphQLString },
+        virtual: { type: GraphQLBoolean },
+        filter: {type: GraphQLString }
       }
     });
 
-    const metaDataType = new GraphQLObjectType({
-      name: 'metaData',
-      fields: {
-        name: { type: GraphQLString  },
+    const entityMetaData:GraphQLObjectType = new GraphQLObjectType({
+      name: 'entityMetaData',
+      fields: () => ({
         path: { type: GraphQLString },
-        label: { type: GraphQLString },
-        parent: { type: GraphQLString },
         typeQuery: { type: GraphQLString },
         typesQuery: { type: GraphQLString },
-        fields: { type: GraphQLList( AdmiFieldMetaData ) }
-    }});
+        fields: {
+          type: GraphQLList( fieldMetaData ),
+          resolve: (root:any) => this.resolveFields(root)
+        },
+        assocTo: {
+          type: GraphQLList( entityMetaData ),
+          resolve: (root:any) => this.resolveAssocTo(root)
+        },
+        assocToMany: {
+          type: GraphQLList( entityMetaData ),
+          resolve: (root:any) => this.resolveAssocToMany( root )
+        },
+        assocFrom: {
+          type: GraphQLList( entityMetaData ),
+          resolve: (root:any) => this.resolveAssocFrom( root )
+        },
+      })
+    });
 
     this.graphx.type('query').extendFields( () => {
       return _.set( {}, 'metaData', {
-        type: new GraphQLList( metaDataType ),
+        type: new GraphQLList( entityMetaData ),
         args: { path: { type: GraphQLString } },
         resolve: (root:any, args:any, context:any) => this.resolve( root, args, context )
       });
     });
   }
 
-  protected resolve( root:any, args:any, context:any ):EntityAdmin[] {
+  protected resolve( root:any, args:any, context:any ):Entity[] {
     const path = _.get( args, 'path' );
-    const entities = path ?
-      _.filter( this.context.entities, entity => entity.admin.path === path ) :
+    return path ?
+      _.filter( this.context.entities, entity => entity.path === path ) :
       _.values( this.context.entities );
-
-    return this.sort( _.map( entities, entity => entity.admin ) );
   }
 
-  protected sort( eas:EntityAdmin[] ):EntityAdmin[] {
-    return eas.sort( (ea1, ea2) => {
-      if( ea1.orderNr && ea2.orderNr ) return ea1.orderNr - ea2.orderNr;
-      if( ea1.orderNr || ea2.orderNr ) return ea1.orderNr ? 1 : -1;
-      return ea1.name.localeCompare( ea2.name );
-    });
+  protected resolveFields( root:any ):any[]{
+    const entity = root as Entity;
+    return _.map( entity.attributes, (attribute, name) => ({
+      name, type: attribute.graphqlType, required: attribute.required, virtual: attribute.virtual,
+      unique: _.toString(attribute.unique), filter: attribute.filterType }));
   }
+
+  resolveAssocTo( root:any ) {
+    const entity = root as Entity;
+    return _.map( entity.assocTo, assocTo => this.context.entities[assocTo.type] );
+  }
+
+  resolveAssocToMany( root:any ) {
+    const entity = root as Entity;
+    return _.map( entity.assocToMany, assocToMany => this.context.entities[assocToMany.type] );
+  }
+
+  resolveAssocFrom( root:any ) {
+    const entity = root as Entity;
+    return _.map( entity.assocFrom, assocFrom => this.context.entities[assocFrom.type] );
+  }
+
 }

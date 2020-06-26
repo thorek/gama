@@ -24,7 +24,6 @@ export class AppComponent implements OnInit, OnDestroy{
         query MetaDataEntityList {
           metaData {
             path
-            name
           }
         }
       `})

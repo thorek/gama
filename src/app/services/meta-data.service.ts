@@ -1,31 +1,72 @@
-// import * as _ from 'lodash';
-// import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Apollo } from 'apollo-angular';
+import gql from 'graphql-tag';
 
-// export type FieldType = string|{name:string, label?:string, value?:(entity:any) => any, fields?:string[] }
-// export type AdminConfigType = {entities?:{ [entity:string]:{ index?:{ fields?:FieldType[]}}}}
+const query = gql`
+  query {
+    metaData {
+      path
+      typeQuery
+      typesQuery
+      fields {
+        name
+        type
+        virtual
+        required
+        unique
+      }
+      assocTo {
+        path
+        typeQuery
+        typesQuery
+        fields {
+          name
+          type
+        }
+      }
+      assocToMany {
+        path
+        typeQuery
+        typesQuery
+        fields {
+          name
+          type
+        }
+      }
+      assocFrom {
+        path
+        typeQuery
+        typesQuery
+        fields {
+          name
+          type
+        }
+      }
+    }
+  }
+`;
 
-// @Injectable({providedIn: 'root'})
-// export class MetaDataService {
+@Injectable({ providedIn: 'root' })
+export class MetaDataService {
 
-//   // get adminConfig():AdminConfigType { return {
-//   //   entities:{
-//   //     clients:{
-//   //       index: {
-//   //         fields: [ 'id', 'name', 'city' ]
-//   //       }
-//   //     },
-//   //     organisations:{
-//   //       index: {
-//   //         fields: [
-//   //           'id',
-//   //           'name',
-//   //           { name: 'industries', fields: ['name'], value: (organisation:any) =>
-//   //             _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ') },
-//   //           { name: 'client', fields: ['name'], value: (organisation:any)=> organisation.client.name },
-//   //         ]
-//   //       }
-//   //     }
-//   //   }
-//   // }}
+  private metaData:any[];
 
-// }
+  constructor(private apollo:Apollo) {}
+
+  async getMetaData():Promise<any[]> {
+    if( ! this.metaData ) await this.loadMetaData();
+    return this.metaData;
+  }
+
+  private loadMetaData():Promise<void>{
+    return new Promise( (resolve, reject) => {
+      this.apollo.watchQuery<any>({ query }).valueChanges.subscribe(({ data, loading }) => {
+        if( loading ) return;
+        this.metaData = data.metaData;
+        resolve();
+      });
+    });
+  }
+
+
+}

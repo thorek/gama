@@ -7,15 +7,15 @@ import { OrganisationsComponent } from './components/organisations/organisations
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { AboutComponent } from './components/about/about.component';
 import { IndexComponent } from './components/admin/index/index.component';
+import { ShowComponent } from './components/admin/show/show.component';
 
-const routes: Routes = [
+const routes:Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/welcome' },
   { path: 'welcome', pathMatch: 'full', component: WelcomeComponent },
   { path: 'about', pathMatch: 'full', component: AboutComponent },
   { path: 'admin', children: [
-    { path: 'clients', component: ClientsComponent },
     { path: ':path', component: IndexComponent },
-    { path: ':path/:id', component: IndexComponent },
+    { path: ':path/:id', component: ShowComponent },
     { path: 'new/:path', component: IndexComponent },
     { path: 'edit/:path/:id/', component: IndexComponent }
   ]},

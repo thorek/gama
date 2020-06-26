@@ -1,0 +1,18 @@
+<nz-page-header class="site-page-header" nzBackIcon>
+  <nz-page-header-title>
+    <span>{{ name }}</span>
+  </nz-page-header-title>
+  <nz-page-header-subtitle>{{ typesName }}</nz-page-header-subtitle>
+  <nz-page-header-extra>
+    <button nz-button nzType="primary">Edit</button>
+    <button nz-button nzType="secondary">Delete</button>
+  </nz-page-header-extra>
+</nz-page-header>
+
+<div *ngIf="loading">Loading...</div>
+
+<nz-descriptions *ngIf="entity" nzTitle="Entity data" nzBordered [nzColumn]="1">
+  <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="field.label">
+    {{ value( field ) }}
+  </nz-descriptions-item>
+</nz-descriptions>
