@@ -4,13 +4,18 @@ import { AdminConfigType, ActionType } from './services/admin.service';
 export const adminConfig = async ():Promise<AdminConfigType> => {
   return {
     entities:{
+      clients: {
+        index: {
+          fields: ['name','city','dsb']
+        }
+      },
       organisations: {
         index: {
           assoc: {
             client: ['id','name'],
             industries: ['name']
           },
-          columns: [
+          fields: [
             'id',
             'name',
             {
@@ -24,6 +29,9 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
               value: (organisation:any) => organisation.client.name
             }
           ]
+        },
+        show: {
+
         }
       },
       processing_activities: {

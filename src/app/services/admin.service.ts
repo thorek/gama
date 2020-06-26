@@ -5,7 +5,7 @@ import { MetaDataService } from './meta-data.service';
 
 export type ActionType = 'index'|'show';
 
-export type FieldConfigType = {
+export type FieldMetaDataType = {
   name:string,
   type?:string,
   virtual?:boolean,
@@ -15,27 +15,29 @@ export type FieldConfigType = {
   value?:(entity:any, action?:ActionType) => any,
 }
 
-export type FieldsConfigType = {[field:string]:FieldConfigType}
+export type FieldsMetaDataType = {[field:string]:FieldMetaDataType}
 
-export type ColumnConfigType = {
+export type FieldConfigType = {
   name:string
   label?:string|(() => string)
   value?:(item:any) => string
 }
 
 export type IndexConfigType = {
+  query?:string
   assoc?:{[assoc:string]:string[]}
-  columns?:(string|ColumnConfigType)[]
+  fields?:(string|FieldConfigType)[]
 }
 
 export type EntityConfigType = {
-  fields?:FieldsConfigType,
+  fields?:FieldsMetaDataType,
   entitesName?:string,
   entityName?:string,
   typesQuery?:string,
   typeQuery?:string,
   name?:(entity:any, action?:ActionType ) => string,
   index?:IndexConfigType
+  show?:IndexConfigType
 }
 export type AdminConfigType = {entities?:{ [entity:string]:EntityConfigType}}
 
@@ -72,7 +74,7 @@ export class AdminService {
     return { typeQuery, typesQuery, fields };
   };
 
-  private buildField( data:any ):FieldConfigType {
+  private buildField( data:any ):FieldMetaDataType {
     return {
       name: data.name,
       label: inflection.humanize( data.name ),

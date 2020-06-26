@@ -1,97 +1,36 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Apollo } from 'apollo-angular';
+import { Component } from '@angular/core';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import * as inflection from 'inflection';
-import { NzModalService } from 'ng-zorro-antd/modal';
-import { FieldType, MetaDataService, EntityConfigType } from 'src/app/services/meta-data.service';
+import { AdminComponent } from '../admin.component';
+import { EntityConfigType } from 'src/app/services/admin.service';
 
 @Component({
   selector: 'app-show',
   templateUrl: './show.component.html',
   styleUrls: ['./show.component.scss']
 })
-export class ShowComponent implements OnInit {
+export class ShowComponent extends AdminComponent {
 
-  name:string;
-  path:string;
-  typesName:string;
-  typeName:string;
-  fields:FieldType[];
-  tableFields:FieldType[];
-  entity:any;
-  loading = true;
+  item:any;
+  get fields() { return this.config.show.fields }
 
-  constructor(
-    private metaDataService:MetaDataService,
-    private apollo:Apollo,
-    private route:ActivatedRoute,
-    private router:Router,
-    private modal:NzModalService ) {}
-
-
-  ngOnInit() {
-    this.route.params.subscribe( params => this.loadData( params['path']) );
+  getQuery(){
+    const fields = this.buildFieldQuery( this.config.show );
+    return {
+      query: gql`query EntityQuery($id: ID!){ ${this.config.show.query}(id: $id) ${ fields } }`,
+      variables: {id: this.id}
+    };
   }
 
-  /**
-   *
-   */
-  private async loadData( path:string ){
-    this.path = path;
-    const meta = _.get( await this.metaDataService.adminConfig(), ['entities', path ]);
-    this.setMetaData( meta );
-    const query = gql`query{ ${ this.buildFieldQuery(path, this.fields) } }`;
-    this.apollo.watchQuery<any>({
-      query, variables: { path }})
-      .valueChanges
-      .subscribe(({ data, loading }) => {
-        this.loading = loading;
-        this.entity = _.get( data, path );
-      });
+  setData( data:any ):void {
+    this.item = _.get( data, this.config.show.query );
   }
 
-  private buildFieldQuery( path:string, fields:(string|FieldType)[] ):string {
-    return `${path} { ${
-      _.join( _.map( fields, field => {
-        if( _.isString( field ) ) return field;
-        if( _.has( field, 'fields' ) ) return this.buildFieldQuery( field.name, field.fields );
-        return field.name;
-      }), ' ')
-    } }`;
-  }
-
-  private setMetaData( meta:EntityConfigType ):void {
-    this.name = meta.name( this.entity, 'show' );
-    this.typesName = _.get( meta, 'typesName', inflection.humanize(this.path));
-    this.typeName = _.get( meta, 'typesName', inflection.humanize( inflection.singularize(this.path)));
-    this.fields = _.map( meta.fields, field => {
-      if( _.isString( field ) ) field = {name: field};
-      if( ! field.label ) field.label = inflection.humanize( field.name );
-      return field;
-    });
-    this.tableFields = _.filter( this.fields, field => field.index !== false );
-  }
-
-
-
-  value(entity:any, field:string|FieldType){
-    if( _.isString(field) ) return _.get(entity, field);
-    return _.isFunction( field.value ) ? field.value( entity, 'show' ) : _.get( entity, field.name );
-  }
-
-  onNew() { console.log('new ', this.typeName ) }
-  onSelect(id:any) { this.router.navigate(['admin', this.path, id]) }
-  onDelete(id:string) {
-    this.modal.confirm({
-      nzTitle: 'Are you sure delete this entity?',
-      nzContent: '<b style="color: red;">All related entities will be deleted too!</b>',
-      nzOkText: 'Yes',
-      nzOkType: 'danger',
-      nzOnOk: () => console.log('OK'),
-      nzCancelText: 'No',
-      nzOnCancel: () => console.log('Cancel')
-    });
+  protected setDefaults( config:EntityConfigType ):EntityConfigType {
+    if( ! _.has(config, 'show') ) _.set( config, 'show', {} );
+    if( ! _.has(config, 'show.fields') ) _.set( config, 'show.fields', _.keys( config.fields ) );
+    config.show.fields = _.map( config.show.fields, col => _.isString( col ) ? { name: col } : col );
+    if( ! _.has( config, 'show.query' ) ) _.set( config, 'show.query', config.typeQuery );
+    return config;
   }
 }
