@@ -21,12 +21,24 @@ export type FieldConfigType = {
   name:string
   label?:string|(() => string)
   value?:(item:any) => string
+  link?:(item:any) => any[]
 }
 
-export type IndexConfigType = {
+export type UiConfigType = {
   query?:string
-  assoc?:{[assoc:string]:string[]}
+  assoc?:{[assoc:string]:AssocUiConfigType}
   fields?:(string|FieldConfigType)[]
+}
+
+export type AssocUiConfigType = UiConfigType & {display?:string}
+
+export type AssocType = {
+  path:string
+  query:string
+}
+
+export type AssocsType = {
+  [assoc:string]:AssocType
 }
 
 export type EntityConfigType = {
@@ -35,9 +47,10 @@ export type EntityConfigType = {
   entityName?:string,
   typesQuery?:string,
   typeQuery?:string,
+  assoc?:AssocsType,
   name?:(entity:any, action?:ActionType ) => string,
-  index?:IndexConfigType
-  show?:IndexConfigType
+  index?:UiConfigType
+  show?:UiConfigType
 }
 export type AdminConfigType = {entities?:{ [entity:string]:EntityConfigType}}
 
@@ -70,8 +83,16 @@ export class AdminService {
   private buildEntityConfig( data:any ):EntityConfigType {
     const typeQuery = data.typeQuery;
     const typesQuery = data.typesQuery;
-    const fields = _.reduce( data.fields, (fields,data) => _.set(fields, data.name, this.buildField(data)), {} );
-    return { typeQuery, typesQuery, fields };
+    const fields = _.reduce( data.fields, (fields,data) =>
+      _.set(fields, data.name, this.buildField(data)), {} );
+    const assoc = _.reduce( data.assocTo, (assocs, assocTo) =>
+      _.set( assocs, assocTo.path, assocTo ), {} );
+    _.reduce( data.assocToMany, (assocs, assocToMany) =>
+      _.set( assocs, assocToMany.path, assocToMany ), assoc );
+    _.reduce( data.assocFrom, (assocs, assocFrom) =>
+      _.set( assocs, assocFrom.path, assocFrom ), assoc );
+    console.log( 3, data.path, {assocs: assoc})
+    return { typeQuery, typesQuery, fields, assoc };
   };
 
   private buildField( data:any ):FieldMetaDataType {

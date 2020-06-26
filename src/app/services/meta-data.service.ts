@@ -17,30 +17,15 @@ const query = gql`
       }
       assocTo {
         path
-        typeQuery
-        typesQuery
-        fields {
-          name
-          type
-        }
+        query
       }
       assocToMany {
         path
-        typeQuery
-        typesQuery
-        fields {
-          name
-          type
-        }
+        query
       }
       assocFrom {
         path
-        typeQuery
-        typesQuery
-        fields {
-          name
-          type
-        }
+        query
       }
     }
   }

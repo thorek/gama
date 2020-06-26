@@ -13,6 +13,9 @@ export class ShowComponent extends AdminComponent {
 
   item:any;
   get fields() { return this.config.show.fields }
+  get detailTables() { return _.filter( this.config.show.assoc, (assoc, name) => assoc.display === 'table' ) }
+
+  assocTableData:any[] = [];
 
   getQuery(){
     const fields = this.buildFieldQuery( this.config.show );
@@ -28,9 +31,10 @@ export class ShowComponent extends AdminComponent {
 
   protected setDefaults( config:EntityConfigType ):EntityConfigType {
     if( ! _.has(config, 'show') ) _.set( config, 'show', {} );
-    if( ! _.has(config, 'show.fields') ) _.set( config, 'show.fields', _.keys( config.fields ) );
-    config.show.fields = _.map( config.show.fields, col => _.isString( col ) ? { name: col } : col );
-    if( ! _.has( config, 'show.query' ) ) _.set( config, 'show.query', config.typeQuery );
+    if( ! _.has( config.show, 'query' ) ) _.set( config.show, 'query', config.typeQuery );
+    this.setFieldDefaults( config.show, this.path);
+    _.forEach( config.show.assoc, (assoc, name) => this.setFieldDefaults( assoc, name ) );
+    console.log( { config })
     return config;
   }
 }

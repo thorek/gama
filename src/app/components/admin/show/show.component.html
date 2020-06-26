@@ -13,6 +13,52 @@
 
 <nz-descriptions *ngIf="item" nzTitle="Entity data" nzBordered [nzColumn]="1">
   <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
-    {{ value( item, field ) }}
+    <a *ngIf="isLink( field ); else noLink" [routerLink]="link( item, field )">
+      {{ value( item, field ) }}
+    </a>
+    <ng-template #noLink>
+      {{ value( item, field ) }}
+    </ng-template>
   </nz-descriptions-item>
 </nz-descriptions>
+
+<ng-container *ngFor="let tableData of assocTableData">
+  <nz-table #detailTable [nzData]="tableData">
+    <thead>
+      <tr>
+        <th *ngFor="let col of columns">{{ label( col ) }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of detailTable.data">
+        <td *ngFor="let col of columns" (click)="onSelect(item.id)">{{ value( item, col ) }}</td>
+        <td align="right">
+          <nz-space>
+            <nz-space-item>
+              <a (click)="onSelect(item.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
+            </nz-space-item>
+            <nz-space-item>
+              <a (click)="onDelete(item.id)">
+                <i nz-icon nzType="delete" nzTheme="outline"></i>
+              </a>
+            </nz-space-item>
+          </nz-space>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</ng-container>
+
+
+{{ detailTables | json }}
+
+
+<nz-alert
+  *ngIf="error"
+  nzType="error"
+  nzCloseable
+  nzMessage="GraphQL Error"
+  [nzDescription]="error">
+</nz-alert>
+

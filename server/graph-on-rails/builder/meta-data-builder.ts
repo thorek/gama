@@ -22,6 +22,14 @@ export class MetaDataBuilder extends SchemaBuilder {
       }
     });
 
+    const assocMetaData:GraphQLObjectType = new GraphQLObjectType({
+      name: 'assocMetaData',
+      fields: {
+        path: { type: GraphQLString },
+        query: { type: GraphQLString }
+      }
+    });
+
     const entityMetaData:GraphQLObjectType = new GraphQLObjectType({
       name: 'entityMetaData',
       fields: () => ({
@@ -33,15 +41,15 @@ export class MetaDataBuilder extends SchemaBuilder {
           resolve: (root:any) => this.resolveFields(root)
         },
         assocTo: {
-          type: GraphQLList( entityMetaData ),
+          type: GraphQLList( assocMetaData ),
           resolve: (root:any) => this.resolveAssocTo(root)
         },
         assocToMany: {
-          type: GraphQLList( entityMetaData ),
+          type: GraphQLList( assocMetaData ),
           resolve: (root:any) => this.resolveAssocToMany( root )
         },
         assocFrom: {
-          type: GraphQLList( entityMetaData ),
+          type: GraphQLList( assocMetaData ),
           resolve: (root:any) => this.resolveAssocFrom( root )
         },
       })
@@ -72,17 +80,26 @@ export class MetaDataBuilder extends SchemaBuilder {
 
   resolveAssocTo( root:any ) {
     const entity = root as Entity;
-    return _.map( entity.assocTo, assocTo => this.context.entities[assocTo.type] );
+    return _.map( entity.assocTo, assocTo => {
+      const refEntity = this.context.entities[assocTo.type];
+      return { path: refEntity.path, query: refEntity.singular };
+    });
   }
 
   resolveAssocToMany( root:any ) {
     const entity = root as Entity;
-    return _.map( entity.assocToMany, assocToMany => this.context.entities[assocToMany.type] );
+    return _.map( entity.assocToMany, assocToMany => {
+      const refEntity = this.context.entities[assocToMany.type];
+      return { path: refEntity.path, query: refEntity.plural };
+    });
   }
 
   resolveAssocFrom( root:any ) {
     const entity = root as Entity;
-    return _.map( entity.assocFrom, assocFrom => this.context.entities[assocFrom.type] );
+    return _.map( entity.assocFrom, assocFrom => {
+      const refEntity = this.context.entities[assocFrom.type];
+      return { path: refEntity.path, query: refEntity.plural };
+    });
   }
 
 }

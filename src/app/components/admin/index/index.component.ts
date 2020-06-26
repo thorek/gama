@@ -25,9 +25,8 @@ export class IndexComponent extends AdminComponent {
 
   protected setDefaults( config:EntityConfigType ):EntityConfigType {
     if( ! _.has(config, 'index') ) _.set( config, 'index', {} );
-    if( ! _.has(config, 'index.fields') ) _.set( config, 'index.fields', _.keys( config.fields ) );
-    config.index.fields = _.map( config.index.fields, col => _.isString( col ) ? { name: col } : col );
-    if( ! _.has( config, 'index.query' ) ) _.set( config, 'index.query', config.typesQuery );
+    if( ! _.has( config.index, 'query' ) ) _.set( config.index, 'query', config.typesQuery );
+    this.setFieldDefaults( config.index, this.path);
     return config;
   }
 }

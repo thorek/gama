@@ -5,15 +5,28 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
   return {
     entities:{
       clients: {
-        index: {
-          fields: ['name','city','dsb']
+        index: { fields: ['name','city','dsb'] },
+        show: {
+          assoc: {
+            organisations: {
+              display: 'table',
+              fields: [
+                'name',
+                {
+                  name: 'industries',
+                  value:(organisation:any) =>
+                    _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
+                }
+              ]
+            }
+          }
         }
       },
       organisations: {
         index: {
           assoc: {
-            client: ['id','name'],
-            industries: ['name']
+            clients: { fields: ['id','name'] },
+            industries: { fields: ['name'] }
           },
           fields: [
             'id',
@@ -31,7 +44,29 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
           ]
         },
         show: {
-
+          fields: [
+            'id',
+            'name',
+            {
+              name: 'industries',
+              label: 'Assigned Industries',
+              value: (organisation:any) =>
+                _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
+            },
+            {
+              name: 'client',
+              value: (organisation:any) => organisation.client.name,
+              link: (organisation:any) => ['/admin', 'clients', organisation.client.id]
+            }
+          ],
+          assoc: {
+            clients: { fields: ['id','name'] },
+            industries: { fields: ['name'] },
+            organisational_units: {
+              display: 'table',
+              fields: [ 'name', 'description']
+            }
+          }
         }
       },
       processing_activities: {
