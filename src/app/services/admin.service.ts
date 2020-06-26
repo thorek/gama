@@ -19,7 +19,7 @@ export type FieldsConfigType = {[field:string]:FieldConfigType}
 
 export type ColumnConfigType = {
   name:string
-  label?:string
+  label?:string|(() => string)
   value?:(item:any) => string
 }
 

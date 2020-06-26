@@ -66,7 +66,6 @@ export class IndexComponent implements OnInit {
     return `${this.config.typesQuery} { ${ _.join( _.concat( columnFields, assocFields ), ' ' ) } }`;
   }
 
-
   private setDefaults( config:EntityConfigType ):EntityConfigType {
     if( ! _.has(config, 'index') ) _.set( config, 'index', {} );
     if( ! _.has(config, 'index.columns') ) _.set( config, 'index.columns', _.keys( config.fields ) );
@@ -75,7 +74,10 @@ export class IndexComponent implements OnInit {
   }
 
   label( col:ColumnConfigType ):string {
-    return col.name
+    if( _.isFunction( col.label ) ) return col.label();
+    // if there is i18n - return label lookup of label | name
+    if( _.isString( col.label ) ) return col.label;
+    return inflection.humanize( col.name );
   }
 
   value(item:any, column:ColumnConfigType){
