@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { AdminService, EntityConfigType, FieldConfigType, UiConfigType } from 'src/app/services/admin.service';
+import { AdminService, EntityConfigType, FieldConfigType, UiConfigType, AssocConfigType } from 'src/app/services/admin.service';
 
 export abstract class AdminComponent implements OnInit {
 
@@ -15,8 +15,8 @@ export abstract class AdminComponent implements OnInit {
   config:EntityConfigType;
   error:any;
 
-  get entitiesName() { return this.config.entitesName || inflection.humanize( this.path ) }
-  get entityName() { return this.config.entityName || inflection.humanize( inflection.singularize(this.path ) ) }
+  get entitiesName() { return _.get(this.config, 'entitesName' ) || inflection.humanize( this.path ) }
+  get entityName() { return _.get(this.config, 'entityName' ) || inflection.humanize( inflection.singularize(this.path ) ) }
 
   get columns() { return this.config.index.fields } //?
 
@@ -46,7 +46,6 @@ export abstract class AdminComponent implements OnInit {
     this.path = path;
     const config = this.adminService.getEntityConfig(path);
     this.config = this.setDefaults( config );
-    console.log( this.config )
 
     this.apollo.watchQuery<any>( this.getQuery() )
       .valueChanges
@@ -96,13 +95,24 @@ export abstract class AdminComponent implements OnInit {
       filter( (field:FieldConfigType) => _.includes( _.keys(this.config.fields ), field.name ) ).
       map( (field:FieldConfigType) => field.name ).
       value();
-    const assocFields = _.join( _.compact( _.map( config.assoc, (assoc, name) => {
-      const assocDefinition = _.get( this.config.assoc, name );
-      if( ! assocDefinition ) return console.warn( `no such assoc '${name}'` );
-      return `${assocDefinition.query} ${ this.buildFieldQuery( assoc) }`;
-    })), ' ');
-    console.log( { assocFields })
+
+    const assocFields = _.map( config.assoc, assoc =>
+        this.getAssocFields( assoc, this.adminService.getEntityConfig(this.path))).join( ' ');
+
     return `{ id ${ _.join( _.concat( queryFields, assocFields ), ' ' ) } }`;
+  }
+
+  protected getAssocFields( assoc:AssocConfigType, rootConfig:EntityConfigType ):string|undefined {
+    if( _.isString( assoc ) ) assoc = _.set( {}, 'path', assoc );
+    const config = this.adminService.getEntityConfig( assoc.path );
+    if( ! config ) return this.warn( `getAssocFields: no config for path '${assoc.path}' `, undefined);
+    const query = _.get( rootConfig.assoc, [assoc.path, 'query']);
+    if( ! query ) return this.warn( `getAssocFields: no query for path '${assoc.path}' `, undefined);
+    if( ! assoc.fields ) assoc.fields = _.keys( config.fields );
+    const fields = _.filter( assoc.fields, field => _.includes( _.keys( config.fields ), field ) );
+    return _.concat(
+      query, '{', fields, _.map( assoc.assoc, assoc => this.getAssocFields( assoc, config ) ), '}'
+    ).join( ' ' );
   }
 
   protected setFieldDefaults( config:UiConfigType, path:string ):void {
@@ -111,6 +121,11 @@ export abstract class AdminComponent implements OnInit {
       _.set( config, 'fields', entityConfig ? _.keys(entityConfig.fields) : [] );
     }
     config.fields = _.map( config.fields, field => _.isString( field ) ? { name: field } : field );
+  }
+
+  protected warn<T>( message:string, type:T ):T {
+    console.warn(message);
+    return type;
   }
 
 }

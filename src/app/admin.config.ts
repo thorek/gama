@@ -3,13 +3,17 @@ import { AdminConfigType, ActionType } from './services/admin.service';
 
 export const adminConfig = async ():Promise<AdminConfigType> => {
   return {
+    menu: ['clients','organisations','processing_activities'],
     entities:{
+      title: "Clients",
       clients: {
-        index: { fields: ['name','city','dsb'] },
+        index: {
+          fields: ['name','city','dsb']
+        },
         show: {
-          assoc: {
-            organisations: {
-              display: 'table',
+          assoc: [ 'organisations' ],
+          table: [
+            {
               fields: [
                 'name',
                 {
@@ -19,15 +23,16 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
                 }
               ]
             }
-          }
+          ]
         }
       },
+
       organisations: {
         index: {
-          assoc: {
-            clients: { fields: ['id','name'] },
-            industries: { fields: ['name'] }
-          },
+          assoc: [
+            'industries',
+            { path: 'clients', fields: ['id', 'name'], assoc: [ {path: 'users'}  ] }
+          ],
           fields: [
             'id',
             'name',
@@ -44,6 +49,9 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
           ]
         },
         show: {
+          assoc: [
+            'clients', 'industries', 'organisational_units'
+          ],
           fields: [
             'id',
             'name',
@@ -59,14 +67,12 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
               link: (organisation:any) => ['/admin', 'clients', organisation.client.id]
             }
           ],
-          assoc: {
-            clients: { fields: ['id','name'] },
-            industries: { fields: ['name'] },
-            organisational_units: {
-              display: 'table',
-              fields: [ 'name', 'description']
+          table: [
+            {
+              title: 'Org Units',
+              fields: [ 'name', 'description'],
             }
-          }
+          ]
         }
       },
       processing_activities: {

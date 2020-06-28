@@ -13,9 +13,9 @@ export class ShowComponent extends AdminComponent {
 
   item:any;
   get fields() { return this.config.show.fields }
-  get detailTables() { return _.filter( this.config.show.assoc, (assoc, name) => assoc.display === 'table' ) }
+  get detailTables() { return this.config.show.table }
 
-  assocTableData:any[] = [];
+
 
   getQuery(){
     const fields = this.buildFieldQuery( this.config.show );
@@ -33,8 +33,6 @@ export class ShowComponent extends AdminComponent {
     if( ! _.has(config, 'show') ) _.set( config, 'show', {} );
     if( ! _.has( config.show, 'query' ) ) _.set( config.show, 'query', config.typeQuery );
     this.setFieldDefaults( config.show, this.path);
-    _.forEach( config.show.assoc, (assoc, name) => this.setFieldDefaults( assoc, name ) );
-    console.log( { config })
     return config;
   }
 }

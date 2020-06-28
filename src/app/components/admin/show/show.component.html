@@ -22,38 +22,6 @@
   </nz-descriptions-item>
 </nz-descriptions>
 
-<ng-container *ngFor="let tableData of assocTableData">
-  <nz-table #detailTable [nzData]="tableData">
-    <thead>
-      <tr>
-        <th *ngFor="let col of columns">{{ label( col ) }}</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of detailTable.data">
-        <td *ngFor="let col of columns" (click)="onSelect(item.id)">{{ value( item, col ) }}</td>
-        <td align="right">
-          <nz-space>
-            <nz-space-item>
-              <a (click)="onSelect(item.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
-            </nz-space-item>
-            <nz-space-item>
-              <a (click)="onDelete(item.id)">
-                <i nz-icon nzType="delete" nzTheme="outline"></i>
-              </a>
-            </nz-space-item>
-          </nz-space>
-        </td>
-      </tr>
-    </tbody>
-  </nz-table>
-</ng-container>
-
-
-{{ detailTables | json }}
-
-
 <nz-alert
   *ngIf="error"
   nzType="error"

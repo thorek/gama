@@ -35,10 +35,7 @@
       <li nz-submenu nzOpen nzTitle="Admin" nzIcon="usergroup-delete">
         <ul>
           <li *ngFor="let entity of entities" nz-menu-item nzMatchRouter>
-            <a [routerLink]="['admin',entity.path]">{{entity.path}}</a>
-          </li>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/admin/organisations">Organisations</a>
+            <a [routerLink]="['admin',entity.path]">{{ title(entity) }}</a>
           </li>
         </ul>
       </li>

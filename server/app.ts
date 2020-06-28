@@ -27,13 +27,13 @@ import { ResolverContext } from './graph-on-rails/core/resolver-context';
       }
     }
   );
-  const configFolder = ['./config-types/d2prom'];
-  const runtime = await Runtime.create( "D2PROM", {configFolder } );
+  const configFolder = [`${__dirname}/config-types/d2prom`];
+  const runtime = await Runtime.create( 'D2PROM', {configFolder } );
 
   const users:{[token:string]:any} = {
-    admin: { id: 100, username: "Admin", roles: ["admin"], clientId: "5ec3b745d3a47f8284414125" },
-    thorek: { id: 101, username: "Thorek", roles: ["dsb","user"], clientId: "5ec42368f0d6ec10681dec79"  },
-    guest: { id: 102, username: "Guest", roles: ["guest"] }
+    admin: { id: 100, username: 'Admin', roles: ['admin'], clientId: '5ec3b745d3a47f8284414125' },
+    thorek: { id: 101, username: 'Thorek', roles: ['dsb','user'], clientId: '5ec42368f0d6ec10681dec79'  },
+    guest: { id: 102, username: 'Guest', roles: ['guest'] }
   };
 
   const getUser = (token?:string) => {

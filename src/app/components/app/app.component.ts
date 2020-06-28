@@ -1,8 +1,7 @@
 import * as _ from 'lodash';
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { Subscription } from 'rxjs';
-import gql from 'graphql-tag';
+import * as inflection from 'inflection';
+import { Component, OnInit } from '@angular/core';
+import { AdminService, EntityConfigType } from 'src/app/services/admin.service';
 
 
 @Component({
@@ -10,31 +9,20 @@ import gql from 'graphql-tag';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit, OnDestroy{
+export class AppComponent implements OnInit{
+
   isCollapsed = false;
-  private querySubscription: Subscription;
+  entities:EntityConfigType[]
 
-  entities:{name:string, path:string}[]
-
-  constructor( private apollo:Apollo ) {}
+  constructor( private adminService:AdminService ) {}
 
   ngOnInit(){
-    this.querySubscription = this.apollo.watchQuery<any>({
-      query: gql`
-        query MetaDataEntityList {
-          metaData {
-            path
-          }
-        }
-      `})
-      .valueChanges
-      .subscribe(({ data, loading }) => {
-        this.entities = data.metaData;
-      });
+    this.entities = this.adminService.getMenuEntities();
   }
 
-  ngOnDestroy() {
-    this.querySubscription.unsubscribe();
+  title( entity:EntityConfigType ):string {
+    if( _.isFunction( entity.title ) ) return entity.title();
+    if( _.isString( entity.title ) ) return entity.title;
+    return inflection.humanize( entity.path );
   }
-
 }

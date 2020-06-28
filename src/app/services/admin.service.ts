@@ -26,11 +26,21 @@ export type FieldConfigType = {
 
 export type UiConfigType = {
   query?:string
-  assoc?:{[assoc:string]:AssocUiConfigType}
+  fields?:(string|FieldConfigType)[]
+  assoc?:AssocConfigType[]
+  table?:UiTableConfig[]
+}
+
+export type UiTableConfig = {
+  title?:string
   fields?:(string|FieldConfigType)[]
 }
 
-export type AssocUiConfigType = UiConfigType & {display?:string}
+export type AssocConfigType = string| {
+  path?:string
+  fields?:string[]
+  assoc?:AssocConfigType[]
+}
 
 export type AssocType = {
   path:string
@@ -42,17 +52,22 @@ export type AssocsType = {
 }
 
 export type EntityConfigType = {
-  fields?:FieldsMetaDataType,
-  entitesName?:string,
-  entityName?:string,
-  typesQuery?:string,
-  typeQuery?:string,
-  assoc?:AssocsType,
-  name?:(entity:any, action?:ActionType ) => string,
+  path?:string
+  title?:string|(()=>string)
+  fields?:FieldsMetaDataType
+  entitesName?:string
+  entityName?:string
+  typesQuery?:string
+  typeQuery?:string
+  assoc?:AssocsType
+  name?:(entity:any, action?:ActionType ) => string
   index?:UiConfigType
   show?:UiConfigType
 }
-export type AdminConfigType = {entities?:{ [entity:string]:EntityConfigType}}
+export type AdminConfigType = {
+  entities?:{ [entity:string]:EntityConfigType}
+  menu?:string[]
+}
 
 @Injectable({providedIn: 'root'})
 export class AdminService {
@@ -69,14 +84,20 @@ export class AdminService {
     return null;
   }
 
+  getMenuEntities():EntityConfigType[] {
+    return this.adminConfig.menu ?
+      _.compact( _.map( this.adminConfig.menu, item => this.adminConfig.entities[item] ) ) :
+      _.values( this.adminConfig.entities );
+  }
+
   getEntityConfig( path:string ):EntityConfigType {
     if( ! this.adminConfig ) throw new Error(`AdminService not yet initialized`);
     return _.get( this.adminConfig, ['entities', path] );
   }
 
   private buildDefaultConfig( metaData:any[] ):AdminConfigType {
-    return _.set( {}, 'entities', _.reduce( metaData, (adminConfig, data) => {
-      return _.set( adminConfig, data.path, this.buildEntityConfig( data ));
+    return _.set( {}, 'entities', _.reduce( metaData, (entities, data) => {
+      return _.set( entities, data.path, this.buildEntityConfig( data ));
     }, {} ));
   }
 
@@ -91,8 +112,7 @@ export class AdminService {
       _.set( assocs, assocToMany.path, assocToMany ), assoc );
     _.reduce( data.assocFrom, (assocs, assocFrom) =>
       _.set( assocs, assocFrom.path, assocFrom ), assoc );
-    console.log( 3, data.path, {assocs: assoc})
-    return { typeQuery, typesQuery, fields, assoc };
+    return { path: data.path, typeQuery, typesQuery, fields, assoc };
   };
 
   private buildField( data:any ):FieldMetaDataType {
