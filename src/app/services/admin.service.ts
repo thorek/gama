@@ -69,6 +69,7 @@ export type EntityConfigType = {
   entityName?:string
   typesQuery?:string
   typeQuery?:string
+  deleteMutation?:string
   assoc?:AssocsType
   name?:(entity:any, action?:ActionType ) => string
   index?:UiConfigType
@@ -114,6 +115,7 @@ export class AdminService {
   private buildEntityConfig( data:any ):EntityConfigType {
     const typeQuery = data.typeQuery;
     const typesQuery = data.typesQuery;
+    const deleteMutation = data.deleteMutation;
     const fields = _.reduce( data.fields, (fields,data) =>
       _.set(fields, data.name, this.buildField(data)), {} );
     const assoc = _.reduce( data.assocTo, (assocs, assocTo) =>
@@ -122,7 +124,7 @@ export class AdminService {
       _.set( assocs, assocToMany.path, assocToMany ), assoc );
     _.reduce( data.assocFrom, (assocs, assocFrom) =>
       _.set( assocs, assocFrom.path, assocFrom ), assoc );
-    return { path: data.path, typeQuery, typesQuery, fields, assoc };
+    return { path: data.path, typeQuery, typesQuery, deleteMutation, fields, assoc };
   };
 
   private buildField( data:any ):FieldMetaDataType {

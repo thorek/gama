@@ -16,7 +16,7 @@ import {
 import _, { Dictionary } from 'lodash';
 
 import { Context } from '../core/context';
-import { Entity, EntityReference } from '../entities/entity';
+import { Entity, AssocType } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { SchemaBuilder } from './schema-builder';
@@ -33,7 +33,7 @@ const scalarTypes:{[scalar:string]:GraphQLType} = {
 type AttributePurpose = 'createInput'|'updateInput'|'filter'|'type';
 
 type AttrFieldConfig = {
-  type: GraphQLType
+  type:GraphQLType
   description?:string
   resolve?:any
 }
@@ -194,7 +194,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private addAssocToForeignKeyToInput( fields:any, ref:EntityReference ):any {
+  private addAssocToForeignKeyToInput( fields:any, ref:AssocType ):any {
     const refEntity = this.context.entities[ref.type];
     _.set( fields, refEntity.foreignKey, { type: GraphQLID });
     if( refEntity.isPolymorph ) _.set( fields, refEntity.typeField,
@@ -204,7 +204,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private addAssocToInputToInput( fields:any, ref:EntityReference ):any {
+  private addAssocToInputToInput( fields:any, ref:AssocType ):any {
     if( ref.input ) {
       const refEntity = this.context.entities[ref.type];
       _.set( fields, refEntity.singular, {type: this.graphx.type( refEntity.createInputTypeName )} );
@@ -214,14 +214,14 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private addAssocToManyForeignKeysToInput( fields:any, ref:EntityReference ):any {
+  private addAssocToManyForeignKeysToInput( fields:any, ref:AssocType ):any {
     const refEntity = this.context.entities[ref.type];
     return _.set( fields, refEntity.foreignKeys, { type: GraphQLList( GraphQLID ) });
   }
 
   //
   //
-  private addAssocToReferenceToType( fields:any, ref:EntityReference ):any {
+  private addAssocToReferenceToType( fields:any, ref:AssocType ):any {
     const refEntity = this.context.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName);
     return _.set( fields, refEntity.singular, {
@@ -233,7 +233,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private addAssocToManyReferenceToType( fields:any, ref:EntityReference ):any {
+  private addAssocToManyReferenceToType( fields:any, ref:AssocType ):any {
     const refEntity = this.context.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName);
     return _.set( fields, refEntity.plural, {
@@ -254,7 +254,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private addAssocFromReferenceToType(fields:any, ref:EntityReference):any {
+  private addAssocFromReferenceToType(fields:any, ref:AssocType):any {
     const refEntity = this.context.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName)
     return _.set( fields, refEntity.plural, {
@@ -266,7 +266,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private checkReference( direction:'assocTo'|'assocFrom', ref:EntityReference ):boolean {
+  private checkReference( direction:'assocTo'|'assocFrom', ref:AssocType ):boolean {
     const refEntity = this.context.entities[ref.type];
     if( ! (refEntity instanceof Entity ) ) {
       console.warn( `'${this.entity.typeName}:${direction}': no such entity type '${ref.type}'` );
@@ -448,14 +448,14 @@ export class EntityBuilder extends SchemaBuilder {
   /**
    *
    */
-	protected addDeleteMutation():void {
-		this.graphx.type( 'mutation' ).extendFields( () => {
-			return _.set( {}, `delete${this.entity.typeName}`, {
-				type: GraphQLBoolean,
-				args: { id: { type: GraphQLID } },
-				resolve: (root:any, args:any, context:any ) => this.resolver.deleteType( {root, args, context} )
-			});
-		});
+  protected addDeleteMutation():void {
+    this.graphx.type( 'mutation' ).extendFields( () => {
+      return _.set( {}, this.entity.deleteMutation, {
+        type: GraphQLBoolean,
+        args: { id: { type: GraphQLID } },
+        resolve: (root:any, args:any, context:any ) => this.resolver.deleteType( {root, args, context} )
+      });
+    });
   }
 
   /**

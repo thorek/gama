@@ -73,7 +73,8 @@ export class EntityResolver extends EntityModule {
    *
    */
   async deleteType( resolverCtx:ResolverContext ) {
-    return this.accessor.delete( resolverCtx.args.id );
+    const id = resolverCtx.args.id;
+    return this.accessor.delete( id );
   }
 
   /**

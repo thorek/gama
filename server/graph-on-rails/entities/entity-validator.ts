@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 import { Validator } from '../validation/validator';
-import { Entity, EntityReference } from './entity';
+import { Entity, AssocType } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { NotFoundError } from './entity-accessor';
 
@@ -66,7 +66,7 @@ export class EntityValidator  {
   /**
    *
    */
-  private async validateRequiredAssocTo( assocTo:EntityReference, attributes:any ):Promise<ValidationViolation|undefined> {
+  private async validateRequiredAssocTo( assocTo:AssocType, attributes:any ):Promise<ValidationViolation|undefined> {
     const refEntity = this.context.entities[assocTo.type];
     const foreignKey = _.get( attributes, refEntity.foreignKey );
     if( ! foreignKey ) return {attribute: refEntity.foreignKey, violation: "must be provided"};

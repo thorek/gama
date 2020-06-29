@@ -4,8 +4,8 @@
   </nz-page-header-title>
   <nz-page-header-subtitle>???</nz-page-header-subtitle>
   <nz-page-header-extra>
-    <button nz-button nzType="primary">Edit</button>
-    <button nz-button nzType="secondary">Delete</button>
+    <button nz-button nzType="primary" (click)="onEdit()">Edit</button>
+    <button nz-button nzType="secondary" (click)="onDelete( item?.id )">Delete</button>
   </nz-page-header-extra>
 </nz-page-header>
 
@@ -32,7 +32,7 @@
     <app-table
       [config]="table"
       [items]="tableItems(table)"
-      (selectItem)="onSelect($event)"
+      (selectItem)="onSelect($event, table.path)"
       (actionItem)="onAction($event)">
     </app-table>
 

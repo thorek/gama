@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Entity, EntityReference } from './entity';
+import { Entity, AssocType } from './entity';
 import { EntityModule } from './entity-module';
 import { EntityItem } from './entity-item';
 
@@ -67,7 +67,7 @@ export class EntitySeeder extends EntityModule {
   /**
    *
    */
-  private async seedAssocTo( assocTo: EntityReference, seed: any, idsMap: any, name: string ):Promise<void> {
+  private async seedAssocTo( assocTo: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
     try {
       const refEntity = this.context.entities[assocTo.type];
       if ( refEntity && _.has( seed, refEntity.typeName ) ) {
@@ -91,7 +91,7 @@ export class EntitySeeder extends EntityModule {
   /**
    *
    */
-  private async seedAssocToMany( assocToMany: EntityReference, seed: any, idsMap: any, name: string ):Promise<void> {
+  private async seedAssocToMany( assocToMany: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
     try {
       const refEntity = this.context.entities[assocToMany.type];
       if ( refEntity && _.has( seed, refEntity.typeName ) ) {

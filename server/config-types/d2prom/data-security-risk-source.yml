@@ -91,7 +91,9 @@ entity:
       description: string
     assocTo: Organisation
     assocToMany: OrganisationalUnit
-    assocFrom: DataAtom
+    assocFrom:
+      - type: DataAtom
+        delete: cascade
     seeds:
       BeratungHP:
         name: Beratung Haftpflichtversicherung
@@ -128,7 +130,9 @@ entity:
             maximum: 50
       description: string
     assocTo: Organisation
-    assocFrom: ProcessingActivity
+    assocFrom:
+      - type: ProcessingActivity
+        delete: cascade
     seeds:
       verkaufPapyr:
         name: Verkauf
@@ -161,7 +165,8 @@ entity:
     assocTo: Client
     assocToMany: Industry
     assocFrom:
-      - OrganisationalUnit
+      - type: OrganisationalUnit
+        delete: cascade
       - ProcessingActivity
     seeds:
       papyr:

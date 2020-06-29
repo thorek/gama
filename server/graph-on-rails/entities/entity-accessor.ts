@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { EntityReference } from './entity';
+import { AssocType } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
 import { ValidationViolation } from './entity-validator';
@@ -91,6 +91,13 @@ export class EntityAccessor extends EntityModule {
    *
    */
   delete( id:any ):Promise<boolean> {
+    _.forEach( this.entity.assocFrom, assocFrom => {
+      if( assocFrom.delete === 'cascade' ) {
+        const refEntity = this.context.entities[assocFrom.type];
+        const ids = refEntity.accessor.findByAttribute( _.set( {}, this.entity.foreignKey, id ) );
+        _.forEach( ids, id => refEntity.accessor.delete( id ) );
+      }
+    });
     return this.dataStore.delete( this.entity, id );
   }
 
@@ -104,7 +111,7 @@ export class EntityAccessor extends EntityModule {
   /**
    *
    */
-  private async createInlineInput( assocTo: EntityReference, attrs: any ) {
+  private async createInlineInput( assocTo: AssocType, attrs: any ) {
     const refEntity = this.context.entities[assocTo.type];
     const input = _.get( attrs, refEntity.singular );
     if( ! input ) return;

@@ -14,7 +14,6 @@ export abstract class AdminComponent {
   }
 
   value(item:any, field:FieldConfigType){
-    console.log({item, field})
     return _.isFunction( field.value ) ? field.value( item ) : _.get( item, field.name );
   }
 

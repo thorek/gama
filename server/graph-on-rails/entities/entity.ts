@@ -11,13 +11,20 @@ import { EntitySeeder } from './entity-seeder';
 import { EntityValidator, ValidationViolation } from './entity-validator';
 import { TypeAttribute } from './type-attribute';
 
-//
-//
-export type EntityReference = {
+export type AssocType = {
   type:string
+}
+
+export type AssocFromType = AssocType & {
+  delete?:'prevent'|'nullify'|'cascade'
+}
+
+export type AssocToType = AssocType & {
   required?:boolean
+  delete?:'silent'|'cascade'
   input?:boolean
 }
+
 
 //
 //
@@ -85,6 +92,7 @@ export abstract class Entity {
   get mutationResultName():string { return this.getMutationResultName() }
   get typesQuery():string { return this.getTypesQuery() }
   get typeQuery():string { return this.getTypeQuery() }
+  get deleteMutation():string { return this.getDeleteMutation() }
   get path() { return this.getPath() }
 
   protected abstract getName():string;
@@ -99,9 +107,9 @@ export abstract class Entity {
   protected getSorterEnumName() { return `${this.typeName}Sort` }
   protected getCollection() { return this.plural }
   protected getAttributes():{[name:string]:TypeAttribute} { return {} };
-  protected getAssocTo(): EntityReference[] { return [] }
-  protected getAssocToMany(): EntityReference[] { return [] }
-  protected getAssocFrom(): EntityReference[] { return [] }
+  protected getAssocTo():AssocToType[] { return [] }
+  protected getAssocToMany():AssocToType[] { return [] }
+  protected getAssocFrom():AssocFromType[] { return [] }
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
   protected getSeeds():{[name:string]:any} { return {} }
   protected getPermissions():undefined|EntityPermissionType { return undefined }
@@ -117,6 +125,7 @@ export abstract class Entity {
   protected getMutationResultName():string { return `Save${this.typeName}MutationResult` }
   protected getTypesQuery():string { return this.plural }
   protected getTypeQuery():string { return this.singular }
+  protected getDeleteMutation():string { return `delete${this.typeName}` }
   protected getPath() { return inflection.underscore( this.plural ) }
 
   /**

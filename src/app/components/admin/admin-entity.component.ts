@@ -3,20 +3,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import {
+  ActionEventType,
   AdminService,
   AssocConfigType,
+  AssocTableConfigType,
   EntityConfigType,
   FieldConfigType,
-  UiConfigType,
   TitlePurposeType,
-  ActionEventType,
-  AssocTableConfigType,
+  UiConfigType,
 } from 'src/app/services/admin.service';
 
 import { AdminComponent } from './admin.component';
-import { TableConfig } from 'ng-zorro-antd/core/config';
+import gql from 'graphql-tag';
 
 export abstract class AdminEntityComponent extends AdminComponent implements OnInit {
 
@@ -35,7 +36,8 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     protected apollo:Apollo,
     protected route:ActivatedRoute,
     protected router:Router,
-    protected modal:NzModalService ) { super() }
+    protected modal:NzModalService,
+    protected message: NzMessageService ) { super() }
 
     protected abstract getQuery():{query:any, variables?:any};
     protected abstract setData( data:any ):void;
@@ -58,7 +60,8 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
 
   onNew() { console.log('new ', this.path ) }
-  onSelect(id:any) { this.router.navigate(['admin', this.path, id]) }
+  onEdit() { console.log('edit ', this.path ) }
+  onSelect(id:any, path?:string) { this.router.navigate(['admin', path ? path : this.path, id]) }
   onAction = ( event:ActionEventType ) => {
     switch( event.action ){
       case 'delete': return this.onDelete( event.id );
@@ -67,14 +70,21 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
   onDelete(id:string) {
     this.modal.confirm({
-      nzTitle: 'Are you sure delete this item?',
+      nzTitle: `Are you sure delete this ${this.entityName}?`,
       nzContent: '<b style="color: red;">All related entities will be deleted too!</b>',
       nzOkText: 'Yes',
       nzOkType: 'danger',
-      nzOnOk: () => console.log('OK'),
+      nzOnOk: () => this.deleteMutation( id ),
       nzCancelText: 'No',
-      nzOnCancel: () => console.log('Cancel')
+      nzOnCancel: () => this.message.info('Nothing was deleted')
     });
+  }
+
+  protected deleteMutation( id:string ){
+    const deleteItem = gql`mutation { ${this.config.deleteMutation}(id: "${id}" )  }`;
+    this.apollo.mutate({ mutation: deleteItem }).subscribe(({data}) => {
+      this.message.info(`${this.config.entityName} was deleted!` );
+    })
   }
 
   protected async loadData( path:string ){

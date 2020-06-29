@@ -8,6 +8,7 @@ const query = gql`
       path
       typeQuery
       typesQuery
+      deleteMutation
       fields {
         name
         type

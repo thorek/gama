@@ -17,6 +17,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzMessageModule } from 'ng-zorro-antd/message';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
@@ -72,6 +73,7 @@ export function initializeApp1(adminService:AdminService) {
     NzBadgeModule,
     NzDividerModule,
     NzAlertModule,
+    NzMessageModule,
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,

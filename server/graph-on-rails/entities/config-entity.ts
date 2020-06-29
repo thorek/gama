@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Entity } from './entity';
+import { Entity, AssocFromType, AssocToType } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { EntityPermissionType } from './entity-permissions';
 
@@ -23,6 +23,8 @@ export type AttributeConfig = {
   sortable?:string
 }
 
+
+
 /**
  *
  */
@@ -30,9 +32,9 @@ export type EntityConfig  = {
   typeName?:string;
 
   attributes?:{[name:string]:string|AttributeConfig};
-  assocTo?:string|(string|{type:string, required?:boolean})[];
-  assocToMany?:string|(string|{type:string})[];
-  assocFrom?:string|string[];
+  assocTo?:string|(string|AssocToType)[];
+  assocToMany?:string|(string|AssocToType)[];
+  assocFrom?:string|string[]|AssocFromType[];
 
   plural?:string
   singular?:string;
@@ -114,7 +116,7 @@ export class ConfigEntity extends Entity {
     }
     return _.map( this.entityConfig.assocFrom, hm => {
       return _.isString(hm) ? { type: hm } : hm;
-    });
+    }) as AssocFromType[];
    }
   protected getPlural() { return this.entityConfig.plural || super.getPlural() }
   protected getSingular() { return this.entityConfig.singular || super.getSingular() }
