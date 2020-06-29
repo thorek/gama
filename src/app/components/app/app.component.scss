@@ -6,7 +6,7 @@
 }
 
 .app-layout {
-  height: 100vh;
+  height: 100%;
 }
 
 .menu-sidebar {
@@ -71,10 +71,11 @@ nz-header {
 
 nz-content {
   margin: 24px;
+
 }
 
 .inner-content {
   padding: 24px;
-  background: #fff;
   height: 100%;
+  background: #fff;
 }

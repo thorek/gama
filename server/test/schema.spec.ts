@@ -7,37 +7,37 @@ import { Entity } from '../graph-on-rails/entities/entity';
 describe('Schema Generation', () => {
 
   class ATestEntity extends Entity {
-    protected getName() { return "ATest" }
+    protected getName() { return 'ATest' }
   }
 
   class BTestEntity extends Entity {
-    protected getName() { return "BTest" }
+    protected getName() { return 'BTest' }
     protected getAssocTo() { return [{type: 'ATest'}]}
   }
 
 
   it( 'should generate schema from config', async () => {
-    const runtime = await Runtime.create( "test:schema", {configFolder: ['./config-types/d2prom']});
+    const runtime = await Runtime.create( 'test:schema', {configFolder: ['./config-types/d2prom']});
     const schema = printSchema( await runtime.schema() );
     // expect( schema ).toContain("type Alpha");
     // expect( schema ).toContain("type Beta");
-    // console.log( schema );
+    console.log( schema );
   });
 
   it( 'should generate schema with custom entity', async () => {
-    const runtime = await Runtime.create( "test:schema", {
+    const runtime = await Runtime.create( 'test:schema', {
       entities: [ new ATestEntity(), new BTestEntity() ]
     });
     const schema = printSchema( await runtime.schema() );
-    expect( schema ).toContain("type ATest");
-    expect( schema ).toContain("type BTest");
-    expect( schema ).toContain("aTest: ATest");
+    expect( schema ).toContain('type ATest');
+    expect( schema ).toContain('type BTest');
+    expect( schema ).toContain('aTest: ATest');
 
     // console.log( schema );
   });
 
   it('should distinguish required variants', async () => {
-    const runtime = await Runtime.create( "test:schema", {
+    const runtime = await Runtime.create( 'test:schema', {
       domainConfiguration: {
         entity: {
           Alpha: {
@@ -54,7 +54,7 @@ describe('Schema Generation', () => {
       }
     });
     const schema = printSchema( await runtime.schema() );
-    expect( schema ).toContain("type Alpha");
+    expect( schema ).toContain('type Alpha');
     // console.log( schema )
   })
 

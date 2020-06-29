@@ -4,6 +4,7 @@ import { EntityReference } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
 import { ValidationViolation } from './entity-validator';
+import { Sort } from 'graph-on-rails/core/data-store';
 
 //
 //
@@ -52,8 +53,14 @@ export class EntityAccessor extends EntityModule {
    *
    * @param filter as it comes from the graqpql request
    */
-  async findByFilter( filter:any ):Promise<EntityItem[]>{
-    const items = await this.dataStore.findByFilter( this.entity, filter );
+  async findByFilter( filter:any, sort?:Sort ):Promise<EntityItem[]>{
+    const items = this.entity.isPolymorph ?
+      await this.dataStore.aggregateFind(
+        this.context.entities['Client'],
+        this.entity.entities,
+        filter,
+        sort) :
+      await this.dataStore.findByFilter( this.entity, filter, sort );
     return Promise.all( _.map( items, item => EntityItem.create( this.entity, item ) ) );
   }
 

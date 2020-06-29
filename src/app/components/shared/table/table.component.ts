@@ -1,5 +1,8 @@
 import * as _ from 'lodash';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { AdminComponent } from '../../admin/admin.component';
+import { TableConfig } from 'ng-zorro-antd/core/config';
+import { AdminTableConfig, UiConfigType } from 'src/app/services/admin.service';
 
 export type TableFieldType = string|{name:string, label?:string, value?:(entity:any) => any }
 
@@ -8,20 +11,16 @@ export type TableFieldType = string|{name:string, label?:string, value?:(entity:
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss']
 })
-export class TableComponent {
+export class TableComponent extends AdminComponent {
 
-  @Input() fields:TableFieldType[];
-  @Input() entities:any[];
-  @Output() selectEntity = new EventEmitter<any>();
-  @Output() action = new EventEmitter<{id:any, action:string}>();
+  @Input() config:AdminTableConfig|UiConfigType;
+  @Input() items:any[];
+  @Output() selectItem = new EventEmitter<any>();
+  @Output() actionItem = new EventEmitter<{id:any, action:string}>();
 
+  get fields() { return this.config.fields }
+  get actions() { return this.config.actions }
 
-  label(field:TableFieldType){ return _.isString( field ) ? field : field.label || field.name }
-  value(entity:any, field:string|TableFieldType){
-    if( _.isString(field) ) return _.get(entity, field);
-    return _.isFunction( field.value ) ? field.value( entity ) : _.get( entity, field.name );
-  }
-
-  onSelect(id:any) { this.selectEntity.emit(id) }
-  onDelete(id:any) { this.action.emit({ id, action: 'delete'} ) }
+  onSelect(id:any) { this.selectItem.emit(id) }
+  onDelete(id:any) { this.actionItem.emit({ id, action: 'delete'} ) }
 }

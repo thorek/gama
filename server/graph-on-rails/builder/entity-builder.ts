@@ -82,6 +82,7 @@ export class EntityBuilder extends SchemaBuilder {
     this.createCreateInputType();
     this.createUpdateInputType();
     this.createFilterType();
+    this.createSortType();
     this.addInterfaces();
     this.addReferences();
     this.addQueries();
@@ -337,7 +338,7 @@ export class EntityBuilder extends SchemaBuilder {
     let resolve = _.get( this.context.virtualResolver, [this.entity.name, name ] );
     if( ! _.isFunction( resolve ) ) {
       fieldConfig.type = GraphQLString;
-      fieldConfig.description = "This attribute should be resolved via attribute resolver, but none was provided."
+      fieldConfig.description = 'This attribute should be resolved via attribute resolver, but none was provided.'
     }
     fieldConfig.resolve = resolve
     return false;
@@ -347,17 +348,30 @@ export class EntityBuilder extends SchemaBuilder {
    *
    */
   protected createFilterType():void {
-		const name = this.entity.filterName;
-		this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
+    const name = this.entity.filterName;
+    this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
       const fields = { id: { type: GraphQLID } };
-			_.forEach( this.attributes(), (attribute, name) => {
+      _.forEach( this.attributes(), (attribute, name) => {
         if( attribute.virtual ) return;
         const filterType = this.getFilterType(attribute);
-				if( filterType ) _.set( fields, name, { type: filterType } );
-			});
-			return fields;
-		} });
-	}
+        if( filterType ) _.set( fields, name, { type: filterType } );
+      });
+      return fields;
+    }});
+  }
+
+  /**
+   *
+   */
+  protected createSortType():void {
+    const name = this.entity.sorterEnumName;
+    const values = _(this.attributes()).
+      map( (attribute, name ) => attribute.virtual ? [] : [`${name}_ASC`, `${name}_DESC`] ).
+      flatten().compact().
+      concat( ['id_ASC', 'id_DESC']).
+      reduce( (values, item) => _.set( values, item, {value: item} ), {} );
+    this.graphx.type( name, { name, values, from: GraphQLEnumType });
+  }
 
   /**
    *
@@ -383,7 +397,10 @@ export class EntityBuilder extends SchemaBuilder {
     this.graphx.type( 'query' ).extendFields( () => {
       return _.set( {}, typesQuery, {
         type: new GraphQLList( this.graphx.type(this.entity.typeName) ),
-        args: { filter: { type: this.graphx.type(this.entity.filterName) } },
+        args: {
+          filter: { type: this.graphx.type(this.entity.filterName) },
+          sort: { type: this.graphx.type(this.entity.sorterEnumName) },
+        },
         resolve: (root:any, args:any, context:any) => this.resolver.resolveTypes( {root, args, context} )
       });
     });

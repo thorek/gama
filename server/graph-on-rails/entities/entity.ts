@@ -66,6 +66,7 @@ export abstract class Entity {
   get createInputTypeName() { return this.getCreateInputTypeName() }
   get updateInputTypeName() { return this.getUpdateInputTypeName() }
   get filterName() { return this.getFilterName() }
+  get sorterEnumName() { return this.getSorterEnumName() }
   get collection() { return this.getCollection() }
   get enum() { return this.getEnum() }
   get seeds() { return this.getSeeds() }
@@ -95,6 +96,7 @@ export abstract class Entity {
   protected getCreateInputTypeName() { return `${this.typeName}CreateInput` }
   protected getUpdateInputTypeName() { return `${this.typeName}UpdateInput` }
   protected getFilterName() { return `${this.typeName}Filter` }
+  protected getSorterEnumName() { return `${this.typeName}Sort` }
   protected getCollection() { return this.plural }
   protected getAttributes():{[name:string]:TypeAttribute} { return {} };
   protected getAssocTo(): EntityReference[] { return [] }

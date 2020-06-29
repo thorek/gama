@@ -1,5 +1,5 @@
 <nz-page-header class="site-page-header" nzBackIcon>
-  <nz-page-header-title>{{ entitiesName }}</nz-page-header-title>
+  <nz-page-header-title>{{ title('index') }}</nz-page-header-title>
   <nz-page-header-extra>
     <button (click)="onNew()" nz-button nzType="primary">New {{ entityName }}</button>
   </nz-page-header-extra>
@@ -7,31 +7,12 @@
 
 <div *ngIf="loading">Loading...</div>
 
-<nz-table #basicTable [nzData]="items">
-  <thead>
-    <tr>
-      <th *ngFor="let col of columns">{{ label( col ) }}</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let item of basicTable.data">
-      <td *ngFor="let col of columns" (click)="onSelect(item.id)">{{ value( item, col ) }}</td>
-      <td align="right">
-        <nz-space>
-          <nz-space-item>
-            <a (click)="onSelect(item.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
-          </nz-space-item>
-          <nz-space-item>
-            <a (click)="onDelete(item.id)">
-              <i nz-icon nzType="delete" nzTheme="outline"></i>
-            </a>
-          </nz-space-item>
-        </nz-space>
-      </td>
-    </tr>
-  </tbody>
-</nz-table>
+<app-table
+  [config]="this.config.index"
+  [items]="items"
+  (selectItem)="onSelect($event)"
+  (actionItem)="onAction($event)">
+</app-table>
 
 <nz-alert
   *ngIf="error"

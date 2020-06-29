@@ -1,12 +1,14 @@
 import * as _ from 'lodash';
-import { AdminConfigType, ActionType } from './services/admin.service';
+
+import { AdminConfigType } from './services/admin.service';
 
 export const adminConfig = async ():Promise<AdminConfigType> => {
   return {
     menu: ['clients','organisations','processing_activities'],
     entities:{
-      title: "Clients",
       clients: {
+        title: (purpose) => purpose === 'index' ? 'All Clients' : 'Clients',
+        action: (event) => event.action === 'some' ? console.log(`some ${event.id}`) : console.log('none'),
         index: {
           fields: ['name','city','dsb']
         },
@@ -14,6 +16,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
           assoc: [ 'organisations' ],
           table: [
             {
+              path: 'organisations',
               fields: [
                 'name',
                 {
@@ -21,6 +24,9 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
                   value:(organisation:any) =>
                     _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
                 }
+              ],
+              actions: [
+                'show', 'some'
               ]
             }
           ]
@@ -44,7 +50,8 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
             },
             {
               name: 'client',
-              value: (organisation:any) => organisation.client.name
+              value: (organisation:any) => organisation.client.name,
+              link: (organisation:any) => ['/admin', 'clients', organisation.client.id]
             }
           ]
         },
@@ -69,7 +76,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
           ],
           table: [
             {
-              title: 'Org Units',
+              path: 'organisational_units',
               fields: [ 'name', 'description'],
             }
           ]

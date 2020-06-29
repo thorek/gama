@@ -24,16 +24,22 @@ export type FieldConfigType = {
   link?:(item:any) => any[]
 }
 
-export type UiConfigType = {
+export type UiConfigType = AdminTableConfig & {
   query?:string
-  fields?:(string|FieldConfigType)[]
   assoc?:AssocConfigType[]
-  table?:UiTableConfig[]
+  table?:AssocTableConfigType[]
 }
 
-export type UiTableConfig = {
-  title?:string
+export type AdminTableActionConfig = {}
+
+export type AdminTableConfig = {
+  title?:string|(()=>string)
   fields?:(string|FieldConfigType)[]
+  actions?:AdminTableActionConfig[]
+}
+
+export type AssocTableConfigType = AdminTableConfig & {
+  path:string
 }
 
 export type AssocConfigType = string| {
@@ -51,9 +57,13 @@ export type AssocsType = {
   [assoc:string]:AssocType
 }
 
+export type ActionEventType = {id:any, action:string};
+export type TitlePurposeType = 'menu'|'index'|'show'|'edit'|'detailTable'
+
 export type EntityConfigType = {
   path?:string
-  title?:string|(()=>string)
+  title?:string|((purpose?:TitlePurposeType)=>string)
+  action?:(event:ActionEventType) => void
   fields?:FieldsMetaDataType
   entitesName?:string
   entityName?:string

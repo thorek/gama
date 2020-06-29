@@ -4,6 +4,7 @@ import { ResolverContext } from '../core/resolver-context';
 import { Entity } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
+import { Sort } from 'graph-on-rails/core/data-store';
 
 //
 //
@@ -25,15 +26,29 @@ export class EntityResolver extends EntityModule {
    */
   async resolveTypes( resolverCtx:ResolverContext ):Promise<any[]> {
     const filter = _.get( resolverCtx.args, 'filter');
-    if( this.entity.isPolymorph ) return this.resolvePolymorphTypes( filter );
-    const enits = await this.accessor.findByFilter( filter );
+    const sort = this.getSort( _.get( resolverCtx.args, 'sort') );
+    // if( this.entity.isPolymorph ) return this.resolvePolymorphTypes( filter, sort );
+    const enits = await this.accessor.findByFilter( filter, sort );
     return _.map( enits, enit => enit.item );
   }
 
   /**
    *
    */
-  private async resolvePolymorphTypes( filter:any ):Promise<any[]> {
+  private getSort( sortString: string ):Sort|undefined {
+    if( ! sortString ) return undefined;
+    const parts = _.split( sortString, '_' );
+    if( parts.length !== 2 ) return this.warn( `invalid sortString '${sortString}'`, undefined );
+    const field = _.first( parts) as string;
+    const direction = _.last( parts ) as 'ASC'|'DESC';
+    if( _.includes( ['ASC', 'DESC'], direction) ) return { field, direction };
+    this.warn(`invalid direction '${direction}'`, undefined);
+  }
+
+  /**
+   *
+   */
+  private async resolvePolymorphTypes( filter:any, sort?:Sort ):Promise<any[]> {
     const result = [];
     for( const entity of this.entity.entities ){
       const enits = await entity.accessor.findByFilter( filter );

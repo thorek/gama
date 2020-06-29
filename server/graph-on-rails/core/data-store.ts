@@ -2,6 +2,11 @@ import { FilterType } from '../builder/filter-type';
 import { Entity } from '../entities/entity';
 import { ResolverContext } from './resolver-context';
 
+export type Sort = {
+  field:string
+  direction:'ASC'|'DESC'
+}
+
 /**
  *
  */
@@ -13,13 +18,15 @@ export abstract class DataStore {
 
   abstract findByAttribute( entity:Entity, attrValue:{[name:string]:any} ):Promise<any[]>;
 
+  abstract aggregateFind( dummyEntity:Entity, entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>;
+
   /**
    *
    * @param entity the entity
    * @param filter the filter as it would be build from the filter types of this datasource
    * @returns all items matching the filter
    */
-  abstract findByFilter( entity:Entity, filter:any ):Promise<any[]>;
+  abstract findByFilter( entity:Entity, filter:any, sort?:Sort ):Promise<any[]>;
 
   abstract create( entity:Entity, attrs: any ):Promise<any>;
 

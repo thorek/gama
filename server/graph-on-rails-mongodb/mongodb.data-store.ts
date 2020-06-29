@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Collection, Db, FilterQuery, MongoClient, ObjectId } from 'mongodb';
 
 import { FilterType } from '../graph-on-rails/builder/filter-type';
-import { DataStore } from '../graph-on-rails/core/data-store';
+import { DataStore, Sort } from '../graph-on-rails/core/data-store';
 import { ResolverContext } from '../graph-on-rails/core/resolver-context';
 import { Entity } from '../graph-on-rails/entities/entity';
 import { EnumFilterType } from './filter/enum-filter-type';
@@ -37,7 +37,7 @@ export class MongoDbDataStore extends DataStore {
     if( ! url ) throw `please provide url`;
     const dbName = _.get( config, 'dbName' );
     if( ! dbName ) throw `please provide dbName`;
-		const client = await MongoClient.connect( url, { useNewUrlParser: true, useUnifiedTopology: true } );
+    const client = await MongoClient.connect( url, { useNewUrlParser: true, useUnifiedTopology: true } );
     return client.db(dbName);
   }
 
@@ -48,7 +48,7 @@ export class MongoDbDataStore extends DataStore {
     if( ! (id instanceof ObjectId) ) id = this.getObjectId( id, entity );
     const collection = this.getCollection( entity );
     const item = await collection.findOne( id );
-		return this.buildOutItem( item );
+    return this.buildOutItem( item );
   }
 
   /**
@@ -57,24 +57,55 @@ export class MongoDbDataStore extends DataStore {
   async findByIds( entity:Entity, ids:(ObjectId|string)[] ):Promise<any> {
     ids = _.map( ids, id => this.getObjectId( id, entity ) );
     const collection = this.getCollection( entity );
-		const items = await collection.find( {_id: { $in: ids }} ).toArray();
-		return _.map( items, item => this.buildOutItem( item ) );
+    const items = await collection.find( {_id: { $in: ids }} ).toArray();
+    return _.map( items, item => this.buildOutItem( item ) );
   }
 
   /**
    *
    */
-  async findByAttribute( entity:Entity, attrValue:{[name:string]:any} ):Promise<any[]> {
+  async findByAttribute( entity:Entity, attrValue:{[name:string]:any}, sort?:Sort ):Promise<any[]> {
     // const expression = { $and: _.map( attrValue, (value, attribute) => _.set({}, attribute, { $eq: value } ) ) };
-    return this.findByExpression( entity, attrValue );
+    return this.findByExpression( entity, attrValue, sort );
   }
 
   /**
    *
    */
-  async findByFilter( entity:Entity, filter:any ):Promise<any[]> {
+  async findByFilter( entity:Entity, filter:any, sort?:Sort ):Promise<any[]> {
     const expression = this.buildExpression( entity, filter );
-    return this.findByExpression( entity, expression );
+    return this.findByExpression( entity, expression, sort );
+  }
+
+  async aggregateFind( dummyEntity:Entity, entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>{
+    if( entities.length === 0 ) return [];
+    const expression = this.buildExpression( _.first(entities) as Entity, filter );
+    const lookups:any[] = _.map( entities, entity => {
+      return {
+        $lookup: { 
+          from: entity.typesQuery,
+          pipeline: [
+            { $addFields: { __typename: entity.typeName } },
+            { $match: expression }
+          ],
+          as: entity.typesQuery
+        }
+      };
+    });
+    const concatArrays = _.map( entities, entity => `$${entity.typesQuery}` );
+
+    const aggregate = _.compact( _.concat(
+      { $limit: 1 },
+      { $project: { _id: '$$REMOVE' } },
+      lookups,
+      { $project: { union: { $concatArrays: concatArrays } } },
+      { $unwind: '$union' },
+      { $replaceRoot: { newRoot: '$union' } },
+      { $sort: this.getSort( sort ) }
+    ));
+
+    const items = await this.getCollection( dummyEntity ).aggregate( aggregate).toArray();
+    return _.map( items, item => this.buildOutItem( item ) );
   }
 
   /**
@@ -84,27 +115,27 @@ export class MongoDbDataStore extends DataStore {
     const collection = this.getCollection( entity );
     const result = await collection.insertOne( attrs );
     return this.findById( entity, result.insertedId );
-	}
+  }
 
   /**
    *
    */
-	async update( entity:Entity, attrs: any ):Promise<any> {
+  async update( entity:Entity, attrs: any ):Promise<any> {
     const _id = new ObjectId( attrs.id );
     delete attrs.id;
     const collection = this.getCollection( entity );
     const result = await collection.updateOne( { _id }, { $set: attrs }, { upsert: false } );
     return this.findById( entity, _id );
-	}
+  }
 
 
   /**
    *
    */
-	async delete( entityType:Entity, id:any  ):Promise<boolean> {
+  async delete( entityType:Entity, id:any  ):Promise<boolean> {
     const collection = this.getCollection( entityType );
-    collection.deleteOne( { "_id": new ObjectId( id ) } );
-		return true;
+    collection.deleteOne( { _id: new ObjectId( id ) } );
+    return true;
   }
 
   /**
@@ -156,27 +187,28 @@ export class MongoDbDataStore extends DataStore {
   /**
    *
    */
-  protected async findByExpression( entity:Entity, filter:any ):Promise<any[]> {
+  protected async findByExpression( entity:Entity, filter:any, sort?:Sort ):Promise<any[]> {
     const collection = this.getCollection( entity );
-    const items = await collection.find( filter ).toArray();
-		return _.map( items, item => this.buildOutItem( item ) );
+    const sortStage = this.getSort( sort );
+    const items = await collection.find( filter ).sort(this.getSort(sort)).toArray();
+    return _.map( items, item => this.buildOutItem( item ) );
   }
 
   /**
    *
    */
-	protected buildExpression( entity:Entity, filter:any ):FilterQuery<any> {
+  protected buildExpression( entity:Entity, filter:any ):FilterQuery<any> {
     const filterQuery:FilterQuery<any> = {};
-		_.forEach( filter, (condition, field) => {
+    _.forEach( filter, (condition, field) => {
       const attribute = entity.getAttribute(field);
-			if( ! attribute ) return;
+      if( ! attribute ) return;
       const filterType = entity.context.filterType( attribute.filterType, attribute.graphqlType );
       if( ! filterType ) return;
-			const expression = filterType.getFilterExpression( condition, field );
-			if( expression ) _.set( filterQuery, field, expression );
+      const expression = filterType.getFilterExpression( condition, field );
+      if( expression ) _.set( filterQuery, field, expression );
     });
-		return filterQuery;
-	}
+    return filterQuery;
+  }
 
   /**
    *
@@ -269,6 +301,10 @@ export class MongoDbDataStore extends DataStore {
   private resolvePermissionValue( entity:Entity, attribute:string, value:any, context:any ):any {
     value = _.get( context, value, value );
     return attribute === '_id' || entity.isAssocToAttribute( attribute ) ? new ObjectId( value ) : value;
+  }
+
+  private getSort( sort?:Sort ):any {
+    return _.isUndefined( sort ) ? { _id: -1 } : _.set( {}, sort.field, sort.direction === 'ASC' ? 1 : -1 ) ;
   }
 
 }

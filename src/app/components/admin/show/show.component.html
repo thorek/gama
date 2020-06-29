@@ -1,8 +1,8 @@
 <nz-page-header class="site-page-header" nzBackIcon>
   <nz-page-header-title>
-    <span>{{ "" }}</span>
+    <span>{{ title('show') }}</span>
   </nz-page-header-title>
-  <nz-page-header-subtitle>{{ entityName }}</nz-page-header-subtitle>
+  <nz-page-header-subtitle>???</nz-page-header-subtitle>
   <nz-page-header-extra>
     <button nz-button nzType="primary">Edit</button>
     <button nz-button nzType="secondary">Delete</button>
@@ -11,16 +11,34 @@
 
 <div *ngIf="loading">Loading...</div>
 
-<nz-descriptions *ngIf="item" nzTitle="Entity data" nzBordered [nzColumn]="1">
-  <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
-    <a *ngIf="isLink( field ); else noLink" [routerLink]="link( item, field )">
-      {{ value( item, field ) }}
-    </a>
-    <ng-template #noLink>
-      {{ value( item, field ) }}
-    </ng-template>
-  </nz-descriptions-item>
-</nz-descriptions>
+<ng-container *ngIf="item" >
+
+  <nz-descriptions nzTitle="Entity data" nzBordered [nzColumn]="1">
+    <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
+      <a *ngIf="isLink( field ); else noLink" [routerLink]="link( item, field )">
+        {{ value( item, field ) }}
+      </a>
+      <ng-template #noLink>
+        {{ value( item, field ) }}
+      </ng-template>
+    </nz-descriptions-item>
+  </nz-descriptions>
+
+  <div *ngFor="let table of this.config.show.table">
+    <hr>
+
+    <h2>{{ title( 'detailTable', table )}}</h2>
+
+    <app-table
+      [config]="table"
+      [items]="tableItems(table)"
+      (selectItem)="onSelect($event)"
+      (actionItem)="onAction($event)">
+    </app-table>
+
+  </div>
+
+</ng-container>
 
 <nz-alert
   *ngIf="error"

@@ -147,7 +147,7 @@ entity:
         Organisation: mtp
       mtpTraining:
         name: Schulungsabteilung
-        OrganisationalUnit: mtp
+        Organisation: mtp
 
   Organisation:
     attributes:
