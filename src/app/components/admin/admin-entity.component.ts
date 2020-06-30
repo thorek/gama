@@ -79,11 +79,15 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
       nzOnCancel: () => this.message.info('Nothing was deleted')
     });
   }
+  gotoList( path?:string ){
+    this.router.navigate(['admin', path ? path : this.path] );
+  }
 
   protected deleteMutation( id:string ){
     const deleteItem = gql`mutation { ${this.config.deleteMutation}(id: "${id}" )  }`;
     this.apollo.mutate({ mutation: deleteItem }).subscribe(({data}) => {
-      this.message.info(`${this.config.entityName} was deleted!` );
+      this.message.info(`This ${this.title('show')} was deleted!` );
+      setTimeout( ()=> this.gotoList(), 500 );
     })
   }
 

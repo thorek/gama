@@ -22,9 +22,11 @@ export class ShowComponent extends AdminEntityComponent {
 
   getQuery(){
     const fields = this.buildFieldQuery( this.config.show );
+    const query = `query EntityQuery($id: ID!){ ${this.config.show.query}(id: $id) ${ fields } }`;
     return {
-      query: gql`query EntityQuery($id: ID!){ ${this.config.show.query}(id: $id) ${ fields } }`,
-      variables: {id: this.id}
+      query: gql(query),
+      variables: {id: this.id},
+      fetchPolicy: 'network-only'
     };
   }
 

@@ -51,7 +51,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
             {
               name: 'client',
               value: (organisation:any) => organisation.client.name,
-              link: (organisation:any) => ['/admin', 'clients', organisation.client.id]
+              link: (organisation:any) => ['/admin', 'clients', organisation?.client?.id]
             }
           ]
         },
@@ -83,6 +83,22 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
         }
       },
       processing_activities: {
+        index: {
+          assoc: [{path: 'organisational_units', assoc: ['organisations']}],
+          fields: [
+            'name',
+            {
+              name: 'organisations',
+              value: (processingActivity) =>
+              _.get( _.first( processingActivity.organisationalUnits ), 'organisation.name' )
+            },
+            {
+              name: 'organisational_units',
+              value: (processingActivity) =>
+                _(processingActivity.organisationalUnits).map( ou => ou.name ).join(', ')
+            }
+          ]
+        }
       },
       foo: {
         name: (entity:any) => entity.name,
@@ -91,5 +107,3 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
   }
 }
 
-// IDEA fields generisch verhalten definieren, dann index/Show/edit Fields nur string[] um auswahlt und
-// reihenfolge zu definieren

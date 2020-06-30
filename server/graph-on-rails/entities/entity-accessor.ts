@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 import { AssocType } from './entity';
 import { EntityItem } from './entity-item';
+import { EntityDeleter } from './entity-deleter';
 import { EntityModule } from './entity-module';
 import { ValidationViolation } from './entity-validator';
 import { Sort } from 'graph-on-rails/core/data-store';
@@ -14,13 +15,14 @@ export class NotFoundError extends Error {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
     this.name = NotFoundError.name; // stack traces display correctly now
-}
+  }
 }
 
 //
 //
 export class EntityAccessor extends EntityModule {
 
+  protected deleter = new EntityDeleter(this.entity);
   get dataStore() { return this.entity.context.dataStore }
 
   /**
@@ -90,14 +92,8 @@ export class EntityAccessor extends EntityModule {
   /**
    *
    */
-  delete( id:any ):Promise<boolean> {
-    _.forEach( this.entity.assocFrom, assocFrom => {
-      if( assocFrom.delete === 'cascade' ) {
-        const refEntity = this.context.entities[assocFrom.type];
-        const ids = refEntity.accessor.findByAttribute( _.set( {}, this.entity.foreignKey, id ) );
-        _.forEach( ids, id => refEntity.accessor.delete( id ) );
-      }
-    });
+  async delete( id:any ):Promise<boolean> {
+    await this.deleter.deleteAssocFrom( id );
     return this.dataStore.delete( this.entity, id );
   }
 

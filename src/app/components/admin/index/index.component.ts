@@ -14,7 +14,11 @@ export class IndexComponent extends AdminEntityComponent {
   items:any;
 
   getQuery(){
-    return { query: gql`query{ ${this.config.index.query} ${ this.buildFieldQuery( this.config.index ) } }` };
+    const query = `query{ ${this.config.index.query} ${ this.buildFieldQuery( this.config.index ) } }`;
+    return {
+      query: gql(query),
+      fetchPolicy: 'network-only'
+    };
   }
 
   setData( data:any ):void {

@@ -132,7 +132,7 @@ entity:
     assocTo: Organisation
     assocFrom:
       - type: ProcessingActivity
-        delete: cascade
+        delete: prevent
     seeds:
       verkaufPapyr:
         name: Verkauf
@@ -204,7 +204,8 @@ entity:
         - type: string!
           default: DE
     assocFrom:
-      - Organisation
+      - type: Organisation
+        delete: cascade
     seeds:
       kb:
         name: Karl Brand GmbH & Co. KG
