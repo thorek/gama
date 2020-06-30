@@ -76,6 +76,7 @@ export type EntityConfigType = {
   index?:UiConfigType
   show?:UiConfigType
   edit?:UiConfigType
+  create?:UiConfigType
 }
 export type AdminConfigType = {
   entities?:{ [entity:string]:EntityConfigType}

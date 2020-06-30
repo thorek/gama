@@ -6,8 +6,6 @@ const query = gql`
   query {
     metaData {
       path
-      singular
-      plural
       typeQuery
       typesQuery
       deleteMutation

@@ -9,6 +9,7 @@ import { AboutComponent } from './components/about/about.component';
 import { IndexComponent } from './components/admin/index/index.component';
 import { ShowComponent } from './components/admin/show/show.component';
 import { EditComponent } from './components/admin/edit/edit.component';
+import { CreateComponent } from './components/admin/create/create.component';
 
 const routes:Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/welcome' },
@@ -16,9 +17,9 @@ const routes:Routes = [
   { path: 'about', pathMatch: 'full', component: AboutComponent },
   { path: 'admin', children: [
     { path: ':path', component: IndexComponent },
-    { path: ':path/:id', component: ShowComponent },
+    { path: ':path/new', component: CreateComponent },
     { path: ':path/edit/:id', component: EditComponent },
-    { path: ':path/new', component: EditComponent },
+    { path: ':path/:id', component: ShowComponent },
   ]},
   { path: 'clients', children:[
     {path: '', component: ClientsComponent},

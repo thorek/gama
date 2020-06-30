@@ -20,6 +20,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
@@ -38,6 +39,7 @@ import { ShowComponent } from './components/admin/show/show.component';
 import { AdminService } from './services/admin.service';
 import { adminConfig } from './admin.config';
 import { EditComponent } from './components/admin/edit/edit.component';
+import { CreateComponent } from './components/admin/create/create.component';
 
 registerLocaleData(en);
 
@@ -60,7 +62,8 @@ export function initializeApp1(adminService:AdminService) {
     HeaderComponent,
     TableComponent,
     ShowComponent,
-    EditComponent
+    EditComponent,
+    CreateComponent
   ],
   imports: [
     BrowserModule,
@@ -80,6 +83,7 @@ export function initializeApp1(adminService:AdminService) {
     NzMessageModule,
     NzFormModule,
     NzInputModule,
+    NzBreadCrumbModule,
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,

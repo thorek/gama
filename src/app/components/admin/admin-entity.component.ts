@@ -40,7 +40,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     protected modal:NzModalService,
     protected message: NzMessageService) { super() }
 
-    protected abstract getQuery():{query:any, variables?:any};
+    protected abstract getQuery():{query:any, variables?:any}|undefined;
     protected abstract setData( data:any ):void;
     protected abstract setDefaults( config:EntityConfigType ):EntityConfigType;
 
@@ -69,7 +69,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
 
   onNew( path?:string) {
-    this.router.navigate(['admin', 'new', path ? path : this.path ])
+    this.router.navigate(['admin', path ? path : this.path, 'new' ])
   }
   onEdit(id?:any, path?:string) {
     this.router.navigate(['/admin', path ? path : this.path, 'edit', id ? id : this.id ])
@@ -157,8 +157,9 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     this.path = path;
     const config = this.adminService.getEntityConfig(path);
     this.config = this.setDefaults( config );
-
-    this.apollo.watchQuery<any>( this.getQuery() )
+    const query = this.getQuery();
+    if( ! query ) return this.setData({});
+    this.apollo.watchQuery<any>( query )
       .valueChanges
       .subscribe(({ data, loading }) => {
         console.log({data, loading})
