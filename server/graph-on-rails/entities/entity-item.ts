@@ -65,7 +65,8 @@ export class EntityItem {
     const entites = foreignEntity.isPolymorph ? foreignEntity.entities : [foreignEntity];
     const enits:EntityItem[] = [];
     for( const entity of entites ){
-      const attr = _.set({}, this.entity.foreignKey, _.toString( this.item.id ) );
+      const foreignKey = entity.isAssocToMany( this.entity ) ? this.entity.foreignKeys : this.entity.foreignKey;
+      const attr = _.set({}, foreignKey, _.toString( this.item.id ) );
       enits.push( ... await entity.findByAttribute( attr ) );
     }
     return enits;
@@ -82,6 +83,12 @@ export class EntityItem {
     return EntityItem.create( this.entity, item );
   }
 
+  /**
+   *
+   */
+  delete():Promise<boolean>{
+    return this.entity.accessor.delete( this.id );
+  }
 
 
   //
@@ -141,8 +148,6 @@ export class EntityItem {
     return new Error( _.join(msg, '\n') );
   }
 
-  toString(){
-    return `[${this.entity.name}:${this.id}]\n${this.item}`
-  }
+  toString(){ return `[${this.entity.name}:${this.id}]` }
 
 }

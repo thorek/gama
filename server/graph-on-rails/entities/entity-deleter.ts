@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { EntityModule } from './entity-module';
 import { AssocFromType } from './entity';
+import { EntityItem } from './entity-item';
 
 //
 //
@@ -18,27 +19,26 @@ export class DeletionError extends Error {
 export class EntityDeleter extends EntityModule {
 
   async deleteAssocFrom( id:string ) {
+    const item = await this.entity.findById( id );
     // first check if any prevents - then delete
     for( const assocFrom of this.entity.assocFrom ){
-      if( assocFrom.delete === 'prevent') this.preventAssocFrom( id, assocFrom );
+      if( assocFrom.delete === 'prevent') await this.preventAssocFrom( item, assocFrom );
     }
     for( const assocFrom of this.entity.assocFrom ){
-      if( assocFrom.delete === 'cascade') this.cascadeAssocFrom( id, assocFrom );
+      if( assocFrom.delete === 'cascade') await this.cascadeAssocFrom( item, assocFrom );
     }
   }
 
-  private async cascadeAssocFrom( id:string, assocFrom:AssocFromType ) {
-    const refEntity = this.context.entities[assocFrom.type];
-    const items = await refEntity.accessor.findByAttribute( _.set( {}, this.entity.foreignKey, id ) );
-    for( const item of items ) await refEntity.accessor.delete( item.id );
+  private async cascadeAssocFrom( item:EntityItem, assocFrom:AssocFromType ) {
+    const items = await item.assocFrom( assocFrom.type );
+    for( const i of items ) await i.delete();
   }
 
-  private async preventAssocFrom( id:string, assocFrom:AssocFromType ) {
-    const refEntity = this.context.entities[assocFrom.type];
-    const items = await refEntity.accessor.findByAttribute( _.set( {}, this.entity.foreignKey, id ) );
+  private async preventAssocFrom( item:EntityItem, assocFrom:AssocFromType ) {
+    const items = await item.assocFrom( assocFrom.type );
     const size = _.size( items);
     if( size > 0 ) throw new DeletionError(
-      `[${this.entity.name}#${id}] cannot be deleted - ${size} ${assocFrom.type} prevent it.`);
+      `${item.toString()} cannot be deleted - ${size} ${assocFrom.type} prevent it.`);
   }
 
 }

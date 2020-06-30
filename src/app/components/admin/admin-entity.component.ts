@@ -86,9 +86,14 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   protected deleteMutation( id:string ){
     const deleteItem = gql`mutation { ${this.config.deleteMutation}(id: "${id}" )  }`;
     this.apollo.mutate({ mutation: deleteItem }).subscribe(({data}) => {
-      this.message.info(`This ${this.title('show')} was deleted!` );
-      setTimeout( ()=> this.gotoList(), 500 );
-    })
+      const violations = _.get( data, this.config.deleteMutation ) as string[];
+      if( _.size( violations ) === 0 ) {
+        this.message.info(`This ${this.title('show')} was deleted!` );
+        setTimeout( ()=> this.gotoList(), 500 );
+      } else {
+        this.message.error( _.join(violations, '\n') );
+      }
+    });
   }
 
   protected async loadData( path:string ){

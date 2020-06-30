@@ -46,18 +46,18 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
               name: 'industries',
               label: 'Assigned Industries',
               value: (organisation:any) =>
-                _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
+                _(organisation.industries).map( industry => industry.name ).join(', ')
             },
             {
               name: 'client',
-              value: (organisation:any) => organisation.client.name,
+              value: (organisation:any) => _.get(organisation, 'client.name' ),
               link: (organisation:any) => ['/admin', 'clients', organisation?.client?.id]
             }
           ]
         },
         show: {
           assoc: [
-            'clients', 'industries', 'organisational_units'
+            'clients', 'industries', 'organisational_units', 'processing_activities'
           ],
           fields: [
             'id',
@@ -77,6 +77,10 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
           table: [
             {
               path: 'organisational_units',
+              fields: [ 'name', 'description'],
+            },
+            {
+              path: 'processing_activities',
               fields: [ 'name', 'description'],
             }
           ]

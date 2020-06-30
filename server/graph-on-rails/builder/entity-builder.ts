@@ -451,7 +451,7 @@ export class EntityBuilder extends SchemaBuilder {
   protected addDeleteMutation():void {
     this.graphx.type( 'mutation' ).extendFields( () => {
       return _.set( {}, this.entity.deleteMutation, {
-        type: GraphQLBoolean,
+        type: new GraphQLList( GraphQLString ),
         args: { id: { type: GraphQLID } },
         resolve: (root:any, args:any, context:any ) => this.resolver.deleteType( {root, args, context} )
       });
