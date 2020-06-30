@@ -16,7 +16,7 @@ import {
 import _, { Dictionary } from 'lodash';
 
 import { Context } from '../core/context';
-import { Entity, AssocType } from '../entities/entity';
+import { Entity, AssocType, AssocToType } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { SchemaBuilder } from './schema-builder';
@@ -204,7 +204,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private addAssocToInputToInput( fields:any, ref:AssocType ):any {
+  private addAssocToInputToInput( fields:any, ref:AssocToType ):any {
     if( ref.input ) {
       const refEntity = this.context.entities[ref.type];
       _.set( fields, refEntity.singular, {type: this.graphx.type( refEntity.createInputTypeName )} );
@@ -323,10 +323,10 @@ export class EntityBuilder extends SchemaBuilder {
   //
   //
   private addNonNull( name:string, attribute:TypeAttribute, purpose:AttributePurpose ):boolean {
-    if( ! attribute.required || purpose === 'filter' ) return false;
-    if( attribute.required === true ) return _.includes( ['createInput', 'updateInput', 'type'], purpose );
+    if( ! attribute.required || _.includes(['filter', 'updateInput'], purpose ) ) return false;
+    if( attribute.required === true ) return _.includes( ['createInput', 'type'], purpose );
     if( attribute.required === 'create' ) return _.includes( ['createInput', 'type'], purpose );
-    if( attribute.required === 'update' ) return _.includes( ['updateInput'], purpose );
+    if( attribute.required === 'update' ) return false
     throw `unallowed required attribute for '${this.entity.name}:{name}'`;
   }
 
@@ -426,7 +426,7 @@ export class EntityBuilder extends SchemaBuilder {
   protected addCreateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
       const args = _.set( {}, this.entity.singular, { type: this.graphx.type(this.entity.createInputTypeName)} );
-      return _.set( {}, this.entity.createMutationName, {
+      return _.set( {}, this.entity.createMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
       });
     });
@@ -437,8 +437,8 @@ export class EntityBuilder extends SchemaBuilder {
    */
   protected addUpdateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
-      const args = _.set( {}, this.entity.singular, { type: this.graphx.type(this.entity.updateInputTypeName)} );
-      return _.set( {}, this.entity.updateMutationName, {
+      const args = _.set( {}, this.entity.typeQuery, { type: this.graphx.type(this.entity.updateInputTypeName)} );
+      return _.set( {}, this.entity.updateMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
       });
     });

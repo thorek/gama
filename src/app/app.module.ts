@@ -18,6 +18,8 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzMessageModule } from 'ng-zorro-antd/message';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './components/app/app.component';
@@ -35,6 +37,7 @@ import { TableComponent } from './components/shared/table/table.component';
 import { ShowComponent } from './components/admin/show/show.component';
 import { AdminService } from './services/admin.service';
 import { adminConfig } from './admin.config';
+import { EditComponent } from './components/admin/edit/edit.component';
 
 registerLocaleData(en);
 
@@ -56,7 +59,8 @@ export function initializeApp1(adminService:AdminService) {
     IndexComponent,
     HeaderComponent,
     TableComponent,
-    ShowComponent
+    ShowComponent,
+    EditComponent
   ],
   imports: [
     BrowserModule,
@@ -74,6 +78,8 @@ export function initializeApp1(adminService:AdminService) {
     NzDividerModule,
     NzAlertModule,
     NzMessageModule,
+    NzFormModule,
+    NzInputModule,
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,

@@ -1,6 +1,7 @@
 import { OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
+import gql from 'graphql-tag';
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -17,11 +18,11 @@ import {
 } from 'src/app/services/admin.service';
 
 import { AdminComponent } from './admin.component';
-import gql from 'graphql-tag';
 
 export abstract class AdminEntityComponent extends AdminComponent implements OnInit {
 
   id?:string;
+  item?:any;
   path:string;
   loading = true;
   config:EntityConfigType;
@@ -37,7 +38,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     protected route:ActivatedRoute,
     protected router:Router,
     protected modal:NzModalService,
-    protected message: NzMessageService ) { super() }
+    protected message: NzMessageService) { super() }
 
     protected abstract getQuery():{query:any, variables?:any};
     protected abstract setData( data:any ):void;
@@ -59,9 +60,23 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
       inflection.humanize( config.path );
   }
 
-  onNew() { console.log('new ', this.path ) }
-  onEdit() { console.log('edit ', this.path ) }
-  onSelect(id:any, path?:string) { this.router.navigate(['admin', path ? path : this.path, id]) }
+  name( item?:any ){
+    if( ! item ) item = this.item;
+    if( _.isFunction(this.config.name) ) return this.config.name( item );
+    const candidates = ['name', 'title', 'lastname', 'last_name', 'firstname', 'first_name'];
+    for( const candidate of candidates) if ( _.has( item, candidate ) ) return _.get( item, candidate );
+    return `#${item.id}`;
+  }
+
+  onNew( path?:string) {
+    this.router.navigate(['admin', 'new', path ? path : this.path ])
+  }
+  onEdit(id?:any, path?:string) {
+    this.router.navigate(['/admin', path ? path : this.path, 'edit', id ? id : this.id ])
+  }
+  onSelect(id:any, path?:string) {
+    this.router.navigate(['admin', path ? path : this.path, id])
+  }
   onAction = ( event:ActionEventType ) => {
     switch( event.action ){
       case 'delete': return this.onDelete( event.id );
@@ -79,10 +94,19 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
       nzOnCancel: () => this.message.info('Nothing was deleted')
     });
   }
+
   gotoList( path?:string ){
     this.router.navigate(['admin', path ? path : this.path] );
   }
 
+  gotoShow( path?:string, id?:string ){
+    this.router.navigate(['admin', path ? path : this.path, id ? id : this.id] );
+  }
+
+
+  /**
+   *
+   */
   protected deleteMutation( id:string ){
     const deleteItem = gql`mutation { ${this.config.deleteMutation}(id: "${id}" )  }`;
     this.apollo.mutate({ mutation: deleteItem }).subscribe(({data}) => {
@@ -94,6 +118,39 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
         this.message.error( _.join(violations, '\n') );
       }
     });
+  }
+
+  /**
+   *
+   */
+  protected updateMutation( id?:string, item?:any ){
+    if( ! id ) id = this.id;
+    if( ! item ) item = this.item;
+    const updateMutation =
+      gql`mutation($input: ClientUpdateInput) {
+        ${this.config.updateMutation}(${this.config.typeQuery}: $input ){
+          validationViolations{
+            attribute
+            violation
+          }
+        }
+      }`;
+    this.apollo.mutate({
+      mutation: updateMutation,
+      variables: { input: this.getItemInput( this.item ) } }
+    ).subscribe(({data}) => {
+      const violations = _.get( data, 'validationViolations' );
+      if( _.size( violations ) === 0 ) {
+        this.message.info(`This ${this.title('edit')} was updated!` );
+        setTimeout( ()=> this.gotoShow(), 500 );
+      } else {
+        this.message.error( _.join(violations, '\n') );
+      }
+    });
+  }
+
+  protected getItemInput( item:any ){
+    return _.pick( item, _.keys(this.config.fields), 'id' );
   }
 
   protected async loadData( path:string ){

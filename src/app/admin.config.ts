@@ -7,7 +7,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
     menu: ['clients','organisations','processing_activities'],
     entities:{
       clients: {
-        title: (purpose) => purpose === 'index' ? 'All Clients' : 'Clients',
+        name: (client) => client.name,
         action: (event) => event.action === 'some' ? console.log(`some ${event.id}`) : console.log('none'),
         index: {
           fields: ['name','city','dsb']

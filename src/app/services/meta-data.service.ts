@@ -6,9 +6,13 @@ const query = gql`
   query {
     metaData {
       path
+      singular
+      plural
       typeQuery
       typesQuery
       deleteMutation
+      updateMutation
+      createMutation
       fields {
         name
         type

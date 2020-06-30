@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import { EntityConfigType, AssocConfigType, AssocTableConfigType } from 'src/app/services/admin.service';
+import { EntityConfigType, AssocConfigType, AssocTableConfigType, FieldConfigType } from 'src/app/services/admin.service';
 
 import { AdminEntityComponent } from '../admin-entity.component';
 
@@ -11,8 +11,7 @@ import { AdminEntityComponent } from '../admin-entity.component';
 })
 export class ShowComponent extends AdminEntityComponent {
 
-  item:any;
-  get fields() { return this.config.show.fields }
+  get fields():FieldConfigType[] { return this.config.show.fields as FieldConfigType[] }
   get detailTables() { return this.config.show.table }
 
   tableItems( table:AssocTableConfigType ):any[]{

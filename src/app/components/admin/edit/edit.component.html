@@ -1,0 +1,25 @@
+<ng-container *ngIf="item" >
+  <nz-page-header class="site-page-header" nzBackIcon>
+    <nz-page-header-title>
+      <span>{{ name( item ) }}</span>
+    </nz-page-header-title>
+    <nz-page-header-subtitle>{{ title('show') }}</nz-page-header-subtitle>
+    <nz-page-header-extra>
+      <button nz-button nzType="primary" (click)="onSave()">Save</button>
+      <button nz-button nzType="secondary" (click)="onCancel()">Cancel</button>
+    </nz-page-header-extra>
+  </nz-page-header>
+
+  <form nz-form>
+    <nz-form-item *ngFor="let field of fields">
+      <nz-form-label [nzSpan]="6" nzFor="email">{{ label( field )}}</nz-form-label>
+      <nz-form-control [nzSpan]="14">
+        <input nz-input [(ngModel)]="item[field.name]" [name]="field.name">
+      </nz-form-control>
+    </nz-form-item >
+  </form>
+
+</ng-container>
+
+
+

@@ -8,6 +8,7 @@ import { OrganisationComponent } from './components/organisation/organisation.co
 import { AboutComponent } from './components/about/about.component';
 import { IndexComponent } from './components/admin/index/index.component';
 import { ShowComponent } from './components/admin/show/show.component';
+import { EditComponent } from './components/admin/edit/edit.component';
 
 const routes:Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/welcome' },
@@ -16,8 +17,8 @@ const routes:Routes = [
   { path: 'admin', children: [
     { path: ':path', component: IndexComponent },
     { path: ':path/:id', component: ShowComponent },
-    { path: 'new/:path', component: IndexComponent },
-    { path: 'edit/:path/:id/', component: IndexComponent }
+    { path: ':path/edit/:id', component: EditComponent },
+    { path: ':path/new', component: EditComponent },
   ]},
   { path: 'clients', children:[
     {path: '', component: ClientsComponent},

@@ -87,12 +87,12 @@ export abstract class Entity {
   get isUnion():boolean { return  ! this.isInterface && ! _.isEmpty( this.entities ) }
   get isPolymorph():boolean { return this.isUnion || this.isInterface }
   get implements():Entity[] { return _.filter( this.getImplements(), entity => entity.isInterface ) }
-  get createMutationName():string { return this.getCreateMutationName() }
-  get updateMutationName():string { return this.getUpdateMutationName() }
+  get deleteMutation():string { return this.getDeleteMutation() }
+  get createMutation():string { return this.getCreateMutation() }
+  get updateMutation():string { return this.getUpdateMutation() }
   get mutationResultName():string { return this.getMutationResultName() }
   get typesQuery():string { return this.getTypesQuery() }
   get typeQuery():string { return this.getTypeQuery() }
-  get deleteMutation():string { return this.getDeleteMutation() }
   get path() { return this.getPath() }
 
   protected abstract getName():string;
@@ -120,8 +120,8 @@ export abstract class Entity {
   protected getImplements():Entity[] { return [] }
   protected getTypeField():string { return `${this.singular}Type` }
   protected getTypeEnumName():string { return `${this.typeName}Types` }
-  protected getCreateMutationName():string { return `create${this.typeName}` }
-  protected getUpdateMutationName():string { return `update${this.typeName}` }
+  protected getCreateMutation():string { return `create${this.typeName}` }
+  protected getUpdateMutation():string { return `update${this.typeName}` }
   protected getMutationResultName():string { return `Save${this.typeName}MutationResult` }
   protected getTypesQuery():string { return this.plural }
   protected getTypeQuery():string { return this.singular }
@@ -154,7 +154,6 @@ export abstract class Entity {
   isAssocToMany( ref:Entity ):boolean {
     return _.find( this.assocToMany, assocToMany => assocToMany.type === ref.typeName ) != undefined;
   }
-
 
   /**
    *
