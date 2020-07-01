@@ -164,12 +164,12 @@ export class EntityBuilder extends SchemaBuilder {
     this.addTypesQuery();
   }
 
-	//
-	//
-	protected addAssocTo( entity?:Entity ):void {
+  //
+  //
+  protected addAssocTo( entity?:Entity ):void {
     if( ! entity ) entity = this.entity;
     let assocTo = _.filter( entity.assocTo, bt => this.checkReference( 'assocTo', bt ) );
-		this.graphx.type(this.entity.typeName).extendFields(
+    this.graphx.type(this.entity.typeName).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToReferenceToType( fields, ref ), {} ));
     this.graphx.type(this.entity.createInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
@@ -177,20 +177,24 @@ export class EntityBuilder extends SchemaBuilder {
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToInputToInput( fields, ref ), {} ));
     this.graphx.type(this.entity.updateInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
+    this.graphx.type(this.entity.filterName).extendFields( // re-use input for filter intentionally
+      () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
   }
 
-	//
-	//
-	protected addAssocToMany(entity?:Entity ):void {
+  //
+  //
+  protected addAssocToMany(entity?:Entity ):void {
     if( ! entity ) entity = this.entity;
     const assocToMany = _.filter( entity.assocToMany, bt => this.checkReference( 'assocTo', bt ) );
-		this.graphx.type(this.entity.typeName).extendFields(
+    this.graphx.type(this.entity.typeName).extendFields(
       () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyReferenceToType( fields, ref ), {} ));
     this.graphx.type(this.entity.createInput).extendFields(
       () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyForeignKeysToInput( fields, ref ), {} ));
     this.graphx.type(this.entity.updateInput).extendFields(
       () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyForeignKeysToInput( fields, ref ), {} ));
-  }
+    this.graphx.type(this.entity.filterName).extendFields( // re-use input for filter intentionally
+      () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyForeignKeysToInput( fields, ref ), {} ));
+    }
 
   //
   //
@@ -201,6 +205,7 @@ export class EntityBuilder extends SchemaBuilder {
       { type: this.graphx.type( refEntity.typesEnumName ) } );
     return fields;
   }
+
 
   //
   //

@@ -20,11 +20,14 @@ import {
 import { AdminComponent } from './admin.component';
 import { FormBuilder } from '@angular/forms';
 
+export type ParentType = { path:string, id:string }
+
 export abstract class AdminEntityComponent extends AdminComponent implements OnInit {
 
   id?:string;
-  item?:any;
   path:string;
+  parent?:ParentType;
+  item?:any;
   loading = true;
   config:EntityConfigType;
   error:any;
@@ -44,12 +47,14 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
 
     protected abstract getQuery():{query:any, variables?:any}|undefined;
     protected abstract setData( data:any ):void;
-    protected abstract setDefaults( config:EntityConfigType ):EntityConfigType;
 
   ngOnInit() {
     this.route.params.subscribe( params => {
       this.id = params['id'];
-      this.loadData( params['path'])
+      this.path = params['path'];
+      if( params.parent && params.parentId ) this.parent = { id: params.parentId, path: params.parent };
+      this.config = this.adminService.getEntityConfig(this.path);
+      this.loadData();
      });
   }
 
@@ -75,16 +80,13 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     return _.get( meta, 'required' );
   }
 
+  onNew = () => this.gotoNew( this.path, this.parent );
+  onEdit = () =>  this.gotoEdit( this.path, this.id, this.parent )
+  onShow = () => this.gotoShow( this.path, this.id, this.parent );
+  onList = () => this.gotoList( this.path, this.parent );
+  onSelect = (id:string) => this.gotoShow( this.path, id, this.parent );
+  onChildSelect = (path:string, id:string) => this.gotoShow( path, id, { path: this.path, id: this.id } );
 
-  onNew( path?:string) {
-    this.router.navigate(['admin', path ? path : this.path, 'new' ])
-  }
-  onEdit(id?:any, path?:string) {
-    this.router.navigate(['/admin', path ? path : this.path, 'edit', id ? id : this.id ])
-  }
-  onSelect(id:any, path?:string) {
-    this.router.navigate(['admin', path ? path : this.path, id])
-  }
   onAction = ( event:ActionEventType ) => {
     switch( event.action ){
       case 'delete': return this.onDelete( event.id );
@@ -103,14 +105,29 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     });
   }
 
-  gotoList( path?:string ){
-    this.router.navigate(['admin', path ? path : this.path] );
+  gotoList( path:string, parent?:ParentType ){
+    const commands = ['admin', path ];
+    if( parent ) commands.unshift( parent.path, parent.id );
+    this.router.navigate( commands );
   }
 
-  gotoShow( path?:string, id?:string ){
-    this.router.navigate(['admin', path ? path : this.path, id ? id : this.id] );
+  gotoShow( path:string, id:string, parent?:ParentType ){
+    const commands = ['admin', path, 'show', id ];
+    if( parent ) commands.unshift( parent.path, parent.id );
+    this.router.navigate( commands );
   }
 
+  gotoEdit( path:string, id:string, parent?:ParentType ){
+    const commands = ['admin', path, 'edit', id ];
+    if( parent ) commands.unshift( parent.path, parent.id );
+    this.router.navigate( commands );
+  }
+
+  gotoNew( path:string, parent?:ParentType ){
+    const commands = ['admin', path, 'new' ];
+    if( parent ) commands.unshift( parent.path, parent.id );
+    this.router.navigate( commands );
+  }
 
   /**
    *
@@ -121,38 +138,30 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
       const violations = _.get( data, this.config.deleteMutation ) as string[];
       if( _.size( violations ) === 0 ) {
         this.message.info(`This ${this.title('show')} was deleted!` );
-        setTimeout( ()=> this.gotoList(), 500 );
+        setTimeout( ()=> this.gotoList( this.path, this.parent ), 500 );
       } else {
         this.message.error( _.join(violations, '\n') );
       }
     });
   }
 
-
-  protected async loadData( path:string ){
-    this.path = path;
-    const config = this.adminService.getEntityConfig(path);
-    this.config = this.setDefaults( config );
+  protected async loadData(){
     const query = this.getQuery();
     if( ! query ) return this.setData({});
     this.apollo.watchQuery<any>( query )
       .valueChanges
       .subscribe(({ data, loading }) => {
-        console.log({data, loading})
         this.loading = loading;
         this.setData( data );
       }, error => this.error = error );
   }
 
   protected buildFieldQuery( config:UiConfigType ):string {
-    const queryFields = _(config.fields).
-      filter( (field:FieldConfigType) => _.includes( _.keys(this.config.fields ), field.name ) ).
-      map( (field:FieldConfigType) => field.name ).
-      value();
-
+    const queryFields = _.intersection(
+      _.keys(this.config.fields),
+      _.map(config.fields, (field:FieldConfigType) => field.name ));
     const assocFields = _.map( config.assoc, assoc =>
         this.getAssocFields( assoc, this.adminService.getEntityConfig(this.path))).join( ' ');
-
     return `{ id ${ _.join( _.concat( queryFields, assocFields ), ' ' ) } }`;
   }
 
@@ -169,12 +178,5 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     ).join( ' ' );
   }
 
-  protected setFieldDefaults( config:UiConfigType|AssocTableConfigType, path:string ):void {
-    if( ! _.has(config, 'fields') ) {
-      const entityConfig = this.adminService.getEntityConfig( path );
-      _.set( config, 'fields', entityConfig ? _.keys(entityConfig.fields) : [] );
-    }
-    config.fields = _.map( config.fields, field => _.isString( field ) ? { name: field } : field );
-  }
 
 }

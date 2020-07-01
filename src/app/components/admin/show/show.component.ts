@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import { EntityConfigType, AssocConfigType, AssocTableConfigType, FieldConfigType } from 'src/app/services/admin.service';
+import { AssocTableConfigType, FieldConfigType } from 'src/app/services/admin.service';
 
 import { AdminEntityComponent } from '../admin-entity.component';
 
@@ -20,8 +20,9 @@ export class ShowComponent extends AdminEntityComponent {
   }
 
   getQuery(){
+    const filter = '(id: $id)';
     const fields = this.buildFieldQuery( this.config.show );
-    const query = `query EntityQuery($id: ID!){ ${this.config.show.query}(id: $id) ${ fields } }`;
+    const query = `query EntityQuery($id: ID!){ ${this.config.show.query}${filter} ${ fields } }`;
     return {
       query: gql(query),
       variables: {id: this.id},
@@ -29,15 +30,6 @@ export class ShowComponent extends AdminEntityComponent {
     };
   }
 
-  setData( data:any ):void {
-    this.item = _.get( data, this.config.show.query );
-  }
+  setData = ( data:any ) => this.item = _.get( data, this.config.show.query );
 
-  protected setDefaults( config:EntityConfigType ):EntityConfigType {
-    if( ! _.has(config, 'show') ) _.set( config, 'show', {} );
-    if( ! _.has( config.show, 'query' ) ) _.set( config.show, 'query', config.typeQuery );
-    this.setFieldDefaults( config.show, this.path);
-    _.forEach( config.show.table, table => this.setFieldDefaults( table, table.path ) );
-    return config;
-  }
 }

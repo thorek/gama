@@ -31,7 +31,7 @@
     <app-table
       [config]="table"
       [items]="tableItems(table)"
-      (selectItem)="onSelect($event, table.path)"
+      (selectItem)="onChildSelect( table.path, $event )"
       (actionItem)="onAction($event)">
     </app-table>
 

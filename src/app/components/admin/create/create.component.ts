@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
+import { FormGroup, Validators } from '@angular/forms';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import { EntityConfigType, FieldConfigType } from 'src/app/services/admin.service';
+import { FieldConfigType } from 'src/app/services/admin.service';
 
 import { AdminEntityComponent } from '../admin-entity.component';
-import { FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-create',
@@ -36,14 +36,8 @@ export class CreateComponent extends AdminEntityComponent {
   }
 
   onSave = () => this.submitForm();
-  onCancel = () => this.router.navigate(['/admin', this.path ]);
+  onCancel = () => this.onList();
 
-  protected setDefaults( config:EntityConfigType ):EntityConfigType {
-    if( ! _.has(config, 'create') ) _.set( config, 'create', {} );
-    if( ! _.has( config.create, 'query' ) ) _.set( config.create, 'query', config.typeQuery );
-    this.setFieldDefaults( config.create, this.path);
-    return config;
-  }
 
   /**
    *

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import { EntityConfigType } from 'src/app/services/admin.service';
 
 import { AdminEntityComponent } from '../admin-entity.component';
 
@@ -12,6 +11,7 @@ import { AdminEntityComponent } from '../admin-entity.component';
 export class IndexComponent extends AdminEntityComponent {
 
   items:any;
+  setData = ( data:any ) => this.items = _.get( data, this.config.index.query );
 
   getQuery(){
     const query = `query{ ${this.config.index.query} ${ this.buildFieldQuery( this.config.index ) } }`;
@@ -21,14 +21,4 @@ export class IndexComponent extends AdminEntityComponent {
     };
   }
 
-  setData( data:any ):void {
-    this.items = _.get( data, this.config.index.query );
-  }
-
-  protected setDefaults( config:EntityConfigType ):EntityConfigType {
-    if( ! _.has(config, 'index') ) _.set( config, 'index', {} );
-    if( ! _.has( config.index, 'query' ) ) _.set( config.index, 'query', config.typesQuery );
-    this.setFieldDefaults( config.index, this.path);
-    return config;
-  }
 }

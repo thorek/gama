@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import { EntityConfigType, FieldConfigType } from 'src/app/services/admin.service';
+import { FieldConfigType } from 'src/app/services/admin.service';
 
 import { AdminEntityComponent } from '../admin-entity.component';
 
@@ -24,24 +24,10 @@ export class EditComponent extends AdminEntityComponent {
     };
   }
 
-  setData( data:any ):void {
-    this.item = _.get( data, this.config.edit.query );
-  }
+  setData = (data:any) => this.item = _.get( data, this.config.edit.query );
+  onSave = () => this.updateMutation();
+  onCancel = () => this.onShow();
 
-  onSave(){
-    this.updateMutation();
-  }
-
-  onCancel(){
-    this.router.navigate(['/admin', this.path, this.id ] );
-  }
-
-  protected setDefaults( config:EntityConfigType ):EntityConfigType {
-    if( ! _.has(config, 'edit') ) _.set( config, 'edit', {} );
-    if( ! _.has( config.edit, 'query' ) ) _.set( config.edit, 'query', config.typeQuery );
-    this.setFieldDefaults( config.edit, this.path);
-    return config;
-  }
 
   /**
    *
@@ -66,7 +52,7 @@ export class EditComponent extends AdminEntityComponent {
       const violations = _.get( data, 'validationViolations' );
       if( _.size( violations ) === 0 ) {
         this.message.info(`This ${this.title('edit')} was updated!` );
-        setTimeout( ()=> this.gotoShow(), 500 );
+        setTimeout( ()=> this.onShow(), 500 );
       } else {
         this.message.error( _.join(violations, '\n') );
       }

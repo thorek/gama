@@ -19,7 +19,13 @@ const routes:Routes = [
     { path: ':path', component: IndexComponent },
     { path: ':path/new', component: CreateComponent },
     { path: ':path/edit/:id', component: EditComponent },
-    { path: ':path/:id', component: ShowComponent },
+    { path: ':path/show/:id', component: ShowComponent },
+    { path: ':parent/:parentId', children: [
+      { path: ':path', component: IndexComponent },
+      { path: ':path/new', component: CreateComponent },
+      { path: ':path/edit/:id', component: EditComponent },
+      { path: ':path/show/:id', component: ShowComponent }
+    ]},
   ]},
   { path: 'clients', children:[
     {path: '', component: ClientsComponent},

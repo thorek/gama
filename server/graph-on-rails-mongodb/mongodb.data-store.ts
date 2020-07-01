@@ -201,7 +201,7 @@ export class MongoDbDataStore extends DataStore {
     const filterQuery:FilterQuery<any> = {};
     _.forEach( filter, (condition, field) => {
       const attribute = entity.getAttribute(field);
-      if( ! attribute ) return;
+      if( ! attribute ) return _.set( filterQuery, field, condition );
       const filterType = entity.context.filterType( attribute.filterType, attribute.graphqlType );
       if( ! filterType ) return;
       const expression = filterType.getFilterExpression( condition, field );

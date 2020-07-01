@@ -98,6 +98,9 @@ export class AdminService {
     const defaultConfig = this.buildDefaultConfig( metaData );
     const config = await adminConfig();
     this.adminConfig = _.defaultsDeep( config, defaultConfig );
+    _.forEach( this.adminConfig.entities, config => {
+      _.forEach( ['index','show','edit','create'], uiType => this.setDefaults( config, uiType ) );
+    })
     return null;
   }
 
@@ -130,7 +133,8 @@ export class AdminService {
     const config = _.pick( data,
       [ 'path', 'typeQuery', 'typesQuery', 'deleteMutation',
         'updateInput', 'updateMutation', 'createInput', 'createMutation']);
-    return _.merge( config, { fields, assoc } );
+    _.merge( config, { fields, assoc } );
+    return config;
   };
 
   private buildField( data:any ):FieldMetaDataType {
@@ -144,4 +148,22 @@ export class AdminService {
     };
   }
 
+  private setDefaults( config:EntityConfigType, uiType:string ):EntityConfigType {
+    if( ! _.has(config, uiType ) ) _.set( config, uiType, {} );
+    const uiConfig:UiConfigType = _.get( config, uiType );
+    if( ! _.has( uiConfig, 'query' ) ) _.set( uiConfig, 'query',
+      uiType === 'index' ? config.typesQuery : config.typeQuery );
+    this.setFieldDefaults( uiConfig, config );
+    _.forEach( uiConfig.table, table => this.setFieldDefaults( table, table.path ) );
+    return config;
+  }
+
+  private setFieldDefaults( uiConfig:UiConfigType|AssocTableConfigType, entityConfig:EntityConfigType|string ):void {
+    if( _.isString( entityConfig ) ) entityConfig = this.getEntityConfig( entityConfig );
+    if( ! _.has( uiConfig, 'fields') ) _.set( uiConfig, 'fields', entityConfig ? _.keys(entityConfig.fields) : [] );
+    uiConfig.fields = _.map( uiConfig.fields, field => _.isString( field ) ? { name: field } : field );
+
+  }
 }
+  // const metaFields = _.keys(entityConfig.fields);
+  // filter( (field:FieldConfigType) => _.includes( metaFields, field.name ) ).
