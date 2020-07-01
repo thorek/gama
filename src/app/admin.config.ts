@@ -13,7 +13,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
           fields: ['name','city','dsb']
         },
         show: {
-          assoc: [ 'organisations' ],
+          assoc: [ { path: 'organisations', assoc: ['industries']} ],
           table: [
             {
               path: 'organisations',
@@ -51,7 +51,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
             {
               name: 'client',
               value: (organisation:any) => _.get(organisation, 'client.name' ),
-              link: (organisation:any) => ['/admin', 'clients', organisation?.client?.id]
+              link: (organisation:any) => ['/admin', 'clients', 'show', organisation?.client?.id]
             }
           ]
         },
@@ -71,7 +71,7 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
             {
               name: 'client',
               value: (organisation:any) => organisation.client.name,
-              link: (organisation:any) => ['/admin', 'clients', organisation.client.id]
+              link: (organisation:any) => ['/admin', 'clients', 'show', organisation.client.id]
             }
           ],
           table: [

@@ -85,7 +85,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   onShow = () => this.gotoShow( this.path, this.id, this.parent );
   onList = () => this.gotoList( this.path, this.parent );
   onSelect = (id:string) => this.gotoShow( this.path, id, this.parent );
-  onChildSelect = (path:string, id:string) => this.gotoShow( path, id, { path: this.path, id: this.id } );
+  onChildSelect = (id:string, path:string) => this.gotoShow( path, id, { path: this.path, id: this.id } );
 
   onAction = ( event:ActionEventType ) => {
     switch( event.action ){
@@ -106,26 +106,30 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
 
   gotoList( path:string, parent?:ParentType ){
-    const commands = ['admin', path ];
+    const commands = [ path ];
     if( parent ) commands.unshift( parent.path, parent.id );
+    commands.unshift( 'admin' );
     this.router.navigate( commands );
   }
 
   gotoShow( path:string, id:string, parent?:ParentType ){
-    const commands = ['admin', path, 'show', id ];
+    const commands = [ path, 'show', id ];
     if( parent ) commands.unshift( parent.path, parent.id );
+    commands.unshift( 'admin' );
     this.router.navigate( commands );
   }
 
   gotoEdit( path:string, id:string, parent?:ParentType ){
-    const commands = ['admin', path, 'edit', id ];
+    const commands = [path, 'edit', id ];
     if( parent ) commands.unshift( parent.path, parent.id );
+    commands.unshift( 'admin' );
     this.router.navigate( commands );
   }
 
   gotoNew( path:string, parent?:ParentType ){
-    const commands = ['admin', path, 'new' ];
+    const commands = [path, 'new' ];
     if( parent ) commands.unshift( parent.path, parent.id );
+    commands.unshift( 'admin' );
     this.router.navigate( commands );
   }
 

@@ -31,7 +31,7 @@
     <app-table
       [config]="table"
       [items]="tableItems(table)"
-      (selectItem)="onChildSelect( table.path, $event )"
+      (selectItem)="onChildSelect( $event, 'organisations' )"
       (actionItem)="onAction($event)">
     </app-table>
 
