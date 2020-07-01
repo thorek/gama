@@ -18,6 +18,7 @@ import {
 } from 'src/app/services/admin.service';
 
 import { AdminComponent } from './admin.component';
+import { FormBuilder } from '@angular/forms';
 
 export abstract class AdminEntityComponent extends AdminComponent implements OnInit {
 
@@ -38,7 +39,8 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     protected route:ActivatedRoute,
     protected router:Router,
     protected modal:NzModalService,
-    protected message: NzMessageService) { super() }
+    protected message:NzMessageService,
+    protected fb:FormBuilder) { super() }
 
     protected abstract getQuery():{query:any, variables?:any}|undefined;
     protected abstract setData( data:any ):void;

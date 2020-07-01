@@ -11,16 +11,20 @@
     </nz-page-header-extra>
   </nz-page-header>
 
-  <form nz-form>
+  <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
     <nz-form-item *ngFor="let field of fields">
-      <nz-form-label [nzSpan]="6" nzFor="email">{{ label( field )}}</nz-form-label>
-      <nz-form-control [nzSpan]="14">
-        <input nz-input
-          [(ngModel)]="item[field.name]"
-          [required]="required(field)"
-          [name]="field.name">
+      <nz-form-label [nzSpan]="6" [nzRequired]="required(field)" [nzFor]="field.name">
+        {{ label( field )}}
+      </nz-form-label>
+      <nz-form-control [nzSpan]="14" [nzErrorTip]="errorTip(field)">
+        <input nz-input [formControlName]="field.name" [id]="field.name" />
       </nz-form-control>
     </nz-form-item >
+    <nz-form-item nz-row>
+      <nz-form-control [nzSpan]="14" [nzOffset]="6">
+        <button nz-button nzType="primary">Save</button>
+      </nz-form-control>
+    </nz-form-item>
   </form>
 
 </ng-container>

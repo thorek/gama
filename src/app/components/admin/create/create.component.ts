@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import { EntityConfigType, FieldConfigType } from 'src/app/services/admin.service';
 
 import { AdminEntityComponent } from '../admin-entity.component';
+import { FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-create',
@@ -12,18 +13,33 @@ import { AdminEntityComponent } from '../admin-entity.component';
 })
 export class CreateComponent extends AdminEntityComponent {
 
+  validateForm!:FormGroup
   get fields():FieldConfigType[] { return this.config.create.fields as FieldConfigType[] }
 
   getQuery(){ return undefined }
 
-  setData( data:any ):void { this.item = data }
+  setData( data:any ):void {
+    this.item = data;
+    this.buildForm();
+  }
+
+  submitForm():void {
+    for (const i in this.validateForm.controls) {
+      this.validateForm.controls[i].markAsDirty();
+      this.validateForm.controls[i].updateValueAndValidity();
+    }
+  }
+
+  errorTip(field:FieldConfigType):string {
+    return 'Invalid';
+  }
 
   onSave(){
     this.createMutation();
   }
 
   onCancel(){
-    this.router.navigate(['/admin', this.path, this.id ] );
+    this.router.navigate(['/admin', this.path ] );
   }
 
   protected setDefaults( config:EntityConfigType ):EntityConfigType {
@@ -69,4 +85,12 @@ export class CreateComponent extends AdminEntityComponent {
     return _.pick( item, _.keys(this.config.fields) );
   }
 
+
+  protected buildForm(){
+    const definition = _.reduce( this.config.create.fields, (definition, field:FieldConfigType) => {
+      const validators = this.required( field ) ? [Validators.required] : [];
+      return _.set(definition, field.name, [null, validators]);
+    }, {});
+    this.validateForm = this.fb.group(definition);
+  }
 }
