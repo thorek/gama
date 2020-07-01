@@ -10,7 +10,9 @@ const query = gql`
       typesQuery
       deleteMutation
       updateMutation
+      updateInput
       createMutation
+      createInput
       fields {
         name
         type

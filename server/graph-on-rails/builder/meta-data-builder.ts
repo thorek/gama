@@ -38,7 +38,9 @@ export class MetaDataBuilder extends SchemaBuilder {
         typesQuery: { type: GraphQLString },
         deleteMutation: { type: GraphQLString },
         updateMutation: { type: GraphQLString },
+        updateInput: { type: GraphQLString },
         createMutation: { type: GraphQLString },
+        createInput: { type: GraphQLString },
         fields: {
           type: GraphQLList( fieldMetaData ),
           resolve: (root:any) => this.resolveFields(root)

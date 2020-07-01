@@ -68,6 +68,12 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     return `#${item.id}`;
   }
 
+  required( field:FieldConfigType ):boolean {
+    const meta = this.config.fields[field.name];
+    return _.get( meta, 'required' );
+  }
+
+
   onNew( path?:string) {
     this.router.navigate(['admin', path ? path : this.path, 'new' ])
   }
@@ -120,38 +126,6 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     });
   }
 
-  /**
-   *
-   */
-  protected updateMutation( id?:string, item?:any ){
-    if( ! id ) id = this.id;
-    if( ! item ) item = this.item;
-    const updateMutation =
-      gql`mutation($input: ClientUpdateInput) {
-        ${this.config.updateMutation}(${this.config.typeQuery}: $input ){
-          validationViolations{
-            attribute
-            violation
-          }
-        }
-      }`;
-    this.apollo.mutate({
-      mutation: updateMutation,
-      variables: { input: this.getItemInput( this.item ) } }
-    ).subscribe(({data}) => {
-      const violations = _.get( data, 'validationViolations' );
-      if( _.size( violations ) === 0 ) {
-        this.message.info(`This ${this.title('edit')} was updated!` );
-        setTimeout( ()=> this.gotoShow(), 500 );
-      } else {
-        this.message.error( _.join(violations, '\n') );
-      }
-    });
-  }
-
-  protected getItemInput( item:any ){
-    return _.pick( item, _.keys(this.config.fields), 'id' );
-  }
 
   protected async loadData( path:string ){
     this.path = path;

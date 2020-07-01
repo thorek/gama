@@ -138,8 +138,8 @@ export class EntityBuilder extends SchemaBuilder {
   protected addFieldsFromInterface( entity:Entity ):void {
     this.graphx.type(this.entity.typeName).extendFields( () => this.getAttributeFields( 'type', entity ) );
     this.graphx.type(this.entity.filterName).extendFields( () => this.getAttributeFields( 'filter', entity ) );
-    this.graphx.type(this.entity.createInputTypeName).extendFields( () => this.getAttributeFields( 'createInput', entity ) );
-    this.graphx.type(this.entity.updateInputTypeName).extendFields( () => this.getAttributeFields( 'updateInput', entity ) );
+    this.graphx.type(this.entity.createInput).extendFields( () => this.getAttributeFields( 'createInput', entity ) );
+    this.graphx.type(this.entity.updateInput).extendFields( () => this.getAttributeFields( 'updateInput', entity ) );
   }
 
 	//
@@ -171,11 +171,11 @@ export class EntityBuilder extends SchemaBuilder {
     let assocTo = _.filter( entity.assocTo, bt => this.checkReference( 'assocTo', bt ) );
 		this.graphx.type(this.entity.typeName).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToReferenceToType( fields, ref ), {} ));
-    this.graphx.type(this.entity.createInputTypeName).extendFields(
+    this.graphx.type(this.entity.createInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
-    this.graphx.type(this.entity.createInputTypeName).extendFields(
+    this.graphx.type(this.entity.createInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToInputToInput( fields, ref ), {} ));
-    this.graphx.type(this.entity.updateInputTypeName).extendFields(
+    this.graphx.type(this.entity.updateInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
   }
 
@@ -186,9 +186,9 @@ export class EntityBuilder extends SchemaBuilder {
     const assocToMany = _.filter( entity.assocToMany, bt => this.checkReference( 'assocTo', bt ) );
 		this.graphx.type(this.entity.typeName).extendFields(
       () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyReferenceToType( fields, ref ), {} ));
-    this.graphx.type(this.entity.createInputTypeName).extendFields(
+    this.graphx.type(this.entity.createInput).extendFields(
       () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyForeignKeysToInput( fields, ref ), {} ));
-    this.graphx.type(this.entity.updateInputTypeName).extendFields(
+    this.graphx.type(this.entity.updateInput).extendFields(
       () => _.reduce( assocToMany, (fields, ref) => this.addAssocToManyForeignKeysToInput( fields, ref ), {} ));
   }
 
@@ -207,7 +207,7 @@ export class EntityBuilder extends SchemaBuilder {
   private addAssocToInputToInput( fields:any, ref:AssocToType ):any {
     if( ref.input ) {
       const refEntity = this.context.entities[ref.type];
-      _.set( fields, refEntity.singular, {type: this.graphx.type( refEntity.createInputTypeName )} );
+      _.set( fields, refEntity.singular, {type: this.graphx.type( refEntity.createInput )} );
     }
     return fields;
   }
@@ -283,7 +283,7 @@ export class EntityBuilder extends SchemaBuilder {
    *
    */
   protected createCreateInputType():void {
-		const name = this.entity.createInputTypeName;
+		const name = this.entity.createInput;
 		this.graphx.type( name, { name,
     from: GraphQLInputObjectType, fields: () => this.getAttributeFields( 'createInput' ) });
 	}
@@ -292,7 +292,7 @@ export class EntityBuilder extends SchemaBuilder {
    *
    */
   protected createUpdateInputType():void {
-		const name = this.entity.updateInputTypeName;
+		const name = this.entity.updateInput;
 		this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
 			const fields = { id: { type: new GraphQLNonNull(GraphQLID) }};
 			return _.merge( fields, this.getAttributeFields( 'updateInput' ) );
@@ -425,7 +425,7 @@ export class EntityBuilder extends SchemaBuilder {
    */
   protected addCreateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
-      const args = _.set( {}, this.entity.singular, { type: this.graphx.type(this.entity.createInputTypeName)} );
+      const args = _.set( {}, this.entity.singular, { type: this.graphx.type(this.entity.createInput)} );
       return _.set( {}, this.entity.createMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
       });
@@ -437,7 +437,7 @@ export class EntityBuilder extends SchemaBuilder {
    */
   protected addUpdateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
-      const args = _.set( {}, this.entity.typeQuery, { type: this.graphx.type(this.entity.updateInputTypeName)} );
+      const args = _.set( {}, this.entity.typeQuery, { type: this.graphx.type(this.entity.updateInput)} );
       return _.set( {}, this.entity.updateMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
       });

@@ -70,8 +70,8 @@ export abstract class Entity {
   get plural() { return this.getPlural() }
   get foreignKey() { return this.getForeignKey() }
   get foreignKeys() { return this.getForeignKeys() }
-  get createInputTypeName() { return this.getCreateInputTypeName() }
-  get updateInputTypeName() { return this.getUpdateInputTypeName() }
+  get createInput() { return this.getCreateInput() }
+  get updateInput() { return this.getUpdateInput() }
   get filterName() { return this.getFilterName() }
   get sorterEnumName() { return this.getSorterEnumName() }
   get collection() { return this.getCollection() }
@@ -101,8 +101,8 @@ export abstract class Entity {
   protected getPlural() { return inflection.pluralize( this.singular ) }
   protected getForeignKey() { return `${this.singular}Id` }
   protected getForeignKeys() { return `${this.singular}Ids` }
-  protected getCreateInputTypeName() { return `${this.typeName}CreateInput` }
-  protected getUpdateInputTypeName() { return `${this.typeName}UpdateInput` }
+  protected getCreateInput() { return `${this.typeName}CreateInput` }
+  protected getUpdateInput() { return `${this.typeName}UpdateInput` }
   protected getFilterName() { return `${this.typeName}Filter` }
   protected getSorterEnumName() { return `${this.typeName}Sort` }
   protected getCollection() { return this.plural }

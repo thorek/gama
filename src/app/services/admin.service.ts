@@ -71,6 +71,9 @@ export type EntityConfigType = {
   typeQuery?:string
   deleteMutation?:string
   updateMutation?:string
+  updateInput?:string
+  createMutation?:string
+  createInput?:string
   assoc?:AssocsType
   name?:(item:any, action?:ActionType ) => string
   index?:UiConfigType
@@ -125,7 +128,8 @@ export class AdminService {
     _.reduce( data.assocFrom, (assocs, assocFrom) =>
       _.set( assocs, assocFrom.path, assocFrom ), assoc );
     const config = _.pick( data,
-      ['path', 'typeQuery', 'typesQuery', 'deleteMutation', 'updateMutation', 'createMutation']);
+      [ 'path', 'typeQuery', 'typesQuery', 'deleteMutation',
+        'updateInput', 'updateMutation', 'createInput', 'createMutation']);
     return _.merge( config, { fields, assoc } );
   };
 
