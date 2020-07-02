@@ -26,9 +26,9 @@ export class SchemaFactory {
 
   get config() { return this.context.config }
 
-	//
-	//
-	private constructor( private context:Context ){}
+  //
+  //
+  private constructor( private context:Context ){}
 
   /**
    *
@@ -69,11 +69,7 @@ export class SchemaFactory {
   private getCustomBuilders():SchemaBuilder[] {
     return _.compact( _.flatten( _.concat(
       _.get(this.config, 'schemaBuilder', [] ),
-      _.map( this.config.entities, entity => new EntityBuilder( entity )),
-      _.map( _.get(this.config.domainConfiguration, 'entity' ), (config, name) =>
-        new EntityBuilder( ConfigEntity.create( name, config ) )),
-      _.map( _.get( this.config.domainConfiguration, 'enum'), (config, name) =>
-        new EnumConfigBuilder( name, config ) )
+      _.map( this.config.entities, entity => new EntityBuilder( entity ))
     )));
   }
 
@@ -100,7 +96,7 @@ export class SchemaFactory {
       const files = this.getConfigFiles( folder );
       _.forEach( files, file => this.parseConfigFile( configs, folder, file ) );
     });
-    return configs;
+    return _.merge( configs, this.config.domainConfiguration );
   }
 
   /**

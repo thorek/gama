@@ -4,10 +4,14 @@ import { Entity, AssocType } from './entity';
 import { EntityModule } from './entity-module';
 import { EntityItem } from './entity-item';
 
+const ld = _;
+
 /**
  *
  */
 export class EntitySeeder extends EntityModule {
+
+  get evalContext() { return {faker, ld } }
 
   /**
    *
@@ -21,7 +25,10 @@ export class EntitySeeder extends EntityModule {
    */
   public async seedAttributes():Promise<any> {
     const ids = {};
-    if( _.has( this.entity.seeds, 'Faker') ) this.generateFaker( _.get(this.entity.seeds, 'Faker') );
+    if( _.has( this.entity.seeds, 'Faker') ) {
+      await this.generateFaker( _.get(this.entity.seeds, 'Faker') );
+      _.unset( this.entity.seeds, 'Faker' );
+    }
     await Promise.all( _.map( this.entity.seeds, (seed, name) => this.seedInstanceAttributes( name, seed, ids ) ) );
     return _.set( {}, this.entity.typeName, ids );
   }
@@ -52,27 +59,25 @@ export class EntitySeeder extends EntityModule {
   /**
    *
    */
-  private generateFaker( fakerSeed:any ):void {
+  private async generateFaker( fakerSeed:any ):Promise<void> {
     const count = fakerSeed.count || 30;
     delete fakerSeed.count;
-    const fakeSeeds = _.compact( _.times( count, () => this.generateFakeSeed( fakerSeed )) );
-    console.log({fakeSeeds})
-    // this.entity.seeds.push( ... fakeSeeds );
+    for( let i = 0; i < count; i++ ){
+      const seed = await this.generateFakeSeed( fakerSeed );
+      if( seed ) _.set( this.entity.seeds, `Fake-${i}`, seed );
+    }
   }
 
   /**
    *
    */
-  private generateFakeSeed( fakerSeed:any ):any {
+  private async generateFakeSeed( fakerSeed:any ):Promise<any> {
     const seed = {};
-    _.forEach( fakerSeed, (value, name) => {
-      if( this.entity.isAssoc( name ) ) return;
-      try {
-        value = (() => { return eval(value) }).call( {faker, _ } );
-        _.set( seed, name, value );
-      }
-      catch (error) { return console.error( error ) }
-    });
+    for( const name of _.keys(fakerSeed) ){
+      let value = fakerSeed[name];
+      if( ! this.entity.isAssoc( name ) ) value = await this.evalFake( value, seed );
+      _.set( seed, name, value );
+    }
     return seed;
   }
 
@@ -92,25 +97,22 @@ export class EntitySeeder extends EntityModule {
     }
   }
 
-
   /**
    *
    */
   private async seedAssocTo( assocTo: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
     try {
       const refEntity = this.context.entities[assocTo.type];
-      if ( refEntity && _.has( seed, refEntity.typeName ) ) {
-        const refName = _.get( seed, refEntity.typeName );
-        let refId = undefined;
-        let refType = undefined;
-        if( _.isString( refName ) ){
-          refId = _.get( idsMap, [refEntity.typeName, refName] );
-        } else {
-          refId = _.get( idsMap, [refName.type, refName.id] );
-          refType = refName.type;
-        }
-        if ( refId ) await this.updateAssocTo( idsMap, name, refEntity, refId, refType );
-      }
+      if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
+
+      const value = _.get( seed, refEntity.typeName );
+      const id = _.startsWith( name, 'Fake' ) ? await this.evalFake( value, seed, idsMap ) :
+        _.isString( value ) ?
+          _.get( idsMap, [refEntity.typeName, value] ) :
+          _.get( idsMap, [value.type, value.id] );
+
+      const refType = _.get( value, 'type' );
+      if ( id ) await this.updateAssocTo( idsMap, name, refEntity, id, refType );
     }
     catch ( error ) {
       console.error( `Entity '${this.entity.typeName}' could not seed a reference`, assocTo, name, error );
@@ -123,12 +125,17 @@ export class EntitySeeder extends EntityModule {
   private async seedAssocToMany( assocToMany: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
     try {
       const refEntity = this.context.entities[assocToMany.type];
-      if ( refEntity && _.has( seed, refEntity.typeName ) ) {
-        let refNames:string|string[] = _.get( seed, refEntity.typeName );
-        if( ! _.isArray(refNames) ) refNames = [refNames];
-        const refIds = _.compact( _.map( refNames, refName => _.get( idsMap, [refEntity.typeName, refName] ) ) );
-        await this.updateAssocToMany( idsMap, name, refEntity, refIds );
+      if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
+
+      let value:string|string[] = _.get( seed, refEntity.typeName );
+      let refIds = undefined;
+      if( _.startsWith( name, 'Fake' ) ) {
+        refIds = await this.evalFake( value, seed, idsMap );
+      } else {
+        if( ! _.isArray(value) ) value = [value];
+        refIds = _.compact( _.map( value, refName => _.get( idsMap, [refEntity.typeName, refName] ) ) );
       }
+      await this.updateAssocToMany( idsMap, name, refEntity, refIds );
     }
     catch ( error ) {
       console.error( `Entity '${this.entity.typeName}' could not seed a reference`, assocToMany, name, error );
@@ -157,6 +164,21 @@ export class EntitySeeder extends EntityModule {
     const enit = await this.entity.findById( id );
     _.set( enit.item, refEntity.foreignKeys, refIds );
     await enit.save( true );
+  }
+
+  /**
+   *
+   */
+  private async evalFake( value:any, seed:any, idsMap?:any ):Promise<any>{
+    try {
+      const result = _.isFunction( value ) ?
+        await value( { idsMap, seed, context: this.context } ) :
+        ((expression:string) => eval( expression )).call( {}, value );
+      console.log({result})
+      return result
+    } catch (error) {
+      console.error( `could not evaluate '${value}'\n`, error);
+    }
   }
 
 

@@ -8,6 +8,8 @@ import _ from 'lodash';
 
 import { Runtime } from './graph-on-rails/core/runtime';
 import { ResolverContext } from './graph-on-rails/core/resolver-context';
+import { Entity } from './graph-on-rails/entities/entity';
+import { seed } from 'faker';
 
 (async () => {
 
@@ -28,7 +30,29 @@ import { ResolverContext } from './graph-on-rails/core/resolver-context';
     }
   );
   const configFolder = [`${__dirname}/config-types/d2prom`];
-  const runtime = await Runtime.create( 'D2PROM', {configFolder } );
+  const runtime = await Runtime.create( 'D2PROM', {configFolder, domainConfiguration: {
+    entity: {
+      ProcessingActivity: {
+        seeds: {
+          Faker: {
+            Organisation: async (evalContext:any) => {
+              const entity:Entity = evalContext.context.entities['Organisation'];
+              const items = await entity.findByAttribute({});
+              const id = _.sample( items )?.id;
+              _.set(evalContext.seed, 'organisationId', id );
+              return id;
+            },
+            OrganisationalUnit: async (evalContext:any) => {
+              const entity:Entity = evalContext.context.entities['OrganisationalUnit'];
+              const items = await entity.findByAttribute( {organisationId: evalContext.seed.organisationId } );
+              const ids = _.map( items, item => item.id );
+              return _.sampleSize( ids, _.random( 1, 3) );
+            }
+          }
+        }
+      }
+    }
+  }});
 
   const users:{[token:string]:any} = {
     admin: { id: 100, username: 'Admin', roles: ['admin'], clientId: '5ec3b745d3a47f8284414125' },

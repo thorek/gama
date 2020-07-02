@@ -7,40 +7,38 @@ import { TypeAttribute } from '../entities/type-attribute';
  * Base class for any custom type that can occur in a GraphQL Schema
  */
 export abstract class SchemaBuilder {
-
-  private _context!:Context;
   get context() { return this._context }
   get graphx() {return this.context.graphx };
 
-  abstract name():string;
-  attributes():{[name:string]:TypeAttribute} { return {} };
+  private _context!:Context;
 
   //
   //
   static getFilterName( type:string ):string { return `${type}Filter` }
 
-	//
-	//
-	init( context:Context ):void {
-    this._context = context;
-	}
+  abstract name():string;
+  attributes():{[name:string]:TypeAttribute} { return {} }
 
-	//
-	//
-	createTypes():void { this.createObjectType(); }
+  //
+  //
+  init( context:Context ):void { this._context = context }
 
-	//
-	//
-	extendTypes():void {}
+  //
+  //
+  createTypes():void { this.createObjectType(); }
 
-	//
-	//
-	protected abstract createObjectType():void;
+  //
+  //
+  extendTypes():void {}
 
-	//
-	//
-	public attribute( name:string):TypeAttribute {
-		return this.attributes()[name];
+  //
+  //
+  protected abstract createObjectType():void;
+
+  //
+  //
+  public attribute( name:string):TypeAttribute {
+    return this.attributes()[name];
   }
 
 

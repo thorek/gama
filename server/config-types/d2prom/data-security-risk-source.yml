@@ -97,10 +97,11 @@ entity:
     seeds:
       Faker:
         count: 5
-        name: faker.commerce.productName()
-        Organisation: _.sample( idsMap.Organisation )
-        OrganisationalUnit: >
-          _.sampleSize(this.context.entities['OrganisationalUnit'].findByAttribute({organisationId: seed.organisationId } ), _.random(3) )
+        name: faker.company.catchPhrase()
+        description: >
+          var hasDescription = ld.random(2) === 1;
+          hasDescription ? faker.random.words( ld.random(10, 20) ) : null
+        Organisation: ld.sample( idsMap.Organisation )
 
       BeratungHP:
         name: Beratung Haftpflichtversicherung
