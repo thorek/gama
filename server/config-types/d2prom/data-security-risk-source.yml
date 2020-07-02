@@ -95,6 +95,13 @@ entity:
       - type: DataAtom
         delete: cascade
     seeds:
+      Faker:
+        count: 5
+        name: faker.commerce.productName()
+        Organisation: _.sample( idsMap.Organisation )
+        OrganisationalUnit: >
+          _.sampleSize(this.context.entities['OrganisationalUnit'].findByAttribute({organisationId: seed.organisationId } ), _.random(3) )
+
       BeratungHP:
         name: Beratung Haftpflichtversicherung
         Organisation: mtp

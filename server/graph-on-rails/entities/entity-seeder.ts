@@ -1,5 +1,5 @@
 import _ from 'lodash';
-
+import * as faker from 'faker';
 import { Entity, AssocType } from './entity';
 import { EntityModule } from './entity-module';
 import { EntityItem } from './entity-item';
@@ -21,24 +21,9 @@ export class EntitySeeder extends EntityModule {
    */
   public async seedAttributes():Promise<any> {
     const ids = {};
+    if( _.has( this.entity.seeds, 'Faker') ) this.generateFaker( _.get(this.entity.seeds, 'Faker') );
     await Promise.all( _.map( this.entity.seeds, (seed, name) => this.seedInstanceAttributes( name, seed, ids ) ) );
     return _.set( {}, this.entity.typeName, ids );
-  }
-
-  /**
-   *
-   */
-  private async seedInstanceAttributes( name:string, seed:any, ids:any ):Promise<any> {
-    try {
-      let enit = await EntityItem.create( this.entity, seed );
-      enit = await enit.save( true );
-      if( ! enit ) throw `seed '${name}' could not be saved`;
-      const id = enit.item.id;
-      if( ! id ) throw `seed '${name}' has no id`;
-      _.set( ids, name, id );
-    } catch (error) {
-      console.error( `Entity '${this.entity.typeName }' could not seed an instance`, seed, error );
-    }
   }
 
   /**
@@ -63,6 +48,50 @@ export class EntitySeeder extends EntityModule {
       }));
     }));
   }
+
+  /**
+   *
+   */
+  private generateFaker( fakerSeed:any ):void {
+    const count = fakerSeed.count || 30;
+    delete fakerSeed.count;
+    const fakeSeeds = _.compact( _.times( count, () => this.generateFakeSeed( fakerSeed )) );
+    console.log({fakeSeeds})
+    // this.entity.seeds.push( ... fakeSeeds );
+  }
+
+  /**
+   *
+   */
+  private generateFakeSeed( fakerSeed:any ):any {
+    const seed = {};
+    _.forEach( fakerSeed, (value, name) => {
+      if( this.entity.isAssoc( name ) ) return;
+      try {
+        value = (() => { return eval(value) }).call( {faker, _ } );
+        _.set( seed, name, value );
+      }
+      catch (error) { return console.error( error ) }
+    });
+    return seed;
+  }
+
+  /**
+   *
+   */
+  private async seedInstanceAttributes( name:string, seed:any, ids:any ):Promise<any> {
+    try {
+      let enit = await EntityItem.create( this.entity, seed );
+      enit = await enit.save( true );
+      if( ! enit ) throw `seed '${name}' could not be saved`;
+      const id = enit.item.id;
+      if( ! id ) throw `seed '${name}' has no id`;
+      _.set( ids, name, id );
+    } catch (error) {
+      console.error( `Entity '${this.entity.typeName }' could not seed an instance`, seed, error );
+    }
+  }
+
 
   /**
    *

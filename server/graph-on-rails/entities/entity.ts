@@ -141,6 +141,16 @@ export abstract class Entity {
   /**
    *
    */
+  isAssoc( name:string ):boolean {
+    if( _.find( this.assocTo, assocTo => assocTo.type === name ) ) return true;
+    if( _.find( this.assocToMany, assocTo => assocTo.type === name ) ) return true;
+    if( _.find( this.assocFrom, assocTo => assocTo.type === name ) ) return true;
+    return false;
+  }
+
+  /**
+   *
+   */
   isAssocToAttribute( attribute:string ):boolean {
     return _.find( this.assocTo, assocTo => {
       const ref = this.context.entities[assocTo.type];
