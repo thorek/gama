@@ -7,7 +7,8 @@ entity:
     seeds:
       Faker:
         count: 20
-        name: faker.name.jobTitle()
+        name:
+          faker: faker.name.jobTitle()
         Industry: ld.sampleSize( ld.random(0, 3))
       vn:
         name: Versicherungsnehmer
@@ -115,7 +116,7 @@ entity:
         name: faker.company.catchPhrase()
         description:
           every: 2
-          value: faker.random.words( ld.random(10, 20) )
+          value: faker.hacker.phrase()
 
       BeratungHP:
         name: Beratung Haftpflichtversicherung
@@ -206,6 +207,7 @@ entity:
           every: 4
           value: faker.random.words( ld.random(5, 20) )
         Client: ld.sample( idsMap.Client )
+        Industry: ld.sampleSize( idsMap.Industry, ld.random(1, 3))
 
       papyr:
         name: Papyr, eine Marke der Karl Brand GmbH & Co KG
@@ -251,7 +253,7 @@ entity:
     seeds:
       Faker:
         count: 30
-        name: faker.lorem.slug()
+        name: ld.capitalize( faker.lorem.slug() )
         description:
           every: 10
           value: faker.random.words( ld.random(5, 20) )

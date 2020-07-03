@@ -1,7 +1,32 @@
+
+<nz-input-group [nzSuffix]="inputClearTpl">
+  <input
+    nz-input
+    placeholder="Search data..."
+    (input)="onSearch($event)"
+    [(ngModel)]="searchTerm" />
+</nz-input-group>
+<ng-template #inputClearTpl>
+  <i nz-icon
+    *ngIf="searchTerm"
+    (click)="cancelSearch()"
+    [nzType]="'close-circle'"
+    [nzTheme]="'outline'">
+  </i>
+</ng-template>
+
 <nz-table #basicTable [nzData]="items">
   <thead>
     <tr>
-      <th *ngFor="let field of fields">{{ label(field) }}</th>
+      <th *ngFor="let column of columns"
+          [nzSortOrder]="column.sortOrder"
+          [nzSortFn]="column.sortFn"
+          [nzSortDirections]="column.sortDirections"
+          [nzFilterMultiple]="column.filterMultiple"
+          [nzFilters]="column.listOfFilter"
+          [nzFilterFn]="column.filterFn">
+        {{ column.label }}
+      </th>
       <th></th>
     </tr>
   </thead>

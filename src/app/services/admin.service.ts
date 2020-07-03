@@ -22,6 +22,8 @@ export type FieldConfigType = {
   label?:string|(() => string)
   value?:(item:any) => string
   link?:(item:any) => any[]
+  searchable?:boolean
+  sortable?:boolean
 }
 
 export type UiConfigType = AdminTableConfig & {

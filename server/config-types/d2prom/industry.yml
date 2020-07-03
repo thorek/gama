@@ -5,7 +5,7 @@ entity:
     seeds:
       Faker:
         count: 20
-        name: faker.company.bsNoun()
+        name: ld.capitalize( faker.company.bsNoun() )
       ra:
         name: Rechtsanwälte & Notare
       finance:
