@@ -3,6 +3,9 @@ entity:
     attributes:
       name: key
     seeds:
+      Faker:
+        count: 20
+        name: faker.company.bsNoun()
       ra:
         name: Rechtsanwälte & Notare
       finance:

@@ -5,6 +5,8 @@ import { Entity, AssocType } from './entity';
 import { EntityModule } from './entity-module';
 import { EntityItem } from './entity-item';
 
+const fakers = {de: FakerDE, en: FakerEN};
+
 /**
  *
  */
@@ -174,8 +176,8 @@ export class EntitySeeder extends EntityModule {
    *
    */
   private async evalFake( value:any, seed:any, idsMap?:any ):Promise<any>{
-    const fakerDE = FakerDE;
-    const fakerEN = FakerEN;
+    const locale = _.get( this.context.config.domainConfiguration, 'locale', 'en' )
+    const faker = _.get(fakers, locale, FakerEN );
     const ld = _;
     try {
       return _.isFunction( value ) ?
