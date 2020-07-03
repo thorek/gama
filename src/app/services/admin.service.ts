@@ -21,6 +21,8 @@ export type FieldConfigType = {
   name:string
   label?:string|(() => string)
   value?:(item:any) => string
+  filter?:(item:any) => string|string[]
+  filterMultiple?:boolean
   link?:(item:any) => any[]
   searchable?:boolean
   sortable?:boolean

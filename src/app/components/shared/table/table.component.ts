@@ -13,7 +13,7 @@ interface ColumnItem {
   label:string;
   sortOrder?:NzTableSortOrder;
   sortFn?:NzTableSortFn;
-  listOfFilter?:NzTableFilterList;
+  filterList?:NzTableFilterList;
   filterFn?:NzTableFilterFn;
   filterMultiple?:boolean;
   sortDirections?:NzTableSortOrder[];
@@ -55,8 +55,11 @@ export class TableComponent extends AdminComponent {
   onDelete = (id:any) => this.actionItem.emit({ id, action: 'delete'} );
 
   private resolveItems( items:any[] ){
-    _.forEach( items, item => _.forEach( this.fields, field =>
-      _.set( item, field.name, this.value( item, field ) ) ) );
+    _.forEach( items, item => {
+      _.set( item, 'source', _.cloneDeep(item) );
+      _.forEach( this.fields, field =>
+        _.set( item, field.name, this.value( item, field ) ) );
+    });
     this.sourceItems = items;
   }
 
@@ -78,7 +81,15 @@ export class TableComponent extends AdminComponent {
       name: field.name,
       label: this.label(field),
       sortOrder: null,
-      sortFn: (a:any, b:any) => this.sortFn( a, b, field.name )
+      sortFn: (a:any, b:any) => this.sortFn( a, b, field.name ),
+      filterList: this.filterList( this.sourceItems, field ),
+      filterMultiple: field.filterMultiple,
+      filterFn: (selection: string|string[], item:any) => {
+        let value = field.filter( item.source);
+        if( ! _.isArray( selection) ) selection = [selection];
+        if( ! _.isArray( value ) ) value = [value];
+        return _.size(_.intersection( selection, value )) > 0;
+      }
     }));
   }
 
@@ -91,4 +102,24 @@ export class TableComponent extends AdminComponent {
     this.searchTerm = undefined;
     this.doSearch();
   }
+
+  private sortFn = (a:any, b:any, property:string) => {
+    const aValue = _.get( a, property );
+    const bValue = _.get( b, property );
+    if( aValue == null && bValue == null ) return 0;
+    if( aValue == null || bValue == null ) return aValue == null ? 1 : -1;
+    return aValue.localeCompare(bValue);
+  }
+
+  private filterList = (items:any, field:FieldConfigType) => {
+    if( ! _.isFunction(field.filter) ) return undefined;
+    return _(items).
+      map( item => field.filter( item.source ) ).
+      flatten().
+      compact().
+      uniq().
+      map( value => ({ text:value, value})).
+      value();
+  }
+
 }

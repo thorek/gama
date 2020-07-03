@@ -23,7 +23,7 @@
           [nzSortFn]="column.sortFn"
           [nzSortDirections]="column.sortDirections"
           [nzFilterMultiple]="column.filterMultiple"
-          [nzFilters]="column.listOfFilter"
+          [nzFilters]="column.filterList"
           [nzFilterFn]="column.filterFn">
         {{ column.label }}
       </th>
@@ -35,12 +35,12 @@
       <ng-container *ngFor="let field of fields">
         <td *ngIf="isLink( field ); else noLink">
           <a [routerLink]="link( item, field )">
-            {{ value( item, field ) }}
+            {{ item[field.name] }}
           </a>
         </td>
         <ng-template #noLink>
           <td (click)="onSelect(item.id)" (click)="onSelect(item.id)" style="cursor: pointer;">
-            {{ value( item, field ) }}
+            {{ item[field.name] }}
           </td>
         </ng-template>
       </ng-container>

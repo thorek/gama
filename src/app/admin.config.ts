@@ -40,13 +40,14 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
             { path: 'clients', fields: ['id', 'name'], assoc: [ {path: 'users'}  ] }
           ],
           fields: [
-            'id',
             'name',
             {
               name: 'industries',
               label: 'Assigned Industries',
               value: (organisation:any) =>
-                _(organisation.industries).map( industry => industry.name ).join(', ')
+                _(organisation.industries).map( industry => industry.name ).join(', '),
+              filter:  (organisation:any) => _(organisation.industries).map( industry => industry.name ).value(),
+              filterMultiple: true
             },
             {
               name: 'client',
