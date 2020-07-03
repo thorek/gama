@@ -96,12 +96,9 @@ entity:
         delete: cascade
     seeds:
       Faker:
-        count: 5
-        name: faker.company.catchPhrase()
-        description: >
-          var hasDescription = ld.random(2) === 1;
-          hasDescription ? faker.random.words( ld.random(10, 20) ) : null
-        Organisation: ld.sample( idsMap.Organisation )
+        count: 50
+        name: fakerDE.company.catchPhrase()
+        description: "ld.random(2) === 1 ? fakerDE.random.words( ld.random(10, 20) ) : null"
 
       BeratungHP:
         name: Beratung Haftpflichtversicherung
@@ -204,6 +201,10 @@ entity:
       name: key
       description: string
       dsb: string
+      dsbEmail:
+        type: string
+        validate:
+          email: true
       city: string!
       zip: string!
       address1: string!
@@ -215,6 +216,18 @@ entity:
       - type: Organisation
         delete: cascade
     seeds:
+      Faker:
+        count: 30
+        name: fakerDE.company.companyName()
+        description:
+          every: 3
+          value: fakerDE.random.words( ld.random(10, 30) )
+        dsb: fakerDE.name.firstName() + " " + fakerDE.name.lastName()
+        dsbEmail: fakerDE.internet.email()
+        city: fakerDE.address.city()
+        zip: fakerDE.address.zipCode()
+        address1: fakerDE.address.streetName()
+
       kb:
         name: Karl Brand GmbH & Co. KG
         city: Hamburg

@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { Entity, AssocFromType, AssocToType } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { EntityPermissionType } from './entity-permissions';
+import { Context } from '../core/context';
 
 /**
  *
@@ -23,11 +24,16 @@ export type AttributeConfig = {
   sortable?:string
 }
 
+export type SeedEvalContextType = {
+  idsMap?:any
+  seed:any
+  context:Context
+}
 
+export type SeedConfigType = {
+  [attribute:string]:object|(( evalContext:SeedEvalContextType) => any)
+}
 
-/**
- *
- */
 export type EntityConfig  = {
   typeName?:string;
 
@@ -45,7 +51,7 @@ export type EntityConfig  = {
   path?:string;
   parent?:string;
 
-  seeds?:{[name:string]:any}
+  seeds?:{[seedId:string]:SeedConfigType}
   permissions?:null|EntityPermissionType
   equality?:null|string|{[typeName:string]:string[]}
   description?:string

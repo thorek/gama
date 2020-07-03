@@ -31,6 +31,7 @@ import { seed } from 'faker';
   );
   const configFolder = [`${__dirname}/config-types/d2prom`];
   const runtime = await Runtime.create( 'D2PROM', {configFolder, domainConfiguration: {
+    locale: 'de',
     entity: {
       ProcessingActivity: {
         seeds: {

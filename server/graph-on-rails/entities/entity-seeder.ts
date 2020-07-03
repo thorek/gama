@@ -1,17 +1,15 @@
 import _ from 'lodash';
-import * as faker from 'faker';
+import * as FakerDE from 'faker/locale/de';
+import * as FakerEN from 'faker/locale/en';
 import { Entity, AssocType } from './entity';
 import { EntityModule } from './entity-module';
 import { EntityItem } from './entity-item';
-
-const ld = _;
 
 /**
  *
  */
 export class EntitySeeder extends EntityModule {
 
-  get evalContext() { return {faker, ld } }
 
   /**
    *
@@ -75,7 +73,13 @@ export class EntitySeeder extends EntityModule {
     const seed = {};
     for( const name of _.keys(fakerSeed) ){
       let value = fakerSeed[name];
-      if( ! this.entity.isAssoc( name ) ) value = await this.evalFake( value, seed );
+      if( ! this.entity.isAssoc( name ) ) {
+        if( value.every ) {
+          if( _.random( value.every ) !== 1 ) continue;
+          value = value.value;
+        }
+        value = await this.evalFake( value, seed )
+      };
       _.set( seed, name, value );
     }
     return seed;
@@ -170,16 +174,16 @@ export class EntitySeeder extends EntityModule {
    *
    */
   private async evalFake( value:any, seed:any, idsMap?:any ):Promise<any>{
+    const fakerDE = FakerDE;
+    const fakerEN = FakerEN;
+    const ld = _;
     try {
-      const result = _.isFunction( value ) ?
-        await value( { idsMap, seed, context: this.context } ) :
+      return _.isFunction( value ) ?
+        Promise.resolve( value( { idsMap, seed, context: this.context } ) ) :
         ((expression:string) => eval( expression )).call( {}, value );
-      console.log({result})
-      return result
     } catch (error) {
       console.error( `could not evaluate '${value}'\n`, error);
     }
   }
-
 
 }

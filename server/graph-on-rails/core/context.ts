@@ -17,6 +17,12 @@ import { DataStore } from './data-store';
 import { GraphX } from './graphx';
 import { ResolverContext } from './resolver-context';
 
+export type DomainConfigurationType = {
+  entity?:{[name:string]:EntityConfig},
+  enum?:{[name:string]:EnumConfig},
+  locale?:string
+}
+
 export type GorConfig = {
   name?:string
   dataStore?:DataStore
@@ -32,7 +38,7 @@ export type GorConfig = {
   schemaBuilder?:SchemaBuilder[]
   entities?:Entity[],
   metaDataBuilder?:SchemaBuilder,
-  domainConfiguration?:{entity?:{[name:string]:EntityConfig}, enum?:{[name:string]:EnumConfig}}
+  domainConfiguration?:DomainConfigurationType
 }
 
 export class Context {

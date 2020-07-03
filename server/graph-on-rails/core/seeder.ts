@@ -1,23 +1,29 @@
 import _ from 'lodash';
+import * as faker from 'faker';
 
 import { Entity } from '../entities/entity';
 import { Context } from './context';
 
 export class Seeder {
 
-	//
-	//
-	private constructor( private entities:Entity[] ){}
+  /**
+   *
+   */
+  private constructor( private entities:Entity[] ){}
 
   /**
    *
    */
   static create( context:Context ):Seeder {
+    const locale = _.get( context.config.domainConfiguration, 'locale', 'en' );
+    _.set(faker, 'locale', locale );
     return new Seeder( _.values(context.entities) );
   }
 
-	//
-	//
+  /**
+   *
+   * @param truncate whether to truncate all collections before seed (clean seed)
+   */
   async seed( truncate:boolean ):Promise<number> {
     const entities = _.filter( this.entities, entity => ( entity instanceof Entity ) ) as Entity[];
     if( truncate ) await Promise.all( _.map( entities, async entity => await entity.seeder.truncate() ) );
@@ -25,5 +31,5 @@ export class Seeder {
     await Promise.all( _.map( entities, async entity => _.merge( idsMap, await entity.seeder.seedAttributes() ) ) );
     await Promise.all( _.map( entities, async entity => _.merge( idsMap, await entity.seeder.seedReferences( idsMap ) ) ) );
     return _.sum( _.map( idsMap, entityIdsMap => _.size( _.values( entityIdsMap ) ) ) );
-	}
+  }
 }
