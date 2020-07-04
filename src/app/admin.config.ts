@@ -10,7 +10,11 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
         name: (client) => client.name,
         action: (event) => event.action === 'some' ? console.log(`some ${event.id}`) : console.log('none'),
         index: {
-          fields: ['name','city','dsb']
+          fields: [
+            'name',
+            {name: 'city', filter: true},
+            'dsb'
+          ]
         },
         show: {
           assoc: [ { path: 'organisations', assoc: ['industries']} ],
@@ -44,10 +48,10 @@ export const adminConfig = async ():Promise<AdminConfigType> => {
             {
               name: 'industries',
               label: 'Assigned Industries',
-              value: (organisation:any) =>
-                _(organisation.industries).map( industry => industry.name ).join(', '),
-              filter:  (organisation:any) => _(organisation.industries).map( industry => industry.name ).value(),
-              filterMultiple: true
+              value: (organisation:any) => organisation.industries,
+              filter: {
+                multiple: true,
+              }
             },
             {
               name: 'client',

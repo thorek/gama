@@ -13,7 +13,11 @@ export abstract class AdminComponent {
   }
 
   value(item:any, field:FieldConfigType){
-    return _.isFunction( field.value ) ? field.value( item ) : _.get( item, field.name );
+    if( ! _.isFunction( field.value ) ) return _.get( item, field.name );
+    const value = field.value( item );
+    return _.isArray( value ) ?
+      _(value).map( v => v['name'] ).join(', ') :
+      value;
   }
 
   isLink( field:FieldConfigType ):boolean {
@@ -22,6 +26,13 @@ export abstract class AdminComponent {
 
   link( item:any, field:FieldConfigType ):string[] {
     return field.link( item );
+  }
+
+  protected guessNameValue( item:any ):string {
+    const property = _.find(['name', 'title', 'key'], property => _.has( item, property ) );
+    if( property ) return _.get( item, property );
+    if( _.has( item, 'id' ) ) return `#${_.get(item, 'id' ) }`;
+    return _.toString( item );
   }
 
   protected warn<T>( message:string, type:T ):T {

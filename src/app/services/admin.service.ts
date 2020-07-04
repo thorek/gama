@@ -17,12 +17,16 @@ export type FieldMetaDataType = {
 
 export type FieldsMetaDataType = {[field:string]:FieldMetaDataType}
 
+export type FieldFilterConfigType = {
+  value?:(item:any) => any | any[]
+  multiple?: boolean
+}
+
 export type FieldConfigType = {
   name:string
   label?:string|(() => string)
-  value?:(item:any) => string
-  filter?:(item:any) => string|string[]
-  filterMultiple?:boolean
+  value?:(item:any) => string|object[]
+  filter?:boolean|FieldFilterConfigType
   link?:(item:any) => any[]
   searchable?:boolean
   sortable?:boolean
@@ -40,6 +44,7 @@ export type AdminTableConfig = {
   title?:string|(()=>string)
   fields?:(string|FieldConfigType)[]
   actions?:AdminTableActionConfig[]
+  search?:boolean
 }
 
 export type AssocTableConfigType = AdminTableConfig & {
@@ -159,6 +164,7 @@ export class AdminService {
       uiType === 'index' ? config.typesQuery : config.typeQuery );
     this.setFieldDefaults( uiConfig, config );
     _.forEach( uiConfig.table, table => this.setFieldDefaults( table, table.path ) );
+    if( _.isUndefined( uiConfig.search ) ) uiConfig.search = true;
     return config;
   }
 

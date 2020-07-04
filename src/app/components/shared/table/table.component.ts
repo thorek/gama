@@ -41,13 +41,17 @@ export class TableComponent extends AdminComponent {
   searchTerm:string;
   private filtered = false;
   private sourceItems:any[] = [];
-  private filteredItems:any[] = [];
+  private filteredIds:any[] = [];
   private searchEntered:Subject<string> = new Subject<string>();
   private miniSearch:MiniSearch;
   columns:ColumnItem[] = []
   onSearch = ($event:any) => this.searchEntered.next($event);
 
-  get items() { return this.filtered ? this.filteredItems : this.sourceItems }
+  get search() { return this.config.search }
+  get items() { return this.filtered ?
+      _.filter( this.sourceItems, item => _.includes( this.filteredIds, item.id ) ) :
+      this.sourceItems
+  }
   get fields() { return this.config.fields as FieldConfigType[]}
   get actions() { return this.config.actions }
 
@@ -55,12 +59,12 @@ export class TableComponent extends AdminComponent {
   onDelete = (id:any) => this.actionItem.emit({ id, action: 'delete'} );
 
   private resolveItems( items:any[] ){
-    _.forEach( items, item => {
+    this.sourceItems = _.cloneDeep( items );
+    _.forEach( this.sourceItems, item => {
       _.set( item, 'source', _.cloneDeep(item) );
       _.forEach( this.fields, field =>
         _.set( item, field.name, this.value( item, field ) ) );
     });
-    this.sourceItems = items;
   }
 
   private prepareSearch(){
@@ -68,7 +72,7 @@ export class TableComponent extends AdminComponent {
     const fields = _.compact( _.map( this.fields, field =>
       field.searchable === false ? undefined : field.name ));
     this.miniSearch = new MiniSearch({
-      fields,  storeFields: fields, searchOptions: {  prefix: true, fuzzy: 0.05 }
+      fields,  storeFields: ['id'], searchOptions: {  prefix: true, fuzzy: 0.05 }
     });
     this.miniSearch.addAll( this.sourceItems );
     this.searchEntered.pipe(
@@ -83,9 +87,10 @@ export class TableComponent extends AdminComponent {
       sortOrder: null,
       sortFn: (a:any, b:any) => this.sortFn( a, b, field.name ),
       filterList: this.filterList( this.sourceItems, field ),
-      filterMultiple: field.filterMultiple,
+      filterMultiple: _.get( field.filter, 'multiple'),
       filterFn: (selection: string|string[], item:any) => {
-        let value = field.filter( item.source);
+        let value = this.getValueOrGuessNameValue( field, item.source );
+        if( _.isUndefined( value ) ) return false;
         if( ! _.isArray( selection) ) selection = [selection];
         if( ! _.isArray( value ) ) value = [value];
         return _.size(_.intersection( selection, value )) > 0;
@@ -95,7 +100,8 @@ export class TableComponent extends AdminComponent {
 
   private doSearch(){
     this.filtered = _.size(this.searchTerm) > 0;
-    if( this.filtered ) this.filteredItems = this.miniSearch.search(this.searchTerm);
+    if( this.filtered ) this.filteredIds =
+      _.map( this.miniSearch.search(this.searchTerm), item => item.id );
   }
 
   cancelSearch(){
@@ -112,9 +118,9 @@ export class TableComponent extends AdminComponent {
   }
 
   private filterList = (items:any, field:FieldConfigType) => {
-    if( ! _.isFunction(field.filter) ) return undefined;
+    if( ! field.filter ) return undefined;
     return _(items).
-      map( item => field.filter( item.source ) ).
+      map( item => this.getValueOrGuessNameValue( field, item.source ) ).
       flatten().
       compact().
       uniq().
@@ -122,4 +128,14 @@ export class TableComponent extends AdminComponent {
       value();
   }
 
+  private getValueOrGuessNameValue( field:FieldConfigType, item:any ):undefined|string|string[]{
+    if( ! field.filter ) return;
+    if( field.filter === true ) field.filter = {}
+    const valueFn = _.isFunction(field.filter.value) ?
+      field.filter.value : _.isFunction( field.value ) ?
+        field.value : (item:any) => _.get( item, field.name )
+    let value = valueFn( item );
+    if( _.isArray( value ) ) return _.map( value, v => _.isString( v ) ? v : this.guessNameValue( v ) );
+    return _.isString( value ) ? value : this.guessNameValue( value );
+  }
 }

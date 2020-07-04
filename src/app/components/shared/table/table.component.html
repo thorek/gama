@@ -1,19 +1,20 @@
-
-<nz-input-group [nzSuffix]="inputClearTpl">
-  <input
-    nz-input
-    placeholder="Search data..."
-    (input)="onSearch($event)"
-    [(ngModel)]="searchTerm" />
-</nz-input-group>
-<ng-template #inputClearTpl>
-  <i nz-icon
-    *ngIf="searchTerm"
-    (click)="cancelSearch()"
-    [nzType]="'close-circle'"
-    [nzTheme]="'outline'">
-  </i>
-</ng-template>
+<ng-container *ngIf="search">
+  <nz-input-group [nzSuffix]="inputClearTpl">
+    <input
+      nz-input
+      placeholder="Search data..."
+      (input)="onSearch($event)"
+      [(ngModel)]="searchTerm" />
+  </nz-input-group>
+  <ng-template #inputClearTpl>
+    <i nz-icon
+      *ngIf="searchTerm"
+      (click)="cancelSearch()"
+      [nzType]="'close-circle'"
+      [nzTheme]="'outline'">
+    </i>
+  </ng-template>
+</ng-container>
 
 <nz-table #basicTable [nzData]="items">
   <thead>
