@@ -35,7 +35,7 @@
     <tr *ngFor="let item of basicTable.data">
       <ng-container *ngFor="let field of fields">
         <td *ngIf="isLink( field ); else noLink">
-          <a [routerLink]="link( item, field )">
+          <a [routerLink]="link( item.source, field )">
             {{ item[field.name] }}
           </a>
         </td>

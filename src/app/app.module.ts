@@ -1,3 +1,4 @@
+import { PortalModule } from '@angular/cdk/portal';
 import { registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import en from '@angular/common/locales/en';
@@ -13,6 +14,7 @@ import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
@@ -21,7 +23,6 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 
 import { adminConfig } from './admin.config';
 import { AppRoutingModule } from './app-routing.module';
@@ -35,6 +36,8 @@ import { ClientComponent } from './components/client/client.component';
 import { ClientsComponent } from './components/clients/clients.component';
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { OrganisationsComponent } from './components/organisations/organisations.component';
+import { DynContentComponent } from './components/shared/dyn-content.component';
+import { BreadcrumComponent } from './components/shared/breadcumb.component';
 import { HeaderComponent } from './components/shared/header/header.component';
 import { TableComponent } from './components/shared/table/table.component';
 import { WelcomeComponent } from './components/welcome/welcome.component';
@@ -64,7 +67,9 @@ export function initializeApp1(adminService:AdminService) {
     TableComponent,
     ShowComponent,
     EditComponent,
-    CreateComponent
+    CreateComponent,
+    DynContentComponent,
+    BreadcrumComponent
   ],
   imports: [
     BrowserModule,
@@ -90,6 +95,7 @@ export function initializeApp1(adminService:AdminService) {
     ReactiveFormsModule,
     HttpClientModule,
     BrowserAnimationsModule,
+    PortalModule,
     GraphQLModule
   ],
   providers: [
