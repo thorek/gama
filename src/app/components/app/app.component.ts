@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
 import * as inflection from 'inflection';
 import { Component, OnInit } from '@angular/core';
-import { AdminService, EntityConfigType } from 'src/app/services/admin.service';
+import { AdminService } from 'src/app/services/admin.service';
+import { EntityConfigType } from 'src/app/lib/admin-config';
 
 
 @Component({

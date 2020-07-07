@@ -10,13 +10,14 @@ import { IndexComponent } from './components/admin/index/index.component';
 import { ShowComponent } from './components/admin/show/show.component';
 import { EditComponent } from './components/admin/edit/edit.component';
 import { CreateComponent } from './components/admin/create/create.component';
+import { AdminDataResolver } from './services/admin-data.resolver';
 
 const routes:Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/welcome' },
   { path: 'welcome', pathMatch: 'full', component: WelcomeComponent },
   { path: 'about', pathMatch: 'full', component: AboutComponent },
   { path: 'admin', children: [
-    { path: ':path', component: IndexComponent },
+    { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
     { path: ':path/new', component: CreateComponent },
     { path: ':path/edit/:id', component: EditComponent },
     { path: ':path/show/:id', component: ShowComponent },

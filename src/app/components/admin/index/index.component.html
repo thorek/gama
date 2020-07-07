@@ -1,25 +1,16 @@
 <nz-page-header class="site-page-header" nzBackIcon>
   <nz-page-header-title>{{ title('index') }}</nz-page-header-title>
   <nz-page-header-extra>
-    <button (click)="onNew()" nz-button nzType="primary">New {{ entityName }}</button>
+    <button (click)="onNew()" nz-button nzType="primary">New {{ data.entityName }}</button>
   </nz-page-header-extra>
 </nz-page-header>
 
-<div *ngIf="loading">Loading...</div>
-
 <app-table
-  [config]="this.config.index"
-  [items]="items"
+  [parent]="data.parent?.path"
+  [config]="data.config.index"
+  [items]="data.items"
   (selectItem)="onSelect($event)"
   (actionItem)="onAction($event)">
 </app-table>
 
-<nz-alert
-  *ngIf="error"
-  nzType="error"
-  nzCloseable
-  nzMessage="GraphQL Error"
-  [nzDescription]="error">
-</nz-alert>
-
-<app-breadcrumb [items]="breadcrumbs()"></app-breadcrumb>
+<app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>

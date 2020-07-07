@@ -24,7 +24,7 @@ import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzTableModule } from 'ng-zorro-antd/table';
 
-import { adminConfig } from './admin.config';
+import { adminConfig } from './config/admin.config';
 import { AppRoutingModule } from './app-routing.module';
 import { AboutComponent } from './components/about/about.component';
 import { CreateComponent } from './components/admin/create/create.component';
@@ -44,6 +44,7 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
 import { GraphQLModule } from './graphql.module';
 import { IconsProviderModule } from './icons-provider.module';
 import { AdminService } from './services/admin.service';
+import { AdminDataResolver } from './services/admin-data.resolver';
 
 registerLocaleData(en);
 
@@ -100,6 +101,7 @@ export function initializeApp1(adminService:AdminService) {
   ],
   providers: [
     AdminService,
+    AdminDataResolver,
     { provide: APP_INITIALIZER ,useFactory: initializeApp1, deps: [AdminService], multi: true },
     { provide: NZ_I18N, useValue: en_US }
   ],

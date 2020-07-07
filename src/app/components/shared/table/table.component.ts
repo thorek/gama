@@ -4,12 +4,13 @@ import MiniSearch from 'minisearch';
 import { NzTableFilterFn, NzTableFilterList, NzTableSortFn, NzTableSortOrder } from 'ng-zorro-antd/table';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { AdminTableConfig, FieldConfigType, UiConfigType } from 'src/app/services/admin.service';
 
 import { AdminComponent } from '../../admin/admin.component';
+import { AdminTableConfig, UiConfigType, FieldConfigType } from 'src/app/lib/admin-config';
 
 interface ColumnItem {
   name:string;
+  field:FieldConfigType;
   label:string;
   sortOrder?:NzTableSortOrder;
   sortFn?:NzTableSortFn;
@@ -28,13 +29,14 @@ export type TableFieldType = string|{name:string, label?:string, value?:(entity:
 })
 export class TableComponent extends AdminComponent {
 
+  @Input() parent:string|undefined
   @Input() config:AdminTableConfig|UiConfigType;
   @Output() selectItem = new EventEmitter<any>();
   @Output() actionItem = new EventEmitter<{id:any, action:string}>();
   @Input() set items( items:any[]){
     if( ! items ) return;
-    this.resolveItems( items );
     this.prepareColumns();
+    this.resolveItems( items );
     this.prepareSearch();
   }
 
@@ -52,7 +54,7 @@ export class TableComponent extends AdminComponent {
       _.filter( this.sourceItems, item => _.includes( this.filteredIds, item.id ) ) :
       this.sourceItems
   }
-  get fields() { return this.config.fields as FieldConfigType[]}
+
   get actions() { return this.config.actions }
 
   onSelect = (id:any) => this.selectItem.emit( id );
@@ -62,15 +64,15 @@ export class TableComponent extends AdminComponent {
     this.sourceItems = _.cloneDeep( items );
     _.forEach( this.sourceItems, item => {
       _.set( item, 'source', _.cloneDeep(item) );
-      _.forEach( this.fields, field =>
-        _.set( item, field.name, this.value( item, field ) ) );
+      _.forEach( this.columns, column =>
+        _.set( item, column.name, this.value( column.field, item ) ) );
     });
   }
 
   private prepareSearch(){
     this.searchTerm = undefined;
-    const fields = _.compact( _.map( this.fields, field =>
-      field.searchable === false ? undefined : field.name ));
+    const fields = _.compact( _.map( this.columns, column =>
+      column.field.searchable === false ? undefined : column.name ));
     this.miniSearch = new MiniSearch({
       fields,  storeFields: ['id'], searchOptions: {  prefix: true, fuzzy: 0.05 }
     });
@@ -81,20 +83,14 @@ export class TableComponent extends AdminComponent {
   }
 
   private prepareColumns(){
-    this.columns = _.map( this.fields, field => ({
-      name: field.name,
-      label: this.label(field),
-      sortOrder: null,
-      sortFn: (a:any, b:any) => this.sortFn( a, b, field.name ),
-      filterList: this.filterList( this.sourceItems, field ),
-      filterMultiple: _.get( field.filter, 'multiple'),
-      filterFn: (selection: string|string[], item:any) => {
-        let value = this.getValueOrGuessNameValue( field, item.source );
-        if( _.isUndefined( value ) ) return false;
-        if( ! _.isArray( selection) ) selection = [selection];
-        if( ! _.isArray( value ) ) value = [value];
-        return _.size(_.intersection( selection, value )) > 0;
-      }
+    this.columns = _.compact( _.map( this.config.fields, (field:FieldConfigType) => {
+      if( _.has( field, 'parent' ) && field.parent === this.parent) return;
+      return { field, name: field.name, label: this.label(field), sortOrder: null,
+        sortFn: (a:any, b:any) => this.sortFn( a, b, field.name ),
+        filterList: this.filterList( this.sourceItems, field ),
+        filterMultiple: _.get( field.filter, 'multiple'),
+        filterFn: (selection:string|string[], item:any) => this.filterFn( field, selection, item )
+      };
     }));
   }
 
@@ -108,6 +104,14 @@ export class TableComponent extends AdminComponent {
     this.searchTerm = undefined;
     this.doSearch();
   }
+
+  private filterFn = (field:FieldConfigType, selection:string|string[], item:any) => {
+    let value = this.getValueOrGuessNameValue( field, item.source );
+    if( _.isUndefined( value ) ) return false;
+    if( ! _.isArray( selection) ) selection = [selection];
+    if( ! _.isArray( value ) ) value = [value];
+    return _.size(_.intersection( selection, value )) > 0;
+  };
 
   private sortFn = (a:any, b:any, property:string) => {
     const aValue = _.get( a, property );

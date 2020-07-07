@@ -13,6 +13,7 @@ const query = gql`
       updateInput
       createMutation
       createInput
+      foreignKey
       fields {
         name
         type

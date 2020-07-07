@@ -1,50 +1,41 @@
-<ng-container *ngIf="item" >
-  <nz-page-header class="site-page-header" nzBackIcon>
-    <nz-page-header-title>
-      <span>{{ name() }}</span>
-    </nz-page-header-title>
-    <nz-page-header-subtitle>{{ title('show') }}</nz-page-header-subtitle>
-    <nz-page-header-extra>
-      <button nz-button nzType="primary" (click)="onEdit()">Edit</button>
-      <button nz-button nzType="secondary" (click)="onDelete( item?.id )">Delete</button>
-    </nz-page-header-extra>
-  </nz-page-header>
 
-  <div *ngIf="loading">Loading...</div>
+<nz-page-header class="site-page-header" nzBackIcon>
+  <nz-page-header-title>
+    <span>{{ name() }}</span>
+  </nz-page-header-title>
+  <nz-page-header-subtitle>{{ title('show') }}</nz-page-header-subtitle>
+  <nz-page-header-extra>
+    <button nz-button nzType="primary" (click)="onEdit()">Edit</button>
+    <button nz-button nzType="secondary" (click)="onDelete()">Delete</button>
+  </nz-page-header-extra>
+</nz-page-header>
 
-  <nz-descriptions nzTitle="Entity data" nzBordered [nzColumn]="1">
-    <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
-      <a *ngIf="isLink( field ); else noLink" [routerLink]="link( item, field )">
-        {{ value( item, field ) }}
-      </a>
-      <ng-template #noLink>
-        {{ value( item, field ) }}
-      </ng-template>
-    </nz-descriptions-item>
-  </nz-descriptions>
+<nz-descriptions nzTitle="Entity data" nzBordered [nzColumn]="1">
+  <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
+    <a *ngIf="isLink( field ); else noLink" [routerLink]="link(field )">
+      {{ value( field ) }}
+    </a>
+    <ng-template #noLink>
+      {{ value( field ) }}
+    </ng-template>
+  </nz-descriptions-item>
+</nz-descriptions>
 
-  <div *ngFor="let table of this.config.show.table">
-    <hr>
+<div *ngFor="let table of data.config.show.table">
+  <hr>
 
+  <a [routerLink]="['/admin', this.data.path, this.data.id, table.path]">
     <h2>{{ title( 'detailTable', table )}}</h2>
+  </a>
 
-    <app-table
-      [config]="table"
-      [items]="tableItems(table)"
-      (selectItem)="onChildSelect( $event, 'organisations' )"
-      (actionItem)="onAction($event)">
-    </app-table>
+  <app-table
+    [parent]="{path:data.path, id:data.id}"
+    [config]="table"
+    [items]="tableItems(table)"
+    (selectItem)="onChildSelect( $event, table.path )"
+    (actionItem)="onAction($event)">
+  </app-table>
 
-  </div>
+</div>
 
-</ng-container>
-
-<nz-alert
-  *ngIf="error"
-  nzType="error"
-  nzCloseable
-  nzMessage="GraphQL Error"
-  [nzDescription]="error">
-</nz-alert>
-
-<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
