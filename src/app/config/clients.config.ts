@@ -24,9 +24,6 @@ export const clientsConfig:EntityConfigType = {
               _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
           }
         ],
-        actions: [
-          'show', 'some'
-        ]
       }
     ]
   }

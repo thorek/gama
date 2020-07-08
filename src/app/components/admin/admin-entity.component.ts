@@ -29,6 +29,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     this.route.data.subscribe( async (data:AdminData) => {
       this.data = _.get(data, 'data');
       this.buildBreadcrumbs();
+      this.buildForm();
      });
   }
 
@@ -96,7 +97,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     this.router.navigate( commands );
   }
 
-  buildBreadcrumbs(){
+  protected buildBreadcrumbs(){
     this.breadcrumbs = [ { text: this.title('index') } ];
     if( this.data.parent ) {
       const config = this.adminService.getEntityConfig( this.data.parent.path );
@@ -105,6 +106,8 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
       ]);
     }
   }
+
+  protected buildForm() { /* to be overwritten in create / edit */ }
 
   title( purpose?:TitlePurposeType, config?:EntityConfigType ):string {
     if( ! config ) config = this.data.config;

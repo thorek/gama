@@ -33,7 +33,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
         route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index ) :
         route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id ) :
         route.component === EditComponent ? this.loadItemData( entityConfig, entityConfig.edit, id ) :
-        route.component === CreateComponent ? this.loadItemData( entityConfig, entityConfig.create, id ) :
+        route.component === CreateComponent ? async () => ({}) :
         undefined;
       const itemData = await load;
       resolve( new AdminData( entityConfig, itemData, parent ) );
