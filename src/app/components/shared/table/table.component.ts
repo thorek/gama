@@ -35,14 +35,14 @@ export class TableComponent extends AdminComponent {
   @Output() actionItem = new EventEmitter<{id:any, action:string}>();
   @Input() set items( items:any[]){
     if( ! items ) return;
-    this.prepareColumns();
     this.resolveItems( items );
+    this.prepareColumns();
     this.prepareSearch();
   }
 
   searchTerm:string;
   private filtered = false;
-  private sourceItems:any[] = [];
+  private resolvedItems:any[] = [];
   private filteredIds:any[] = [];
   private searchEntered:Subject<string> = new Subject<string>();
   private miniSearch:MiniSearch;
@@ -51,8 +51,8 @@ export class TableComponent extends AdminComponent {
 
   get search() { return this.config.search }
   get items() { return this.filtered ?
-      _.filter( this.sourceItems, item => _.includes( this.filteredIds, item.id ) ) :
-      this.sourceItems
+      _.filter( this.resolvedItems, item => _.includes( this.filteredIds, item.id ) ) :
+      this.resolvedItems
   }
 
   get defaultActions() { return this.config.defaultActions || ['show', 'edit', 'delete'] }
@@ -63,11 +63,11 @@ export class TableComponent extends AdminComponent {
   onDelete = (id:any) => this.actionItem.emit({ id, action: 'delete'} );
 
   private resolveItems( items:any[] ){
-    this.sourceItems = _.cloneDeep( items );
-    _.forEach( this.sourceItems, item => {
+    this.resolvedItems = _.cloneDeep( items );
+    _.forEach( this.resolvedItems, item => {
       _.set( item, 'source', _.cloneDeep(item) );
-      _.forEach( this.columns, column =>
-        _.set( item, column.name, this.value( column.field, item ) ) );
+      _.forEach( this.config.fields, (field:FieldConfigType) =>
+        _.set( item, field.name, this.value( field, item ) ) );
     });
   }
 
@@ -78,7 +78,7 @@ export class TableComponent extends AdminComponent {
     this.miniSearch = new MiniSearch({
       fields,  storeFields: ['id'], searchOptions: {  prefix: true, fuzzy: 0.05 }
     });
-    this.miniSearch.addAll( this.sourceItems );
+    this.miniSearch.addAll( this.resolvedItems );
     this.searchEntered.pipe(
       debounceTime(400), distinctUntilChanged()
     ).subscribe( () => this.doSearch() );
@@ -89,7 +89,7 @@ export class TableComponent extends AdminComponent {
       if( _.has( field, 'parent' ) && field.parent === this.parent) return;
       return { field, name: field.name, label: this.label(field), sortOrder: null,
         sortFn: (a:any, b:any) => this.sortFn( a, b, field.name ),
-        filterList: this.filterList( this.sourceItems, field ),
+        filterList: this.filterList( this.resolvedItems, field ),
         filterMultiple: _.get( field.filter, 'multiple'),
         filterFn: (selection:string|string[], item:any) => this.filterFn( field, selection, item )
       };
