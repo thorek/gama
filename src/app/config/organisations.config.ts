@@ -27,7 +27,11 @@ export const organisationsConfig:EntityConfigType = {
         name: 'description',
         parent: null
       }
-    ]
+    ],
+    defaultActions: ['edit', 'delete'],
+    actions: {
+      some: { icon: 'home', onAction: (item:any) => console.log('some action called', item.id ) }
+    }
   },
   show: {
     assoc: [

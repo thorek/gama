@@ -1,22 +1,17 @@
 import { Component } from '@angular/core';
-import gql from 'graphql-tag';
 import * as _ from 'lodash';
-
-import { AdminEntityComponent } from '../admin-entity.component';
 import { FieldConfigType } from 'src/app/lib/admin-config';
+
+import { CreateComponent } from '../create/create.component';
 
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.scss']
 })
-export class EditComponent extends AdminEntityComponent {
+export class EditComponent extends CreateComponent {
 
   get fields():FieldConfigType[] { return this.data.config.edit.fields as FieldConfigType[] }
-
-  onSave = () => this.updateMutation();
-  onCancel = () => this.onShow();
-
 
   /**
    *
@@ -46,10 +41,6 @@ export class EditComponent extends AdminEntityComponent {
     //     this.message.error( _.join(violations, '\n') );
     //   }
     // });
-  }
-
-  protected getItemInput( item:any ){
-    return _.pick( item, _.keys(this.data.config.fields), 'id' );
   }
 
 }

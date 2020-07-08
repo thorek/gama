@@ -34,6 +34,6 @@ export class DynContentComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy():void {
-    this.outlet.detach();
+    if( this.outlet ) this.outlet.detach();
   }
 }

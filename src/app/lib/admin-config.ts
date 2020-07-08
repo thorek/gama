@@ -37,12 +37,17 @@ export type UiConfigType = AdminTableConfig & {
   table?:AssocTableConfigType[]
 }
 
-export type AdminTableActionConfig = {}
+export type AdminTableActionConfig = {
+  icon?:string
+  text?:string
+  onAction:(item:any) => void
+}
 
 export type AdminTableConfig = {
   title?:string|(()=>string)
   fields?:(string|FieldConfigType)[]
-  actions?:AdminTableActionConfig[]
+  actions?:{[name:string]:AdminTableActionConfig}
+  defaultActions?:('show'|'edit'|'delete')[]
   search?:boolean
 }
 

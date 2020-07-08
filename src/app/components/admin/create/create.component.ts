@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { FormGroup, Validators } from '@angular/forms';
-import gql from 'graphql-tag';
 import * as _ from 'lodash';
-
+import { FieldConfigType } from 'src/app/lib/admin-config';
 
 import { AdminEntityComponent } from '../admin-entity.component';
-import { FieldConfigType } from 'src/app/lib/admin-config';
+
 
 @Component({
   selector: 'app-create',
@@ -17,12 +16,11 @@ export class CreateComponent extends AdminEntityComponent {
   validateForm!:FormGroup
   get fields():FieldConfigType[] { return this.data.config.create.fields as FieldConfigType[] }
 
-
   submitForm():void {
-    for (const i in this.validateForm.controls) {
-      this.validateForm.controls[i].markAsDirty();
-      this.validateForm.controls[i].updateValueAndValidity();
-    }
+    _.forEach( this.validateForm.controls, control => {
+      control.markAsDirty();
+      control.updateValueAndValidity();
+    });
     if( this.validateForm.valid ) this.createMutation();
   }
 

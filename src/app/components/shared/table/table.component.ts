@@ -55,9 +55,11 @@ export class TableComponent extends AdminComponent {
       this.sourceItems
   }
 
-  get actions() { return this.config.actions }
+  get defaultActions() { return this.config.defaultActions || ['show', 'edit', 'delete'] }
+  get actions() { return _.map(this.config.actions, (action, name) => _.set( action, 'name', name ) ) }
 
   onSelect = (id:any) => this.selectItem.emit( id );
+  onEdit = (id:any) => this.actionItem.emit({ id, action: 'edit'} );
   onDelete = (id:any) => this.actionItem.emit({ id, action: 'delete'} );
 
   private resolveItems( items:any[] ){

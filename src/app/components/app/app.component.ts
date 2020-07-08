@@ -4,6 +4,13 @@ import { Component, OnInit } from '@angular/core';
 import { AdminService } from 'src/app/services/admin.service';
 import { EntityConfigType } from 'src/app/lib/admin-config';
 
+import {Event,
+NavigationCancel,
+NavigationEnd,
+NavigationError,
+NavigationStart,
+Router
+} from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -12,13 +19,35 @@ import { EntityConfigType } from 'src/app/lib/admin-config';
 })
 export class AppComponent implements OnInit{
 
+  loading = false;
   isCollapsed = false;
   entities:EntityConfigType[]
 
-  constructor( private adminService:AdminService ) {}
+  constructor(
+    private adminService:AdminService,
+    private router:Router
+  ) {}
 
   ngOnInit(){
     this.entities = this.adminService.getMenuEntities();
+    this.router.events.subscribe((event: Event) => {
+      switch (true) {
+        case event instanceof NavigationStart: {
+          this.loading = true;
+          break;
+        }
+
+        case event instanceof NavigationEnd:
+        case event instanceof NavigationCancel:
+        case event instanceof NavigationError: {
+          this.loading = false;
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    });
   }
 
   title( entity:EntityConfigType ):string {

@@ -18,14 +18,14 @@ const routes:Routes = [
   { path: 'about', pathMatch: 'full', component: AboutComponent },
   { path: 'admin', children: [
     { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
-    { path: ':path/new', component: CreateComponent },
-    { path: ':path/edit/:id', component: EditComponent },
-    { path: ':path/show/:id', component: ShowComponent },
+    { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
+    { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
+    { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } },
     { path: ':parent/:parentId', children: [
-      { path: ':path', component: IndexComponent },
-      { path: ':path/new', component: CreateComponent },
-      { path: ':path/edit/:id', component: EditComponent },
-      { path: ':path/show/:id', component: ShowComponent }
+      { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
+      { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
+      { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
+      { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } }
     ]},
   ]},
   { path: 'clients', children:[

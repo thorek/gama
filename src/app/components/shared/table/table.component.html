@@ -48,10 +48,23 @@
 
       <td align="right">
         <nz-space>
-          <nz-space-item>
-            <a (click)="onSelect(item.id)"> <i nz-icon nzType="eye" nzTheme="outline"></i> </a>
+          <nz-space-item *ngFor="let action of actions">
+            <a (click)="action.onAction(item)">
+              <i *ngIf="action.icon" nz-icon [nzType]="action.icon" nzTheme="outline"></i>
+              {{ action.text || null }}
+            </a>
           </nz-space-item>
-          <nz-space-item>
+          <nz-space-item *ngIf="defaultActions.includes('show')">
+            <a (click)="onSelect(item.id)">
+              <i nz-icon nzType="eye" nzTheme="outline"></i>
+            </a>
+          </nz-space-item>
+          <nz-space-item *ngIf="defaultActions.includes('edit')">
+            <a (click)="onEdit(item.id)">
+              <i nz-icon nzType="edit" nzTheme="outline"></i>
+            </a>
+          </nz-space-item>
+          <nz-space-item *ngIf="defaultActions.includes('delete')">
             <a (click)="onDelete(item.id)">
               <i nz-icon nzType="delete" nzTheme="outline"></i>
             </a>
