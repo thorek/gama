@@ -37,11 +37,11 @@ export class AdminService {
   /**
    *
    */
-  delete( adminData:AdminData ):Promise<string[]>{
-    const deleteItem = gql`mutation { ${adminData.config.deleteMutation}(id: "${adminData.id}" )  }`;
+  delete( id:string, deleteMutation:string ):Promise<string[]>{
+    const deleteItem = gql`mutation { ${deleteMutation}(id: "${id}" )  }`;
     return new Promise( resolve => {
       this.apollo.mutate({ mutation: deleteItem }).subscribe(({data}) => {
-        const violations = _.get( data, adminData.config.deleteMutation ) as string[];
+        const violations = _.get( data, deleteMutation ) as string[];
         resolve( violations );
       });
     });

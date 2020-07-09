@@ -15,7 +15,6 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   data:AdminData;
   breadcrumbs:any[] = [];
 
-
   constructor(
     protected adminService:AdminService,
     protected route:ActivatedRoute,
@@ -44,7 +43,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     switch( event.action ){
       case 'delete': return this.onDelete( event.id );
     }
-    if( _.isFunction( this.data.config.action ) ) this.data.config.action( event );
+    if( _.isFunction( this.data.entityConfig.action ) ) this.data.entityConfig.action( event );
   }
 
   onDelete(id?:string) {
@@ -61,8 +60,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
 
   private async delete( id:string ){
-    const adminData = new AdminData( this.data.config, {id} );
-    const violations = await this.adminService.delete( adminData );
+    const violations = await this.adminService.delete( id, this.data.entityConfig.deleteMutation );
     if( _.size( violations ) === 0 ) {
       this.message.info(`This ${this.title('show')} was deleted!` );
       setTimeout( ()=> this.onList(), 500 );
@@ -110,13 +108,13 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   protected buildForm() { /* to be overwritten in create / edit */ }
 
   title( purpose?:TitlePurposeType, config?:EntityConfigType ):string {
-    if( ! config ) config = this.data.config;
+    if( ! config ) config = this.data.entityConfig;
     return super.title( purpose, config );
   }
 
   name( item?:any, config?:EntityConfigType ){
     if( ! item ) item = this.data.item;
-    if( ! config ) config = this.data.config;
+    if( ! config ) config = this.data.entityConfig;
     return super.name( item, config );
   }
 
@@ -130,8 +128,4 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     return super.link( field, item );
   }
 
-  required( field:FieldConfigType, config?:EntityConfigType ):boolean {
-    if( ! config ) config = this.data.config;
-    return super.required( field, config );
-  }
 }

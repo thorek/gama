@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as inflection from 'inflection';
-import { EntityConfigType, TitlePurposeType, FieldConfigType } from 'src/app/lib/admin-config';
+import { EntityConfigType, TitlePurposeType, FieldConfigType, FormFieldConfigType } from 'src/app/lib/admin-config';
 
 export abstract class AdminComponent {
 
@@ -25,17 +25,12 @@ export abstract class AdminComponent {
     return this.guessNameValue( item );
   }
 
-  label( field:FieldConfigType ):string {
+  label( field:FieldConfigType|FormFieldConfigType ):string {
     if( _.isFunction( field.label ) ) return field.label();
     // if there is i18n - return label lookup of label | name
     if( _.isString( field.label ) ) return field.label;
     if( _.isString( field.name ) ) return inflection.humanize( field.name );
     return _.toString(field);
-  }
-
-  required( field:FieldConfigType, config:EntityConfigType ):boolean {
-    const meta = config.fields[field.name];
-    return _.get( meta, 'required' );
   }
 
   value( field:FieldConfigType, item:any ){
@@ -53,6 +48,12 @@ export abstract class AdminComponent {
   link( field:FieldConfigType, item:any ):string[] {
     if( ! this.isLink( field ) ) return [];
     return field.link( item );
+  }
+
+
+  protected warn<T>( message:string, type:T ):T {
+    console.warn(message);
+    return type;
   }
 
 }

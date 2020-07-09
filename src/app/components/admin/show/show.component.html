@@ -21,9 +21,8 @@
   </nz-descriptions-item>
 </nz-descriptions>
 
-<div *ngFor="let table of data.config.show.table">
+<div *ngFor="let table of data.entityConfig.show.table">
   <hr>
-
   <a [routerLink]="['/admin', this.data.path, this.data.id, table.path]">
     <h2>{{ title( 'detailTable', table )}}</h2>
   </a>

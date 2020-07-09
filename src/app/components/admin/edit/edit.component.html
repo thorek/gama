@@ -12,11 +12,26 @@
 
 <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
   <nz-form-item *ngFor="let field of fields">
-    <nz-form-label [nzSpan]="6" [nzRequired]="required(field)" [nzFor]="field.name">
-      {{ label( field )}}
+    <nz-form-label [nzSpan]="6" [nzRequired]="field.required" [nzFor]="field.name">
+      {{ label( field ) }}
     </nz-form-label>
     <nz-form-control [nzSpan]="14" [nzErrorTip]="errorTip(field)">
-      <input nz-input [formControlName]="field.name" [id]="field.name" />
+
+      <ng-container [ngSwitch]="field.control">
+
+        <nz-select
+            *ngSwitchCase="'select'"
+            nzShowSearch nzAllowClear
+            nzPlaceHolder="Select a value"
+            [formControlName]="field.name">
+          <nz-option nzLabel="Jack" nzValue="jack"></nz-option>
+          <nz-option nzLabel="Lucy" nzValue="lucy"></nz-option>
+          <nz-option nzLabel="Tom" nzValue="tom"></nz-option>
+        </nz-select>
+
+        <input *ngSwitchDefault nz-input [formControlName]="field.name" [id]="field.name" />
+     </ng-container>
+
     </nz-form-control>
   </nz-form-item >
 </form>

@@ -24,6 +24,7 @@ import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 import { adminConfig } from './config/admin.config';
 import { AppRoutingModule } from './app-routing.module';
@@ -94,6 +95,7 @@ export function initializeApp1(adminService:AdminService) {
     NzBreadCrumbModule,
     NzIconModule,
     NzSpinModule,
+    NzSelectModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,

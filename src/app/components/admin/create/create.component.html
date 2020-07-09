@@ -12,7 +12,7 @@
 
 <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
   <nz-form-item *ngFor="let field of fields">
-    <nz-form-label [nzSpan]="6" [nzRequired]="required(field)" [nzFor]="field.name">
+    <nz-form-label [nzSpan]="6" [nzRequired]="field.required" [nzFor]="field.name">
       {{ label( field )}}
     </nz-form-label>
     <nz-form-control [nzSpan]="14" [nzErrorTip]="errorTip(field)">

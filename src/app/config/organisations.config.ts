@@ -62,5 +62,14 @@ export const organisationsConfig:EntityConfigType = {
         fields: [ 'name', 'description'],
       }
     ]
+  },
+  form: {
+    data: ['clients', 'industries'],
+    fields: [
+      { name: 'clientId', path: 'clients', values: (data:any) => _.get( data, 'clients')},
+      'name',
+      'description',
+      { path: 'industries', values: (data:any) => _.get( data, 'industries') }
+    ]
   }
 }

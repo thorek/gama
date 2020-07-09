@@ -7,7 +7,7 @@
 
 <app-table
   [parent]="data.parent?.path"
-  [config]="data.config.index"
+  [config]="data.entityConfig.index"
   [items]="data.items"
   (selectItem)="onSelect($event)"
   (actionItem)="onAction($event)">

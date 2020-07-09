@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AdminData } from '../lib/admin-data';
 import { AdminService } from './admin.service';
-import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType } from '../lib/admin-config';
+import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType, FormConfigType } from '../lib/admin-config';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import { IndexComponent } from '../components/admin/index/index.component';
@@ -30,13 +30,13 @@ export class AdminDataResolver implements Resolve<AdminData> {
       const parent = await this.getParentData( parentPath, parentId );
       const entityConfig = this.adminService.getEntityConfig(path);
       const load =
-        route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index ) :
-        route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id ) :
-        route.component === EditComponent ? this.loadItemData( entityConfig, entityConfig.edit, id ) :
+        route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index, parent ) :
+        route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id, parent ) :
+        route.component === EditComponent ? this.loadFormData( entityConfig, entityConfig.edit, entityConfig.form, id, parent ) :
         route.component === CreateComponent ? async () => ({}) :
         undefined;
-      const itemData = await load;
-      resolve( new AdminData( entityConfig, itemData, parent ) );
+      const adminData = await load;
+      resolve( adminData );
     });
   }
 
@@ -44,25 +44,54 @@ export class AdminDataResolver implements Resolve<AdminData> {
     if( ! path ) return undefined;
     const config = this.adminService.getEntityConfig(path);
     if( ! config ) return this.warn( `no such config '${path}'`, undefined );
-    const itemData = await this.loadItemData( config, config.show, id );
-    return new AdminData( config, itemData );
+    const data = await this.loadItemData( config, config.show, id );
+    return new AdminData( data, config, config.show );
   }
 
-  private async loadItemsData( entityConfig:EntityConfigType, uiConfig:UiConfigType ):Promise<any> {
+  private async loadItemsData( entityConfig:EntityConfigType, uiConfig:UiConfigType, parent?:AdminData ):Promise<AdminData> {
     const parentCondition = '' // this.getParentCondition();
     const expression = `query{ ${uiConfig.query}${parentCondition} ${ this.buildFieldQuery( entityConfig, uiConfig ) } }`;
     const query = { query: gql(expression), fetchPolicy: 'network-only' };
     const data = await this.loadData( query );
-    return _.get( data, uiConfig.query );
+    return new AdminData( data, entityConfig, uiConfig, parent );
   }
 
-  private async loadItemData( entityConfig:EntityConfigType, uiConfig:UiConfigType, id:string ):Promise<any> {
-    const fields = this.buildFieldQuery( entityConfig, uiConfig );
-    const expression = `query EntityQuery($id: ID!){ ${uiConfig.query}(id: $id) ${ fields } }`;
+  private async loadItemData( entityConfig:EntityConfigType, uiConfig:UiConfigType, id:string, parent?:AdminData ):Promise<any> {
+    const itemLoadExpression = this.getItemLoadExpression( entityConfig, uiConfig );
+    const expression = `query EntityQuery($id: ID!){ ${itemLoadExpression} }`;
     const query = { query: gql(expression), variables: {id}, fetchPolicy: 'network-only' };
     const data = await this.loadData( query );
-    return _.get( data, uiConfig.query );
+    return new AdminData( data, entityConfig, uiConfig, parent );
   }
+
+  private getItemLoadExpression( entityConfig:EntityConfigType, uiConfig:UiConfigType ) {
+    const fields = this.buildFieldQuery( entityConfig, uiConfig );
+    return `${uiConfig.query}(id: $id) ${fields}`;
+  }
+
+  private async loadFormData(
+      entityConfig:EntityConfigType,
+      uiConfig:UiConfigType,
+      formConfig:FormConfigType,
+      id?:string,
+      parent?:AdminData ):Promise<any> {
+    const expressions = [];
+    if( id ) expressions.push( this.getItemLoadExpression( entityConfig, entityConfig.edit  ));
+    expressions.push( ... _.compact( _.map( formConfig.data, data => this.getDataLoadExpression( data, uiConfig ) ) ) );
+    const expression = `query ${ id ? 'EntityQuery($id: ID!)' : '' }{ ${ _.join( expressions, '\n' ) } }`;
+    const query = { query: gql(expression), variables: {id}, fetchPolicy: 'network-only' };
+    const data = await this.loadData( query );
+    return new AdminData( data, entityConfig, uiConfig, parent );
+  }
+
+  private getDataLoadExpression( data:AssocConfigType, uiConfig:UiConfigType ):string {
+    if( _.isString( data ) ) data = { path: data };
+    const config = this.adminService.getEntityConfig( data.path );
+    if( ! config ) return this.warn(`no such config '${data.path}'`, undefined );
+    const fields = this.buildFieldQuery( config, config.show );
+    return `${config.typesQuery} ${fields}`;
+  }
+
 
   protected async loadData( query:any ):Promise<any>{
     if( ! query ) return undefined;

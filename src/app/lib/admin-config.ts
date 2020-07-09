@@ -64,6 +64,7 @@ export type AssocConfigType = string| {
 export type AssocType = {
   path:string
   query:string
+  required?:boolean
 }
 
 export type AssocsType = {
@@ -71,13 +72,30 @@ export type AssocsType = {
 }
 
 export type ActionEventType = {id:any, action:string};
+
 export type TitlePurposeType = 'menu'|'index'|'show'|'edit'|'detailTable'
+
+export type FormFieldConfigType = {
+  name?:string
+  path?:string
+  label?:string|(() => string)
+  control?:string
+  values?:(data:any) => {value:any, label:string}[]
+  required?:boolean
+  virtual?:boolean
+}
+
+export type FormConfigType = {
+  data?:AssocConfigType[]
+  fields?:(string|FormFieldConfigType)[]
+}
 
 export type EntityConfigType = {
   path?:string
   title?:string|((purpose?:TitlePurposeType)=>string)
   action?:(event:ActionEventType) => void
   fields?:FieldsMetaDataType
+  assoc?:AssocsType
   entitesName?:string
   entityName?:string
   typesQuery?:string
@@ -88,12 +106,12 @@ export type EntityConfigType = {
   createMutation?:string
   createInput?:string,
   foreignKey?:string
-  assoc?:AssocsType
   name?:(item:any, action?:ActionType ) => string
   index?:UiConfigType
   show?:UiConfigType
   edit?:UiConfigType
   create?:UiConfigType
+  form?:FormConfigType
 }
 export type AdminConfigType = {
   entities?:{ [entity:string]:EntityConfigType}

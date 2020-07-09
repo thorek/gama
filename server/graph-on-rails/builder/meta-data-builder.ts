@@ -26,7 +26,8 @@ export class MetaDataBuilder extends SchemaBuilder {
       name: 'assocMetaData',
       fields: {
         path: { type: GraphQLString },
-        query: { type: GraphQLString }
+        query: { type: GraphQLString },
+        required: { type: GraphQLBoolean }
       }
     });
 
@@ -88,7 +89,7 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.assocTo, assocTo => {
       const refEntity = this.context.entities[assocTo.type];
-      return { path: refEntity.path, query: refEntity.singular };
+      return { path: refEntity.path, query: refEntity.singular, required: assocTo.required };
     });
   }
 
@@ -96,7 +97,7 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.assocToMany, assocToMany => {
       const refEntity = this.context.entities[assocToMany.type];
-      return { path: refEntity.path, query: refEntity.plural };
+      return { path: refEntity.path, query: refEntity.plural, required: assocToMany.required };
     });
   }
 

@@ -24,10 +24,12 @@ const query = gql`
       assocTo {
         path
         query
+        required
       }
       assocToMany {
         path
         query
+        required
       }
       assocFrom {
         path
