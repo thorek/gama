@@ -69,7 +69,7 @@ export const organisationsConfig:EntityConfigType = {
       'clients',
       'name',
       'description',
-      'industries'
+      { path: 'industries', name: 'industryIds' }
     ]
   }
 }

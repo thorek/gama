@@ -63,7 +63,10 @@ export class EditComponent extends AdminEntityComponent {
       value: _.get( data, 'id'), label: this.label( data )
     }));
     const query = _.get( this.data.entityConfig.assocs, [field.path, 'query']);
-    const value = (item:any) => _.get( item, [query, 'id'] );
+    const value = (item:any) => {
+      const assocValue = _.get( item, query );
+      return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
+    };
     const label = inflection.humanize( query );
     const control = 'select';
     return _.defaults( field,
