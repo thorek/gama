@@ -35,19 +35,19 @@ export const organisationsConfig:EntityConfigType = {
   },
   show: {
     assoc: [
-      'clients', 'industries', 'organisational_units', 'processing_activities'
+      'organisational_units', 'processing_activities'
     ],
     fields: [
       'id',
       'name',
       {
-        name: 'industries',
+        path: 'industries',
         label: 'Assigned Industries',
         value: (organisation:any) =>
           _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
       },
       {
-        name: 'client',
+        path: 'clients',
         value: (organisation:any) => organisation.client.name,
         link: (organisation:any) => ['/admin', 'clients', 'show', organisation.client.id]
       }
@@ -66,10 +66,10 @@ export const organisationsConfig:EntityConfigType = {
   form: {
     data: ['clients', 'industries'],
     fields: [
-      { name: 'clientId', path: 'clients', values: (data:any) => _.get( data, 'clients')},
+      'clients',
       'name',
       'description',
-      { path: 'industries', values: (data:any) => _.get( data, 'industries') }
+      'industries'
     ]
   }
 }

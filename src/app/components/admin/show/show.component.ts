@@ -14,7 +14,7 @@ export class ShowComponent extends AdminEntityComponent {
   get detailTables() { return this.data.entityConfig.show.table }
 
   tableItems( table:AssocTableConfigType ):any[]{
-    const query = _.get( this.data.entityConfig.assoc, [table.path, 'query']);
+    const query = _.get( this.data.entityConfig.assocs, [table.path, 'query']);
     return _.get( this.data.item, query );
   }
 

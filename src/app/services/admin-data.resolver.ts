@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AdminData } from '../lib/admin-data';
 import { AdminService } from './admin.service';
-import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType, FormConfigType } from '../lib/admin-config';
+import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType } from '../lib/admin-config';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import { IndexComponent } from '../components/admin/index/index.component';
@@ -32,7 +32,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
       const load =
         route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index, parent ) :
         route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id, parent ) :
-        route.component === EditComponent ? this.loadFormData( entityConfig, entityConfig.edit, entityConfig.form, id, parent ) :
+        route.component === EditComponent ? this.loadItemData( entityConfig, entityConfig.form, id, parent ) :
         route.component === CreateComponent ? async () => ({}) :
         undefined;
       const adminData = await load;
@@ -44,8 +44,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
     if( ! path ) return undefined;
     const config = this.adminService.getEntityConfig(path);
     if( ! config ) return this.warn( `no such config '${path}'`, undefined );
-    const data = await this.loadItemData( config, config.show, id );
-    return new AdminData( data, config, config.show );
+    return this.loadItemData( config, config.show, id );
   }
 
   private async loadItemsData( entityConfig:EntityConfigType, uiConfig:UiConfigType, parent?:AdminData ):Promise<AdminData> {
@@ -56,9 +55,15 @@ export class AdminDataResolver implements Resolve<AdminData> {
     return new AdminData( data, entityConfig, uiConfig, parent );
   }
 
-  private async loadItemData( entityConfig:EntityConfigType, uiConfig:UiConfigType, id:string, parent?:AdminData ):Promise<any> {
-    const itemLoadExpression = this.getItemLoadExpression( entityConfig, uiConfig );
-    const expression = `query EntityQuery($id: ID!){ ${itemLoadExpression} }`;
+  private async loadItemData(
+      entityConfig:EntityConfigType,
+      uiConfig:UiConfigType,
+      id:string,
+      parent?:AdminData ):Promise<any> {
+    const expressions = [this.getItemLoadExpression( entityConfig, uiConfig )];
+    expressions.push( ...
+      _.compact( _.map( uiConfig.data, data => this.getDataLoadExpression( data, uiConfig ) ) ) );
+    const expression = `query EntityQuery($id: ID!){ ${ _.join(expressions, '\n') } }`;
     const query = { query: gql(expression), variables: {id}, fetchPolicy: 'network-only' };
     const data = await this.loadData( query );
     return new AdminData( data, entityConfig, uiConfig, parent );
@@ -69,20 +74,6 @@ export class AdminDataResolver implements Resolve<AdminData> {
     return `${uiConfig.query}(id: $id) ${fields}`;
   }
 
-  private async loadFormData(
-      entityConfig:EntityConfigType,
-      uiConfig:UiConfigType,
-      formConfig:FormConfigType,
-      id?:string,
-      parent?:AdminData ):Promise<any> {
-    const expressions = [];
-    if( id ) expressions.push( this.getItemLoadExpression( entityConfig, entityConfig.edit  ));
-    expressions.push( ... _.compact( _.map( formConfig.data, data => this.getDataLoadExpression( data, uiConfig ) ) ) );
-    const expression = `query ${ id ? 'EntityQuery($id: ID!)' : '' }{ ${ _.join( expressions, '\n' ) } }`;
-    const query = { query: gql(expression), variables: {id}, fetchPolicy: 'network-only' };
-    const data = await this.loadData( query );
-    return new AdminData( data, entityConfig, uiConfig, parent );
-  }
 
   private getDataLoadExpression( data:AssocConfigType, uiConfig:UiConfigType ):string {
     if( _.isString( data ) ) data = { path: data };
@@ -109,7 +100,9 @@ export class AdminDataResolver implements Resolve<AdminData> {
     const queryFields = _.intersection(
       _.keys(entityConfig.fields),
       _.map(uiConfig.fields, (field:FieldConfigType) => field.name ));
-    const assocFields = _.map( uiConfig.assoc, assoc =>
+    const assocs = _.compact( _.uniq( _.concat(
+      uiConfig.assoc, _.map( uiConfig.fields, (field:FieldConfigType) => field.path ) ) ) );
+    const assocFields = _.map( assocs, assoc =>
         this.getAssocFields( entityConfig, assoc)).join( ' ');
     return `{ id ${ _.join( _.concat( queryFields, assocFields ), ' ' ) } }`;
   }
@@ -118,7 +111,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
     if( _.isString( assoc ) ) assoc = _.set( {}, 'path', assoc );
     const config = this.adminService.getEntityConfig( assoc.path );
     if( ! config ) return this.warn( `getAssocFields: no config for path '${assoc.path}' `, undefined);
-    const query = _.get( entityConfig.assoc, [assoc.path, 'query']);
+    const query = _.get( entityConfig.assocs, [assoc.path, 'query']);
     if( ! query ) return this.warn( `getAssocFields: no query for path '${assoc.path}' `, undefined);
     if( ! assoc.fields ) assoc.fields = _.keys( config.fields );
     const fields = _.filter( assoc.fields, field => _.includes( _.keys( config.fields ), field ) );

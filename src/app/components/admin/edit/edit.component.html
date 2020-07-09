@@ -24,9 +24,11 @@
             nzShowSearch nzAllowClear
             nzPlaceHolder="Select a value"
             [formControlName]="field.name">
-          <nz-option nzLabel="Jack" nzValue="jack"></nz-option>
-          <nz-option nzLabel="Lucy" nzValue="lucy"></nz-option>
-          <nz-option nzLabel="Tom" nzValue="tom"></nz-option>
+          <nz-option
+            *ngFor="let value of field.values(data.data)"
+            [nzLabel]="value.label"
+            [nzValue]="value.value">
+          </nz-option>
         </nz-select>
 
         <input *ngSwitchDefault nz-input [formControlName]="field.name" [id]="field.name" />

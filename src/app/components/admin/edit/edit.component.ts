@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
-import { FieldConfigType, FormFieldConfigType, FieldMetaDataType, AssocType } from 'src/app/lib/admin-config';
+import { FieldConfigType, AssocType } from 'src/app/lib/admin-config';
 
 import { Validators, FormGroup } from '@angular/forms';
 import { AdminEntityComponent } from '../admin-entity.component';
@@ -14,7 +14,7 @@ import { AdminEntityComponent } from '../admin-entity.component';
 export class EditComponent extends AdminEntityComponent {
 
   validateForm!:FormGroup
-  get fields() { return this.data.entityConfig.form.fields as FormFieldConfigType[] }
+  get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
 
   submitForm():void {
     _.forEach( this.validateForm.controls, control => {
@@ -30,65 +30,53 @@ export class EditComponent extends AdminEntityComponent {
   }
 
   onSave = () => this.submitForm();
-  onCancel = () => this.onList();
-
+  onCancel = () => this.onShow();
 
   protected prepareFields(){
     const config = this.data.entityConfig;
     if( ! _.has( config, 'form' ) ) _.set( config, 'form', {} );
     if( ! _.has( config.form, 'fields' ) ) _.set( config.form, 'fields',
-      _.concat( _.keys( config.assoc ) , _.keys( config.fields ) ) );
-
-    config.form.fields = _.compact( _.map( config.form.fields, field => this.prepareField( field ) ) );
+      _.concat( _.keys( config.assocs ) , _.keys( config.fields ) ) );
+    config.form.fields = _.compact( _.map( config.form.fields, (field:FieldConfigType) => this.prepareField( field ) ) );
   }
 
-  protected prepareField( field:string|FormFieldConfigType ):FormFieldConfigType | undefined {
-    const fieldName = _.isString( field ) ? field : field.name;
-    const fieldConfig = this.data.entityConfig.fields[fieldName];
+  protected prepareField( field:FieldConfigType ):FieldConfigType | undefined {
+    const fieldConfig = this.data.entityConfig.fields[field.name];
     if( fieldConfig ) return this.fieldFromMetaField( field, fieldConfig );
 
-    const path = _.isString( field ) ? field : field.path;
-    const assocConfig = this.data.entityConfig.assoc[path];
+    const assocConfig = this.data.entityConfig.assocs[field.path];
     if( assocConfig ) return this.fieldFromMetaAssoc( field, assocConfig );
 
     return this.warn( `neither field nor assoc : '${field}'`, undefined );
   }
 
-  protected fieldFromMetaField( field:string|FormFieldConfigType, fieldConfig:FieldMetaDataType ):FormFieldConfigType {
+  protected fieldFromMetaField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { name: field };
-    return _.defaults( field, _.pick( fieldConfig, ['name', 'required', 'virtual'] ));
+    return _.defaults( field, fieldConfig );
   }
 
-  protected fieldFromMetaAssoc( field:string|FormFieldConfigType, assocConfig:AssocType ):FormFieldConfigType {
+  protected fieldFromMetaAssoc( field:string|FieldConfigType, assocConfig:AssocType ):FieldConfigType {
     if( _.isString( field ) ) field = { path: field };
     const config = this.adminService.getEntityConfig( assocConfig.path );
     if( ! config ) return this.warn( `no such config '${assocConfig.path}'`, undefined );
-    const values = (data:any) => _.get( data, config.typesQuery );
-    const label = inflection.humanize( inflection.singularize( field.path ) );
+    const values = (data:any) => _.map( _.get( data, config.typesQuery ), data => ({
+      value: _.get( data, 'id'), label: this.label( data )
+    }));
+    const query = _.get( this.data.entityConfig.assocs, [field.path, 'query']);
+    const value = (item:any) => _.get( item, [query, 'id'] );
+    const label = inflection.humanize( query );
     const control = 'select';
     return _.defaults( field,
-      { name: config.foreignKey, path: assocConfig.path, required: assocConfig.required, values, label, control } );
+      { name: config.foreignKey, path: assocConfig.path, required: assocConfig.required, values, value, label, control } );
   }
 
   protected buildForm(){
     this.prepareFields();
-    const definition = {};
-
-    _.reduce( this.fields, (definition, field) => {
-      if( _.isString( field ) ) field = { name: field } as FieldConfigType;
-      if( _.has( field, 'path') ) {
-        const path = _.get( field, 'path' );
-        const config = this.adminService.getEntityConfig( path );
-        if( ! config ) return this.warn( `no such config '${path}'`, definition );
-        _.set( field, 'name', config.foreignKey );
-      }
-      const fieldName = _.get( field, 'name' );
-      const fieldMeta =  this.data.entityConfig.fields[fieldName];
-      const required = _.get( fieldMeta, 'required' );
-      const validators = required ? [Validators.required] : [];
-      return _.set(definition, fieldName, [null, validators]);
-    }, definition );
-
+    const definition = _.reduce( this.fields, (definition, field) => {
+      const validators = field.required ? [Validators.required] : [];
+      const value = this.value( field );
+      return _.set(definition, field.name, [value, validators]);
+    }, {} );
     this.validateForm = this.fb.group(definition);
   }
 

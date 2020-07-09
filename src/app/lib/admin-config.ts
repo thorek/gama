@@ -1,46 +1,31 @@
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
 
-export type ActionType = 'index'|'show';
-
-export type FieldMetaDataType = {
-  name:string,
-  type?:string,
-  virtual?:boolean,
-  unique?:boolean,
-  required?:boolean,
-  label?:string,
-  value?:(entity:any, action?:ActionType) => any,
+export type AdminConfigType = {
+  entities?:{ [entity:string]:EntityConfigType}
+  menu?:string[]
 }
 
-export type FieldsMetaDataType = {[field:string]:FieldMetaDataType}
-
-export type FieldFilterConfigType = {
-  value?:(item:any) => any | any[]
-  multiple?: boolean
-}
-
-export type FieldConfigType = {
-  name:string
-  label?:string|(() => string)
-  value?:(item:any) => string|object[]
-  filter?:boolean|FieldFilterConfigType
-  link?:(item:any) => any[]
-  searchable?:boolean
-  sortable?:boolean
-  parent?:string
-}
-
-export type UiConfigType = AdminTableConfig & {
-  query?:string
-  assoc?:AssocConfigType[]
-  table?:AssocTableConfigType[]
-}
-
-export type AdminTableActionConfig = {
-  icon?:string
-  text?:string
-  onAction:(item:any) => void
+export type EntityConfigType = {
+  path?:string
+  title?:string|((purpose?:TitlePurposeType)=>string)
+  action?:(event:ActionEventType) => void
+  fields?:{[name:string]:FieldConfigType}
+  assocs?:{[name:string]:AssocType}
+  entitesName?:string
+  entityName?:string
+  typesQuery?:string
+  typeQuery?:string
+  deleteMutation?:string
+  updateMutation?:string
+  updateInput?:string
+  createMutation?:string
+  createInput?:string,
+  foreignKey?:string
+  name?:( item:any ) => string
+  index?:UiConfigType
+  show?:UiConfigType
+  form?:UiConfigType
 }
 
 export type AdminTableConfig = {
@@ -50,6 +35,44 @@ export type AdminTableConfig = {
   defaultActions?:('show'|'edit'|'delete')[]
   search?:boolean
 }
+
+export type UiConfigType = AdminTableConfig & {
+  query?:string
+  assoc?:AssocConfigType[]
+  data?:AssocConfigType[]
+  table?:AssocTableConfigType[]
+}
+
+export type AdminTableActionConfig = {
+  icon?:string
+  text?:string
+  onAction:(item:any) => void
+}
+
+export type FieldFilterConfigType = {
+  value?:(item:any) => any | any[]
+  multiple?:boolean
+}
+
+export type FieldConfigType = {
+  name?:string
+  path?:string
+  label?:string|(() => string)
+  value?:(item:any) => string|object[]
+  filter?:boolean|FieldFilterConfigType
+  link?:(item:any) => any[]
+  searchable?:boolean
+  sortable?:boolean
+  parent?:string
+  control?:string
+  values?:(data:any) => {value:any, label:string}[]
+  required?:boolean
+  virtual?:boolean
+  type?:string,
+  unique?:boolean,
+}
+
+
 
 export type AssocTableConfigType = AdminTableConfig & {
   path:string
@@ -67,56 +90,13 @@ export type AssocType = {
   required?:boolean
 }
 
-export type AssocsType = {
-  [assoc:string]:AssocType
-}
-
 export type ActionEventType = {id:any, action:string};
 
 export type TitlePurposeType = 'menu'|'index'|'show'|'edit'|'detailTable'
 
-export type FormFieldConfigType = {
-  name?:string
-  path?:string
-  label?:string|(() => string)
-  control?:string
-  values?:(data:any) => {value:any, label:string}[]
-  required?:boolean
-  virtual?:boolean
-}
 
-export type FormConfigType = {
-  data?:AssocConfigType[]
-  fields?:(string|FormFieldConfigType)[]
-}
 
-export type EntityConfigType = {
-  path?:string
-  title?:string|((purpose?:TitlePurposeType)=>string)
-  action?:(event:ActionEventType) => void
-  fields?:FieldsMetaDataType
-  assoc?:AssocsType
-  entitesName?:string
-  entityName?:string
-  typesQuery?:string
-  typeQuery?:string
-  deleteMutation?:string
-  updateMutation?:string
-  updateInput?:string
-  createMutation?:string
-  createInput?:string,
-  foreignKey?:string
-  name?:(item:any, action?:ActionType ) => string
-  index?:UiConfigType
-  show?:UiConfigType
-  edit?:UiConfigType
-  create?:UiConfigType
-  form?:FormConfigType
-}
-export type AdminConfigType = {
-  entities?:{ [entity:string]:EntityConfigType}
-  menu?:string[]
-}
+
 
 /**
  *
@@ -149,32 +129,25 @@ export class AdminConfig {
   private buildEntityConfig( data:any ):EntityConfigType {
     const fields = _.reduce( data.fields, (fields,data) =>
       _.set(fields, data.name, this.buildField(data)), {} );
-    const assoc = _.reduce( data.assocTo, (assocs, assocTo) =>
+    const assocs = _.reduce( data.assocTo, (assocs, assocTo) =>
       _.set( assocs, assocTo.path, assocTo ), {} );
     _.reduce( data.assocToMany, (assocs, assocToMany) =>
-      _.set( assocs, assocToMany.path, assocToMany ), assoc );
+      _.set( assocs, assocToMany.path, assocToMany ), assocs );
     _.reduce( data.assocFrom, (assocs, assocFrom) =>
-      _.set( assocs, assocFrom.path, assocFrom ), assoc );
+      _.set( assocs, assocFrom.path, assocFrom ), assocs );
     const config = _.pick( data,
       [ 'path', 'typeQuery', 'typesQuery', 'deleteMutation',
         'updateInput', 'updateMutation', 'createInput', 'createMutation', 'foreignKey']);
-    return _.merge( config, { fields, assoc } );
+    return _.merge( config, { fields, assocs } );
   };
 
-  private buildField( data:any ):FieldMetaDataType {
-    return {
-      name: data.name,
-      label: inflection.humanize( data.name ),
-      type: data.type,
-      required: data.required,
-      virtual: data.virtual,
-      unique: data.unique
-    };
+  private buildField( data:any ):FieldConfigType {
+    return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique']);
   }
 
   private setUiConfigDefaults( config:AdminConfigType ):void {
     _.forEach( config.entities, config => {
-      _.forEach( ['index','show','edit','create'], uiType => this.setDefaults( config, uiType ) );
+      _.forEach( ['index','show','form'], uiType => this.setDefaults( config, uiType ) );
     });
   }
 
@@ -183,24 +156,32 @@ export class AdminConfig {
     const uiConfig:UiConfigType = _.get( config, uiType );
     if( ! _.has( uiConfig, 'query' ) ) _.set( uiConfig, 'query',
       uiType === 'index' ? config.typesQuery : config.typeQuery );
-    this.setFieldDefaults( uiConfig, config );
+    this.setFieldsDefaults( uiConfig, config );
     if( _.isUndefined( uiConfig.search ) ) uiConfig.search = true;
     return config;
   }
 
-  private setFieldDefaults( uiConfig:UiConfigType|AssocTableConfigType, entityConfig:EntityConfigType ):void {
-    if( ! _.has( uiConfig, 'fields') ) _.set( uiConfig, 'fields', entityConfig ? _.keys(entityConfig.fields) : [] );
-    uiConfig.fields = _.map( uiConfig.fields, field => _.isString( field ) ? { name: field } : field );
+  private setFieldsDefaults( uiConfig:UiConfigType|AssocTableConfigType, entityConfig:EntityConfigType ):void {
+    if( ! _.has( uiConfig, 'fields') ) _.set( uiConfig, 'fields',
+      _.concat( _.keys(entityConfig.fields), _.keys( entityConfig.assocs ) ) );
+    uiConfig.fields = _.compact( _.map( uiConfig.fields, field => this.setFieldDefault( field, entityConfig ) ) );
+  }
+
+  private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType):FieldConfigType|undefined {
+    return ! _.isString( field ) ? field :
+      _.has( entityConfig.fields, field ) ? { name: field } :
+      _.has( entityConfig.assocs, field ) ? { path: field } :
+      undefined;
   }
 
   private setAssocTableDefaults( config:AdminConfigType ):void {
     _.forEach( config.entities, entityConfig => {
-      _.forEach( ['index','show','edit','create'], uiType => {
+      _.forEach( ['index','show','form'], uiType => {
         const uiConfig:UiConfigType = entityConfig[uiType];
         _.forEach( uiConfig.table, table => {
           const tableEntityConfig = config.entities[table.path];
           if( ! tableEntityConfig ) return console.warn(`no such tableEntityConfig '${table.path}'`);
-          this.setFieldDefaults( table, tableEntityConfig );
+          this.setFieldsDefaults( table, tableEntityConfig );
          });
       } );
     });
