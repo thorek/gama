@@ -1,6 +1,8 @@
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
 
+const nameProperties = ['name', 'title', 'key', 'lastname', 'firstname', 'last_name', 'first_name'];
+
 export type AdminConfigType = {
   entities?:{ [entity:string]:EntityConfigType}
   menu?:string[]
@@ -149,11 +151,21 @@ export class AdminConfig {
     return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique']);
   }
 
+  private guessNameValue = (item:any) => {
+    const candidate = _.find( nameProperties, candidate => _.has( item, candidate ) );
+    if( candidate ) return _.get( item, candidate );
+    if( _.has( item, 'id' ) ) return `#${_.get(item, 'id' ) }`;
+    return _.toString( item );
+
+  }
+
   private setUiConfigDefaults( config:AdminConfigType ):void {
     _.forEach( config.entities, config => {
+      if( _.isUndefined( config.name) ) config.name = this.guessNameValue;
       _.forEach( ['index','show','form'], uiType => this.setDefaults( config, uiType ) );
       if( _.isUndefined( config.form.data ) ) config.form.data =
         _.compact( _.map( config.form.fields, (field:FieldConfigType) => field.path ) );
+
     });
   }
 
@@ -191,13 +203,13 @@ export class AdminConfig {
     });
   }
 
-  private setFieldDefault( field:string|FieldConfigType, config:EntityConfigType ):FieldConfigType | undefined {
+  private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType ):FieldConfigType | undefined {
     const fieldName = _.isString( field ) ? field : _.get( field, 'name' );
-    const fieldConfig = config.fields[fieldName];
+    const fieldConfig = entityConfig.fields[fieldName];
     if( fieldConfig ) return this.fieldFromMetaField( field, fieldConfig );
     const pathName = _.isString( field ) ? field : _.get( field, 'path' );
-    const assoc = config.assocs[pathName];
-    if( assoc ) return this.fieldFromMetaAssoc( field, assoc );
+    const assoc = entityConfig.assocs[pathName];
+    if( assoc ) return this.fieldFromMetaAssoc( field, assoc, entityConfig );
     return this.warn( `neither field nor assoc : '${field}'`, undefined );
   }
 
@@ -206,29 +218,23 @@ export class AdminConfig {
     return _.defaults( field, fieldConfig );
   }
 
-  private fieldFromMetaAssoc( field:string|FieldConfigType, assoc:AssocType ):FieldConfigType {
+  private fieldFromMetaAssoc( field:string|FieldConfigType, assoc:AssocType, entityConfig:EntityConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { path: field };
     const values = (data:any) => _.map( _.get( data, assoc.typesQuery ), data => ({
-      value: _.get( data, 'id'), label: _.get( data, 'name') // TODO
-    }));
-    const query = assoc.query;
+      value: _.get( data, 'id'), label: entityConfig.name( data ) }));
     const value = (item:any) => {
-      const assocValue = _.get( item, query );
-      return _.isArray( assocValue ) ? _.join( _.map( assocValue, value => value.name ), ', ' ) : assocValue.name;
+      const assocValue = _.get( item, assoc.query );
+      return _.isArray( assocValue ) ?
+        _.join( _.map( assocValue, value => entityConfig.name( value ) ), ', ' ) :
+        entityConfig.name( assocValue );
     };
     const keyValue = (item:any) => {
-      const assocValue = _.get( item, query );
+      const assocValue = _.get( item, assoc.query );
       return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
     }
-    const label = inflection.humanize( query );
-    const control =
-      assoc.type === 'assocTo' ? 'select' :
-      assoc.type === 'assocToMany' ? 'tags' :
-      undefined;
-    return _.defaults( field, { values, value, keyValue, label, control,
-      name: assoc.foreignKey,
-      path: assoc.path,
-      required: assoc.required } );
+    return _.defaults( field, { values, value, keyValue,
+      control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'tags' : undefined,
+      label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );
   }
 
   private warn<T>( message:string, type:T ):T {

@@ -4,14 +4,6 @@ import { EntityConfigType, TitlePurposeType, FieldConfigType } from 'src/app/lib
 
 export abstract class AdminComponent {
 
-  protected guessNameValue( item:any ):string {
-    const candidates = ['name', 'title', 'key'];
-    const candidate = _.find( candidates, candidate => _.has( item, candidate ) );
-    if( candidate ) return _.get( item, candidate );
-    if( _.has( item, 'id' ) ) return `#${_.get(item, 'id' ) }`;
-    return _.toString( item );
-  }
-
   title( purpose:TitlePurposeType, config:EntityConfigType ):string {
     if( _.isFunction( config.title ) ) return config.title( purpose );
     if( _.isString( config.title ) ) return config.title;
@@ -21,8 +13,7 @@ export abstract class AdminComponent {
   }
 
   name( item:any, config:EntityConfigType ){
-    if( _.isFunction(config.name) ) return config.name( item );
-    return this.guessNameValue( item );
+    return config.name( item );
   }
 
   label( field:FieldConfigType ):string {
@@ -36,10 +27,7 @@ export abstract class AdminComponent {
 
   value( field:FieldConfigType, item:any ){
     if( ! _.isFunction( field.value ) ) return _.get( item, field.name );
-    const value = field.value( item );
-    return _.isArray( value ) ?
-      _(value).map( v => this.guessNameValue( v ) ).join(', ') :
-      value;
+    return field.value( item );
   }
 
   isLink( field:FieldConfigType ):boolean {
