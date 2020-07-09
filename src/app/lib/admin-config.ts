@@ -59,6 +59,7 @@ export type FieldConfigType = {
   path?:string
   label?:string|(() => string)
   value?:(item:any) => string|object[]
+  keyValue?:(item:any) => string|string[]
   filter?:boolean|FieldFilterConfigType
   link?:(item:any) => any[]
   searchable?:boolean
@@ -151,6 +152,8 @@ export class AdminConfig {
   private setUiConfigDefaults( config:AdminConfigType ):void {
     _.forEach( config.entities, config => {
       _.forEach( ['index','show','form'], uiType => this.setDefaults( config, uiType ) );
+      if( _.isUndefined( config.form.data ) ) config.form.data =
+        _.compact( _.map( config.form.fields, (field:FieldConfigType) => field.path ) );
     });
   }
 
@@ -168,17 +171,12 @@ export class AdminConfig {
     if( ! _.has( uiConfig, 'fields') ) _.set( uiConfig, 'fields',
       _.concat(
         _.keys( entityConfig.fields ),
-        _.keys( _.filter( entityConfig.assocs, assoc => _.includes( ['assocTo', 'assocToMany'], assoc.type ) ) )
+        _.map(
+          _.filter( entityConfig.assocs, assoc => _.includes( ['assocTo', 'assocToMany'], assoc.type ) ),
+          assoc => assoc.path )
       ));
     uiConfig.fields = _.compact( _.map( uiConfig.fields, field => this.setFieldDefault( field, entityConfig ) ) );
   }
-
-  // private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType):FieldConfigType|undefined {
-  //   return ! _.isString( field ) ? field :
-  //     _.has( entityConfig.fields, field ) ? { name: field } :
-  //     _.has( entityConfig.assocs, field ) ? { path: field } :
-  //     undefined;
-  // }
 
   private setAssocTableDefaults( config:AdminConfigType ):void {
     _.forEach( config.entities, entityConfig => {
@@ -192,15 +190,6 @@ export class AdminConfig {
       } );
     });
   }
-
-
-  // private prepareForm( config:EntityConfigType ){
-  //   if( ! _.has( config, 'form' ) ) _.set( config, 'form', {} );
-  //   if( ! _.has( config.form, 'fields' ) ) _.set( config.form, 'fields',
-  //     _.concat( _.keys( config.assocs ) , _.keys( config.fields ) ) );
-  //   config.form.fields = _.compact(
-  //     _.map( config.form.fields, (field:FieldConfigType) => this.prepareFormField( field, config ) ) );
-  // }
 
   private setFieldDefault( field:string|FieldConfigType, config:EntityConfigType ):FieldConfigType | undefined {
     const fieldName = _.isString( field ) ? field : _.get( field, 'name' );
@@ -225,15 +214,21 @@ export class AdminConfig {
     const query = assoc.query;
     const value = (item:any) => {
       const assocValue = _.get( item, query );
-      return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
+      return _.isArray( assocValue ) ? _.join( _.map( assocValue, value => value.name ), ', ' ) : assocValue.name;
     };
+    const keyValue = (item:any) => {
+      const assocValue = _.get( item, query );
+      return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
+    }
     const label = inflection.humanize( query );
     const control =
       assoc.type === 'assocTo' ? 'select' :
       assoc.type === 'assocToMany' ? 'tags' :
       undefined;
-    return _.defaults( field,
-      { name: assoc.foreignKey, path: assoc.path, required: assoc.required, values, value, label, control } );
+    return _.defaults( field, { values, value, keyValue, label, control,
+      name: assoc.foreignKey,
+      path: assoc.path,
+      required: assoc.required } );
   }
 
   private warn<T>( message:string, type:T ):T {

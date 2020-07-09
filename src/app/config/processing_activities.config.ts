@@ -7,12 +7,12 @@ export const processingActivitiesConfig:EntityConfigType = {
     fields: [
       'name',
       {
-        name: 'organisations',
+        path: 'organisations',
         value: (processingActivity) =>
         _.get( _.first( processingActivity.organisationalUnits ), 'organisation.name' )
       },
       {
-        name: 'organisational_units',
+        path: 'organisational_units',
         value: (processingActivity) =>
           _(processingActivity.organisationalUnits).map( ou => ou.name ).join(', ')
       }

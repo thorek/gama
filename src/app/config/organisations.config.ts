@@ -10,7 +10,7 @@ export const organisationsConfig:EntityConfigType = {
     fields: [
       'name',
       {
-        name: 'industries',
+        path: 'industries',
         label: 'Assigned Industries',
         value: (organisation:any) => organisation.industries,
         filter: {
@@ -18,8 +18,7 @@ export const organisationsConfig:EntityConfigType = {
         }
       },
       {
-        name: 'client',
-        parent: 'clients',
+        path: 'clients',
         value: (organisation:any) => _.get(organisation, 'client.name' ),
         link: (organisation:any) => ['/admin', 'clients', 'show', organisation?.client?.id]
       },
@@ -64,12 +63,6 @@ export const organisationsConfig:EntityConfigType = {
     ]
   },
   form: {
-    data: ['clients', 'industries'],
-    fields: [
-      'clients',
-      'name',
-      'description',
-      { path: 'industries', name: 'industryIds' }
-    ]
+    data: ['clients', 'industries']
   }
 }

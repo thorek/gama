@@ -36,7 +36,7 @@ export class EditComponent extends AdminEntityComponent {
   protected buildForm(){
     const definition = _.reduce( this.fields, (definition, field) => {
       const validators = field.required ? [Validators.required] : [];
-      const value = field.path ? this.rawValue( field ) : this.value( field );
+      const value = field.path ? field.keyValue( this.data.item ) : this.value( field );
       return _.set(definition, field.name, [value, validators]);
     }, {} );
     this.validateForm = this.fb.group(definition);

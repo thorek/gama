@@ -118,11 +118,6 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     return super.name( item, config );
   }
 
-  rawValue( field:FieldConfigType, item?:any ){
-    if( ! item ) item = this.data.item;
-    return super.rawValue( field, item );
-  }
-
   value( field:FieldConfigType, item?:any ){
     if( ! item ) item = this.data.item;
     return super.value( field, item );
