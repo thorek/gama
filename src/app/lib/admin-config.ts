@@ -56,14 +56,19 @@ export type FieldFilterConfigType = {
   multiple?:boolean
 }
 
+export type LinkValueType = {
+  value:string
+  link:string[]
+}
+
 export type FieldConfigType = {
   name?:string
   path?:string
   label?:string|(() => string)
-  value?:(item:any) => string|object[]
+  value?:(item:any) => string|LinkValueType|(string|LinkValueType)[]
   keyValue?:(item:any) => string|string[]
   filter?:boolean|FieldFilterConfigType
-  link?:(item:any) => any[]
+  link?:boolean|((item:any) => any[])
   searchable?:boolean
   sortable?:boolean
   parent?:string
@@ -206,32 +211,40 @@ export class AdminConfig {
   private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType ):FieldConfigType | undefined {
     const fieldName = _.isString( field ) ? field : _.get( field, 'name' );
     const fieldConfig = entityConfig.fields[fieldName];
-    if( fieldConfig ) return this.fieldFromMetaField( field, fieldConfig );
+    if( fieldConfig ) return this.fieldFromEntityField( field, fieldConfig );
     const pathName = _.isString( field ) ? field : _.get( field, 'path' );
     const assoc = entityConfig.assocs[pathName];
-    if( assoc ) return this.fieldFromMetaAssoc( field, assoc, entityConfig );
+    if( assoc ) return this.fieldFromAssoc( field, assoc, entityConfig );
     return this.warn( `neither field nor assoc : '${field}'`, undefined );
   }
 
-  private fieldFromMetaField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
+  private fieldFromEntityField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { name: field };
     return _.defaults( field, fieldConfig );
   }
 
-  private fieldFromMetaAssoc( field:string|FieldConfigType, assoc:AssocType, entityConfig:EntityConfigType ):FieldConfigType {
+  private linkValue( field:FieldConfigType, assoc:AssocType, assocValue:any, name:( item:any )=> string ){
+    const link =
+      field.link === false ? undefined :
+      field.link ? field.link : ['/admin', assoc.path, 'show', assocValue.id ];
+    return link ? { value: name(assocValue), link } : name(assocValue);
+  }
+
+  private fieldFromAssoc( field:string|FieldConfigType, assoc:AssocType, entityConfig:EntityConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { path: field };
     const values = (data:any) => _.map( _.get( data, assoc.typesQuery ), data => ({
       value: _.get( data, 'id'), label: entityConfig.name( data ) }));
     const value = (item:any) => {
       const assocValue = _.get( item, assoc.query );
       return _.isArray( assocValue ) ?
-        _.join( _.map( assocValue, value => entityConfig.name( value ) ), ', ' ) :
-        entityConfig.name( assocValue );
+        _.map( assocValue, value => this.linkValue( field as FieldConfigType, assoc, value, entityConfig.name ) ) :
+        this.linkValue( field as FieldConfigType, assoc, assocValue, entityConfig.name );
     };
     const keyValue = (item:any) => {
       const assocValue = _.get( item, assoc.query );
       return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
     }
+
     return _.defaults( field, { values, value, keyValue,
       control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'tags' : undefined,
       label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );

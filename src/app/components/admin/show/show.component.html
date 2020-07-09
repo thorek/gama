@@ -12,12 +12,7 @@
 
 <nz-descriptions nzTitle="Entity data" nzBordered [nzColumn]="1">
   <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
-    <a *ngIf="isLink( field ); else noLink" [routerLink]="link(field )">
-      {{ value( field ) }}
-    </a>
-    <ng-template #noLink>
-      {{ value( field ) }}
-    </ng-template>
+    <span [innerHTML]="value( field )"></span>
   </nz-descriptions-item>
 </nz-descriptions>
 

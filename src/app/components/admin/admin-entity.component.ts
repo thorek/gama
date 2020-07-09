@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType } from 'src/app/lib/admin-config';
+import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType, LinkValueType } from 'src/app/lib/admin-config';
 import { AdminData } from 'src/app/lib/admin-data';
 import { AdminService } from 'src/app/services/admin.service';
 
@@ -121,11 +121,6 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   value( field:FieldConfigType, item?:any ){
     if( ! item ) item = this.data.item;
     return super.value( field, item );
-  }
-
-  link( field:FieldConfigType, item?:any ):string[] {
-    if( ! item ) item = this.data.item;
-    return super.link( field, item );
   }
 
 }

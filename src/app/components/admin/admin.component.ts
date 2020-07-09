@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as inflection from 'inflection';
-import { EntityConfigType, TitlePurposeType, FieldConfigType } from 'src/app/lib/admin-config';
+import { EntityConfigType, TitlePurposeType, FieldConfigType, LinkValueType } from 'src/app/lib/admin-config';
 
 export abstract class AdminComponent {
 
@@ -26,19 +26,18 @@ export abstract class AdminComponent {
   }
 
   value( field:FieldConfigType, item:any ){
-    if( ! _.isFunction( field.value ) ) return _.get( item, field.name );
-    return field.value( item );
+    if( ! _.isFunction( field.value ) ) field.value = (item) => _.get( item, field.name );
+    const value = field.value( item );
+    return _.isArray( value ) ?
+      _.join( _.map( value, fieldValue => this.linkOrPlain( fieldValue ) ), ', ') :
+      this.linkOrPlain( value );
   }
 
-  isLink( field:FieldConfigType ):boolean {
-    return _.isFunction( field.link );
+  protected linkOrPlain( value:string|LinkValueType ):string {
+    if( ! value ) return '';
+    if( _.isString( value ) ) return value;
+    return `<a href="${_.join(value.link, '/')}">${ value.value }</a>`;
   }
-
-  link( field:FieldConfigType, item:any ):string[] {
-    if( ! this.isLink( field ) ) return [];
-    return field.link( item );
-  }
-
 
   protected warn<T>( message:string, type:T ):T {
     console.warn(message);

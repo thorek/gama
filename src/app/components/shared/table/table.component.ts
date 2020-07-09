@@ -141,7 +141,7 @@ export class TableComponent extends AdminComponent {
       field.filter.value : _.isFunction( field.value ) ?
         field.value : (item:any) => _.get( item, field.name )
     let value = valueFn( item );
-    if( _.isArray( value ) ) return _.map( value, v => _.isString( v ) ? v : this.guessNameValue( v ) );
-    return _.isString( value ) ? value : this.guessNameValue( value );
+    if( _.isArray( value ) ) return _.map( value, v => _.isString( v ) ? v : ((((v.name)))) );
+    return _.isString( value ) ? value : (((value.name))) ; // !!!!! TODO !!!!!
   }
 }

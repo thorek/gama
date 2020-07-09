@@ -33,19 +33,9 @@
   </thead>
   <tbody>
     <tr *ngFor="let item of basicTable.data">
-      <ng-container *ngFor="let column of columns">
-        <td *ngIf="isLink( column.field ); else noLink">
-          <a [routerLink]="link( item.source, column.field )">
-            {{ item[column.name] }}
-          </a>
-        </td>
-        <ng-template #noLink>
-          <td (click)="onSelect(item.id)" (click)="onSelect(item.id)" style="cursor: pointer;">
-            {{ item[column.name] }}
-          </td>
-        </ng-template>
-      </ng-container>
-
+      <td *ngFor="let column of columns" (click)="onSelect(item.id)">
+        <span [innerHTML]="item[column.name]"></span>
+      </td>
       <td align="right">
         <nz-space>
           <nz-space-item *ngFor="let action of actions">

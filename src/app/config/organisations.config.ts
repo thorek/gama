@@ -12,15 +12,12 @@ export const organisationsConfig:EntityConfigType = {
       {
         path: 'industries',
         label: 'Assigned Industries',
-        value: (organisation:any) => organisation.industries,
         filter: {
           multiple: true,
         }
       },
       {
         path: 'clients',
-        value: (organisation:any) => _.get(organisation, 'client.name' ),
-        link: (organisation:any) => ['/admin', 'clients', 'show', organisation?.client?.id]
       },
       {
         name: 'description',
@@ -41,14 +38,10 @@ export const organisationsConfig:EntityConfigType = {
       'name',
       {
         path: 'industries',
-        label: 'Assigned Industries',
-        value: (organisation:any) =>
-          _.join( _.map( organisation.industries, (industry:any) => industry.name ), ', ')
+        label: 'Assigned Industries'
       },
       {
-        path: 'clients',
-        value: (organisation:any) => organisation.client.name,
-        link: (organisation:any) => ['/admin', 'clients', 'show', organisation.client.id]
+        path: 'clients'
       }
     ],
     table: [
