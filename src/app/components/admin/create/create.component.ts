@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormGroup, Validators } from '@angular/forms';
 import * as _ from 'lodash';
-import { FieldConfigType, FormFieldConfigType } from 'src/app/lib/admin-config';
+import { FieldConfigType } from 'src/app/lib/admin-config';
 
 import { AdminEntityComponent } from '../admin-entity.component';
 
@@ -14,7 +14,7 @@ import { AdminEntityComponent } from '../admin-entity.component';
 export class CreateComponent extends AdminEntityComponent {
 
   validateForm!:FormGroup
-  get fields():FormFieldConfigType[] { return this.data.entityConfig.form.fields as FormFieldConfigType[] }
+  get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
 
   submitForm():void {
     _.forEach( this.validateForm.controls, control => {

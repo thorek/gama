@@ -25,15 +25,21 @@ const query = gql`
         path
         query
         required
+        typesQuery
+        foreignKey
       }
       assocToMany {
         path
         query
         required
+        typesQuery
+        foreignKey
       }
       assocFrom {
         path
         query
+        typesQuery
+        foreignKey
       }
     }
   }

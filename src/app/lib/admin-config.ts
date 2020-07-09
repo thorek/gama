@@ -88,6 +88,9 @@ export type AssocType = {
   path:string
   query:string
   required?:boolean
+  type:'assocTo'|'assocToMany'|'assocFrom'
+  foreignKey:string
+  typesQuery:string // for lookups
 }
 
 export type ActionEventType = {id:any, action:string};
@@ -130,11 +133,11 @@ export class AdminConfig {
     const fields = _.reduce( data.fields, (fields,data) =>
       _.set(fields, data.name, this.buildField(data)), {} );
     const assocs = _.reduce( data.assocTo, (assocs, assocTo) =>
-      _.set( assocs, assocTo.path, assocTo ), {} );
+      _.set( assocs, assocTo.path, _.merge( assocTo, { type: 'assocTo' } ) ), {} );
     _.reduce( data.assocToMany, (assocs, assocToMany) =>
-      _.set( assocs, assocToMany.path, assocToMany ), assocs );
+      _.set( assocs, assocToMany.path, _.merge( assocToMany, { type: 'assocToMany' } ) ), assocs );
     _.reduce( data.assocFrom, (assocs, assocFrom) =>
-      _.set( assocs, assocFrom.path, assocFrom ), assocs );
+      _.set( assocs, assocFrom.path, _.merge( assocFrom, { type: 'assocFrom' } ) ), assocs );
     const config = _.pick( data,
       [ 'path', 'typeQuery', 'typesQuery', 'deleteMutation',
         'updateInput', 'updateMutation', 'createInput', 'createMutation', 'foreignKey']);
@@ -163,16 +166,19 @@ export class AdminConfig {
 
   private setFieldsDefaults( uiConfig:UiConfigType|AssocTableConfigType, entityConfig:EntityConfigType ):void {
     if( ! _.has( uiConfig, 'fields') ) _.set( uiConfig, 'fields',
-      _.concat( _.keys(entityConfig.fields), _.keys( entityConfig.assocs ) ) );
+      _.concat(
+        _.keys( entityConfig.fields ),
+        _.keys( _.filter( entityConfig.assocs, assoc => _.includes( ['assocTo', 'assocToMany'], assoc.type ) ) )
+      ));
     uiConfig.fields = _.compact( _.map( uiConfig.fields, field => this.setFieldDefault( field, entityConfig ) ) );
   }
 
-  private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType):FieldConfigType|undefined {
-    return ! _.isString( field ) ? field :
-      _.has( entityConfig.fields, field ) ? { name: field } :
-      _.has( entityConfig.assocs, field ) ? { path: field } :
-      undefined;
-  }
+  // private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType):FieldConfigType|undefined {
+  //   return ! _.isString( field ) ? field :
+  //     _.has( entityConfig.fields, field ) ? { name: field } :
+  //     _.has( entityConfig.assocs, field ) ? { path: field } :
+  //     undefined;
+  // }
 
   private setAssocTableDefaults( config:AdminConfigType ):void {
     _.forEach( config.entities, entityConfig => {
@@ -185,6 +191,54 @@ export class AdminConfig {
          });
       } );
     });
+  }
+
+
+  // private prepareForm( config:EntityConfigType ){
+  //   if( ! _.has( config, 'form' ) ) _.set( config, 'form', {} );
+  //   if( ! _.has( config.form, 'fields' ) ) _.set( config.form, 'fields',
+  //     _.concat( _.keys( config.assocs ) , _.keys( config.fields ) ) );
+  //   config.form.fields = _.compact(
+  //     _.map( config.form.fields, (field:FieldConfigType) => this.prepareFormField( field, config ) ) );
+  // }
+
+  private setFieldDefault( field:string|FieldConfigType, config:EntityConfigType ):FieldConfigType | undefined {
+    const fieldName = _.isString( field ) ? field : _.get( field, 'name' );
+    const fieldConfig = config.fields[fieldName];
+    if( fieldConfig ) return this.fieldFromMetaField( field, fieldConfig );
+    const pathName = _.isString( field ) ? field : _.get( field, 'path' );
+    const assoc = config.assocs[pathName];
+    if( assoc ) return this.fieldFromMetaAssoc( field, assoc );
+    return this.warn( `neither field nor assoc : '${field}'`, undefined );
+  }
+
+  private fieldFromMetaField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
+    if( _.isString( field ) ) field = { name: field };
+    return _.defaults( field, fieldConfig );
+  }
+
+  private fieldFromMetaAssoc( field:string|FieldConfigType, assoc:AssocType ):FieldConfigType {
+    if( _.isString( field ) ) field = { path: field };
+    const values = (data:any) => _.map( _.get( data, assoc.typesQuery ), data => ({
+      value: _.get( data, 'id'), label: _.get( data, 'name') // TODO
+    }));
+    const query = assoc.query;
+    const value = (item:any) => {
+      const assocValue = _.get( item, query );
+      return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
+    };
+    const label = inflection.humanize( query );
+    const control =
+      assoc.type === 'assocTo' ? 'select' :
+      assoc.type === 'assocToMany' ? 'tags' :
+      undefined;
+    return _.defaults( field,
+      { name: assoc.foreignKey, path: assoc.path, required: assoc.required, values, value, label, control } );
+  }
+
+  private warn<T>( message:string, type:T ):T {
+    console.warn(message);
+    return type;
   }
 
 }

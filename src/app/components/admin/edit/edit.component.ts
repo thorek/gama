@@ -32,52 +32,11 @@ export class EditComponent extends AdminEntityComponent {
   onSave = () => this.submitForm();
   onCancel = () => this.onShow();
 
-  protected prepareFields(){
-    const config = this.data.entityConfig;
-    if( ! _.has( config, 'form' ) ) _.set( config, 'form', {} );
-    if( ! _.has( config.form, 'fields' ) ) _.set( config.form, 'fields',
-      _.concat( _.keys( config.assocs ) , _.keys( config.fields ) ) );
-    config.form.fields = _.compact( _.map( config.form.fields, (field:FieldConfigType) => this.prepareField( field ) ) );
-  }
-
-  protected prepareField( field:FieldConfigType ):FieldConfigType | undefined {
-    const fieldConfig = this.data.entityConfig.fields[field.name];
-    if( fieldConfig ) return this.fieldFromMetaField( field, fieldConfig );
-
-    const assocConfig = this.data.entityConfig.assocs[field.path];
-    if( assocConfig ) return this.fieldFromMetaAssoc( field, assocConfig );
-
-    return this.warn( `neither field nor assoc : '${field}'`, undefined );
-  }
-
-  protected fieldFromMetaField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
-    if( _.isString( field ) ) field = { name: field };
-    return _.defaults( field, fieldConfig );
-  }
-
-  protected fieldFromMetaAssoc( field:string|FieldConfigType, assocConfig:AssocType ):FieldConfigType {
-    if( _.isString( field ) ) field = { path: field };
-    const config = this.adminService.getEntityConfig( assocConfig.path );
-    if( ! config ) return this.warn( `no such config '${assocConfig.path}'`, undefined );
-    const values = (data:any) => _.map( _.get( data, config.typesQuery ), data => ({
-      value: _.get( data, 'id'), label: this.label( data )
-    }));
-    const query = _.get( this.data.entityConfig.assocs, [field.path, 'query']);
-    const value = (item:any) => {
-      const assocValue = _.get( item, query );
-      return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
-    };
-    const label = inflection.humanize( query );
-    const control = 'select';
-    return _.defaults( field,
-      { name: config.foreignKey, path: assocConfig.path, required: assocConfig.required, values, value, label, control } );
-  }
 
   protected buildForm(){
-    this.prepareFields();
     const definition = _.reduce( this.fields, (definition, field) => {
       const validators = field.required ? [Validators.required] : [];
-      const value = this.value( field );
+      const value = field.path ? this.rawValue( field ) : this.value( field );
       return _.set(definition, field.name, [value, validators]);
     }, {} );
     this.validateForm = this.fb.group(definition);

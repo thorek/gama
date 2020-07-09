@@ -27,7 +27,9 @@ export class MetaDataBuilder extends SchemaBuilder {
       fields: {
         path: { type: GraphQLString },
         query: { type: GraphQLString },
-        required: { type: GraphQLBoolean }
+        required: { type: GraphQLBoolean },
+        typesQuery: { type: GraphQLString },
+        foreignKey: { type: GraphQLString }
       }
     });
 
@@ -89,7 +91,13 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.assocTo, assocTo => {
       const refEntity = this.context.entities[assocTo.type];
-      return { path: refEntity.path, query: refEntity.singular, required: assocTo.required };
+      return {
+        path: refEntity.path,
+        query: refEntity.singular,
+        required: assocTo.required,
+        typesQuery: refEntity.typesQuery,
+        foreignKey: refEntity.foreignKey
+      };
     });
   }
 
@@ -97,7 +105,13 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.assocToMany, assocToMany => {
       const refEntity = this.context.entities[assocToMany.type];
-      return { path: refEntity.path, query: refEntity.plural, required: assocToMany.required };
+      return {
+        path: refEntity.path,
+        query: refEntity.plural,
+        required: assocToMany.required,
+        typesQuery: refEntity.typesQuery,
+        foreignKey: refEntity.foreignKeys
+      };
     });
   }
 
@@ -105,7 +119,12 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.assocFrom, assocFrom => {
       const refEntity = this.context.entities[assocFrom.type];
-      return { path: refEntity.path, query: refEntity.plural };
+      return {
+        path: refEntity.path,
+        query: refEntity.plural,
+        typesQuery: refEntity.typesQuery,
+        foreignKey: entity.foreignKey
+      };
     });
   }
 

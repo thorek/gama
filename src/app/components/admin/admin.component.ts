@@ -34,9 +34,13 @@ export abstract class AdminComponent {
     return _.toString(field);
   }
 
-  value( field:FieldConfigType, item:any ){
+  rawValue( field:FieldConfigType, item:any ){
     if( ! _.isFunction( field.value ) ) return _.get( item, field.name );
-    const value = field.value( item );
+    return field.value( item );
+  }
+
+  value( field:FieldConfigType, item:any ){
+    const value = this.rawValue( field, item );
     return _.isArray( value ) ?
       _(value).map( v => this.guessNameValue( v ) ).join(', ') :
       value;

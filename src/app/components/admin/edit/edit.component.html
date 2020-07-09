@@ -20,8 +20,23 @@
       <ng-container [ngSwitch]="field.control">
 
         <nz-select
+            *ngSwitchCase="'tags'"
+            nzShowSearch
+            nzAllowClear
+            nzMode="tags"
+            nzPlaceHolder="Select a value"
+            [formControlName]="field.name">
+          <nz-option
+            *ngFor="let value of field.values(data.data)"
+            [nzLabel]="value.label"
+            [nzValue]="value.value">
+          </nz-option>
+        </nz-select>
+
+        <nz-select
             *ngSwitchCase="'select'"
-            nzShowSearch nzAllowClear
+            nzShowSearch
+            nzAllowClear
             nzPlaceHolder="Select a value"
             [formControlName]="field.name">
           <nz-option
