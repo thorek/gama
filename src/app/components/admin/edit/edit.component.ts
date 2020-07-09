@@ -16,13 +16,20 @@ export class EditComponent extends AdminEntityComponent {
   validateForm!:FormGroup
   get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
 
-  submitForm():void {
+  async submitForm():Promise<void> {
     _.forEach( this.validateForm.controls, control => {
       control.markAsDirty();
       control.updateValueAndValidity();
 
     });
-    if( this.validateForm.valid ) this.updateMutation();
+    if( ! this.validateForm.valid ) return;
+    const violations = await this.adminService.update( this.data.id, this.validateForm.value, this.data.entityConfig );
+    if( _.size( violations ) === 0 ) {
+      this.message.info(`This ${this.title('edit')} was updated!` );
+      setTimeout( ()=> this.onShow(), 500 );
+    } else {
+      this.message.error( _.join(_.map(violations, violation => `${violation.attribute}: ${violation.violation}`), '\n') );
+    }
   }
 
   errorTip(field:FieldConfigType):string {
@@ -32,7 +39,6 @@ export class EditComponent extends AdminEntityComponent {
   onSave = () => this.submitForm();
   onCancel = () => this.onShow();
 
-
   protected buildForm(){
     const definition = _.reduce( this.fields, (definition, field) => {
       const validators = field.required ? [Validators.required] : [];
@@ -41,40 +47,5 @@ export class EditComponent extends AdminEntityComponent {
     }, {} );
     this.validateForm = this.fb.group(definition);
   }
-
-  protected getItemInput = () => this.validateForm.value;
-
-
-
-  /**
-   *
-   */
-  protected updateMutation( id?:string, item?:any ){
-    // if( ! id ) id = this.id;
-    // if( ! item ) item = this.item;
-    // const updateMutation =
-    //   gql`mutation($input: ${this.config.updateInput}) {
-    //     ${this.config.updateMutation}(${this.config.typeQuery}: $input ){
-    //       validationViolations{
-    //         attribute
-    //         violation
-    //       }
-    //     }
-    //   }`;
-    // this.apollo.mutate({
-    //   mutation: updateMutation,
-    //   variables: { input: this.getItemInput( this.item ) },
-    //   errorPolicy: 'all'
-    // }).subscribe(({data}) => {
-    //   const violations = _.get( data, 'validationViolations' );
-    //   if( _.size( violations ) === 0 ) {
-    //     this.message.info(`This ${this.title('edit')} was updated!` );
-    //     setTimeout( ()=> this.onShow(), 500 );
-    //   } else {
-    //     this.message.error( _.join(violations, '\n') );
-    //   }
-    // });
-  }
-x
 
 }

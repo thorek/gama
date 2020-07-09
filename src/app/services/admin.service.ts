@@ -46,4 +46,27 @@ export class AdminService {
       });
     });
   }
+
+  update( id:string, input:any, config:EntityConfigType ):Promise<{attribute:string, violation:string}[]>{
+    const updateMutation =
+      gql`mutation($input: ${config.updateInput}) {
+        ${config.updateMutation}(${config.typeQuery}: $input ){
+          validationViolations{
+            attribute
+            violation
+          }
+        }
+      }`;
+    input = _.set( input, 'id', id );
+    return new Promise( resolve => {
+      this.apollo.mutate({
+        mutation: updateMutation,
+        variables: { input },
+        errorPolicy: 'all'
+      }).subscribe(({data}) => {
+        const violations = _.get( data, [config.updateMutation, 'validationViolations'] );
+        resolve( violations );
+      });
+    });
+  }
 }
