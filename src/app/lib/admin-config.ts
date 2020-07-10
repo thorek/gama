@@ -80,8 +80,6 @@ export type FieldConfigType = {
   unique?:boolean,
 }
 
-
-
 export type AssocTableConfigType = AdminTableConfig & {
   path:string
 }
@@ -105,7 +103,10 @@ export type ActionEventType = {id:any, action:string};
 
 export type TitlePurposeType = 'menu'|'index'|'show'|'edit'|'detailTable'
 
-
+export type ViolationType = {
+  attribute:string
+  message:string
+}
 
 
 

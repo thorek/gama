@@ -8,8 +8,8 @@ import { NotFoundError } from './entity-accessor';
 //
 //
 export type ValidationViolation = {
-  attribute?: string,
-  violation: string
+  attribute?:string,
+  message:string
 }
 
 //
@@ -69,12 +69,12 @@ export class EntityValidator  {
   private async validateRequiredAssocTo( assocTo:AssocType, attributes:any ):Promise<ValidationViolation|undefined> {
     const refEntity = this.context.entities[assocTo.type];
     const foreignKey = _.get( attributes, refEntity.foreignKey );
-    if( ! foreignKey ) return {attribute: refEntity.foreignKey, violation: "must be provided"};
+    if( ! foreignKey ) return {attribute: refEntity.foreignKey, message: 'must be provided'};
     try {
       await refEntity.findById( _.toString(foreignKey) );
     } catch (error) {
-      if( error instanceof NotFoundError ) return { attribute: refEntity.foreignKey, violation: "must refer to existing item" };
-      return { attribute: refEntity.foreignKey, violation: _.toString(error) };
+      if( error instanceof NotFoundError ) return { attribute: refEntity.foreignKey, message: 'must refer to existing item' };
+      return { attribute: refEntity.foreignKey, message: _.toString(error) };
     }
   }
 
@@ -99,7 +99,7 @@ export class EntityValidator  {
     const value = _.get( attributes, name );
     if( _.isUndefined( value ) ) return;
     const attrValues = _.set({}, name, value );
-    let scopeMsg = "";
+    let scopeMsg = '';
     if( _.isString( attribute.unique ) ){
       const scopeEntity = this.context.entities[attribute.unique];
       const scope = scopeEntity ? scopeEntity.foreignKey : attribute.unique;
@@ -108,7 +108,7 @@ export class EntityValidator  {
       scopeMsg = ` within scope '${attribute.unique}'`;
     }
     const result = await this.entity.findByAttribute( attrValues );
-    const violation = {attribute: name, violation: `value '${value}' must be unique` + scopeMsg }
+    const violation = {attribute: name, message: `value '${value}' must be unique` + scopeMsg }
     return this.isUniqueResult( attributes, result ) ? undefined : violation;
   }
 
@@ -118,7 +118,7 @@ export class EntityValidator  {
   isUniqueResult( attributes:any, result:any[] ):boolean {
     if( _.size( result ) === 0 ) return true;
     if( _.size( result ) > 1 ) return false;
-    const currentId = _.toString( _.get( attributes, "id" ) );
+    const currentId = _.toString( _.get( attributes, 'id' ) );
     return currentId === _.toString( _.get( _.first(result), 'id') );
   }
 

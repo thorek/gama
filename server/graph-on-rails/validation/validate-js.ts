@@ -34,7 +34,7 @@ export class ValidateJs extends Validator {
   private formatErrors( result:any ):ValidationViolation[] {
     const errors:ValidationViolation[] = [];
     _.forEach( result, (messages:string[], attribute) => {
-      _.forEach( messages, violation => errors.push( { attribute, violation } ) );
+      _.forEach( messages, message => errors.push( { attribute, message } ) );
     });
     return errors;
   }

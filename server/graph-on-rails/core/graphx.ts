@@ -18,17 +18,17 @@ import { Seeder } from './seeder';
 export class GraphX {
 
 
-	rawTypes:any = {};
+  rawTypes:any = {};
 
-	private fnFromArray = (fns:any) => () => fns.reduce((obj:any, fn:any) => Object.assign({}, obj, fn.call()), {});
+  private fnFromArray = (fns:any) => () => fns.reduce((obj:any, fn:any) => Object.assign({}, obj, fn.call()), {});
 
-	//
-	//
-	init(){
-		this.createQueryType();
+  //
+  //
+  init(){
+    this.createQueryType();
     this.createMutationType();
     this.createValidationViolationType();
-	}
+  }
 
   /**
    *
@@ -72,28 +72,28 @@ export class GraphX {
       name: 'ValidationViolation',
       fields: () => ({
         attribute: { type: GraphQLString },
-        violation: { type: new GraphQLNonNull( GraphQLString ) }
+        message: { type: new GraphQLNonNull( GraphQLString ) }
       })
     });
   }
 
 
-	//
-	//
-	private createType( name:string, obj:any ){
-		if (this.rawTypes[name]) throw new Error(`Type '${name}' already exists.`);
-		return this.rawTypes[name] = {
-			from: obj.from || GraphQLObjectType,
-			name: obj.name,
-			description: obj.description,
-			args: obj.args,
-			fields: [obj.fields],
+  //
+  //
+  private createType( name:string, obj:any ){
+    if (this.rawTypes[name]) throw new Error(`Type '${name}' already exists.`);
+    return this.rawTypes[name] = {
+      from: obj.from || GraphQLObjectType,
+      name: obj.name,
+      description: obj.description,
+      args: obj.args,
+      fields: [obj.fields],
       values: obj.values,
       types: obj.types,
       interfaceTypes: obj.interfaceTypes,
-			extendFields: (fields:any) => this.rawTypes[name].fields.push(fields instanceof Function ? fields : () => fields),
-		};
-	}
+      extendFields: (fields:any) => this.rawTypes[name].fields.push(fields instanceof Function ? fields : () => fields),
+    };
+  }
 
 	//
 	//

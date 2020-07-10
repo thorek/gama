@@ -144,7 +144,7 @@ export class EntityItem {
   //
   private getValidationError( violations:ValidationViolation[] ):Error {
     const msg = [`${this.entity.name}] could not save, there are validation violations`];
-    msg.push( ... _.map( violations, violation => `[${violation.attribute}] ${violation.violation}`) );
+    msg.push( ... _.map( violations, violation => `[${violation.attribute}] ${violation.message}`) );
     return new Error( _.join(msg, '\n') );
   }
 

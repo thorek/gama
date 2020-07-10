@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import * as _ from 'lodash';
-
-import { AdminConfigType, EntityConfigType, AdminConfig } from '../lib/admin-config';
-import { MetaDataService } from './meta-data.service';
-import { AdminData } from '../lib/admin-data';
 import gql from 'graphql-tag';
+import * as _ from 'lodash';
 import { NzMessageService } from 'ng-zorro-antd/message';
+
+import { AdminConfig, AdminConfigType, EntityConfigType, ViolationType } from '../lib/admin-config';
+import { MetaDataService } from './meta-data.service';
 
 @Injectable({providedIn: 'root'})
 export class AdminService {
@@ -47,14 +46,11 @@ export class AdminService {
     });
   }
 
-  update( id:string, input:any, config:EntityConfigType ):Promise<{attribute:string, violation:string}[]>{
+  update( id:string, input:any, config:EntityConfigType ):Promise<ViolationType[]>{
     const updateMutation =
       gql`mutation($input: ${config.updateInput}) {
         ${config.updateMutation}(${config.typeQuery}: $input ){
-          validationViolations{
-            attribute
-            violation
-          }
+          validationViolations{ attribute message }
         }
       }`;
     input = _.set( input, 'id', id );

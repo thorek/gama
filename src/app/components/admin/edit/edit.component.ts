@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import * as inflection from 'inflection';
+
 import * as _ from 'lodash';
-import { FieldConfigType, AssocType } from 'src/app/lib/admin-config';
+import { FieldConfigType, AssocType, ViolationType } from 'src/app/lib/admin-config';
 
 import { Validators, FormGroup } from '@angular/forms';
 import { AdminEntityComponent } from '../admin-entity.component';
+
 
 @Component({
   selector: 'app-edit',
@@ -20,16 +21,24 @@ export class EditComponent extends AdminEntityComponent {
     _.forEach( this.validateForm.controls, control => {
       control.markAsDirty();
       control.updateValueAndValidity();
-
     });
-    if( ! this.validateForm.valid ) return;
+    if( this.validateForm.valid ) this.update();
+  }
+
+  protected async update(){
     const violations = await this.adminService.update( this.data.id, this.validateForm.value, this.data.entityConfig );
-    if( _.size( violations ) === 0 ) {
-      this.message.info(`This ${this.title('edit')} was updated!` );
-      setTimeout( ()=> this.onShow(), 500 );
-    } else {
-      this.message.error( _.join(_.map(violations, violation => `${violation.attribute}: ${violation.violation}`), '\n') );
-    }
+    if( _.size( violations ) === 0 ) return this.onUpdateSuccess();
+    this.onUpdateViolations( violations );
+  }
+
+  protected onUpdateSuccess(){
+    this.message.info(`This ${this.title('edit')} was updated!` );
+    setTimeout( ()=> this.onShow(), 500 );
+  }
+
+  protected onUpdateViolations( violations:ViolationType[] ){
+    this.message.error( _.join( _.map(violations, violation =>
+      `${violation.attribute}: ${violation.message}`), '\n') );
   }
 
   errorTip(field:FieldConfigType):string {

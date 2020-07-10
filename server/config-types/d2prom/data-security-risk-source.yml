@@ -192,7 +192,11 @@ entity:
           length:
             minimum: 2
             maximum: 50
-      description: string
+      description:
+        type: string
+        validation:
+          length:
+            maximum: 20
     assocTo: Client
     assocToMany: Industry
     assocFrom:

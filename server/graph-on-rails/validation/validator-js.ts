@@ -36,12 +36,12 @@ export class ValidatorJs extends Validator {
    */
   private formatErrors( result:any ):ValidationViolation[] {
     const errors:ValidationViolation[] = [];
-    _.forEach( result, (violations, key) => {
+    _.forEach( result, (violations, attribute) => {
       violations = _.isArray( violations ) ? violations : [violations];
       _.forEach( violations, violation => {
-        const msg = _.get( violation, '__class__' ) === 'Violation' && (! _.isObject( _.get( violation, 'value')) ) ?
+        const message = _.get( violation, '__class__' ) === 'Violation' && (! _.isObject( _.get( violation, 'value')) ) ?
           violation.__toString() : `${_.get(violation, ['assert', '__class__'])} assert failed`;
-          errors.push( { attribute: key, violation: msg } );
+        errors.push( { attribute, message } );
       });
     });
     return errors;
