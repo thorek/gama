@@ -36,6 +36,7 @@ export const organisationsConfig:EntityConfigType = {
     fields: [
       'id',
       'name',
+      'description',
       {
         path: 'industries',
         label: 'Assigned Industries'

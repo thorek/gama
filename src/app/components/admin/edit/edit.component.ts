@@ -14,6 +14,7 @@ import { AdminEntityComponent } from '../admin-entity.component';
 })
 export class EditComponent extends AdminEntityComponent {
 
+  violations:ViolationType[]
   validateForm!:FormGroup
   get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
 
@@ -27,22 +28,28 @@ export class EditComponent extends AdminEntityComponent {
 
   protected async update(){
     const violations = await this.adminService.update( this.data.id, this.validateForm.value, this.data.entityConfig );
-    if( _.size( violations ) === 0 ) return this.onUpdateSuccess();
-    this.onUpdateViolations( violations );
+    _.size( violations ) === 0 ? this.onUpdateSuccess() : this.onUpdateViolations( violations );
   }
 
   protected onUpdateSuccess(){
-    this.message.info(`This ${this.title('edit')} was updated!` );
-    setTimeout( ()=> this.onShow(), 500 );
+    this.message.info(`This ${this.title('edit')} was successfully updated!` );
+    setTimeout( ()=> this.onShow(), 200 );
   }
 
   protected onUpdateViolations( violations:ViolationType[] ){
-    this.message.error( _.join( _.map(violations, violation =>
-      `${violation.attribute}: ${violation.message}`), '\n') );
+    this.violations = violations;
+    _.forEach( violations, violation => {
+      const control = this.validateForm.controls[violation.attribute];
+      if( control ) control.setErrors( { invalid: true } );
+    });
   }
 
   errorTip(field:FieldConfigType):string {
-    return 'Invalid';
+    const control = this.validateForm.controls[field.name];
+    if( control && control.hasError('invalid') ) return _(this.violations).
+      filter( violation => violation.attribute === field.name ).
+      map( violation => violation.message ).
+      join(', ');
   }
 
   onSave = () => this.submitForm();
