@@ -121,6 +121,7 @@ export class AdminConfig {
 
   private static adminConfig:AdminConfig;
   private constructor(){}
+  private config:AdminConfigType;
 
   static getInstance() {
     if( _.isUndefined( this.adminConfig ) ) this.adminConfig = new AdminConfig();
@@ -129,11 +130,11 @@ export class AdminConfig {
 
   async getConfig( metaData:any, adminConfig:() => Promise<AdminConfigType> ){
     const defaultConfig = this.buildDefaultConfig( metaData );
-    const config = await adminConfig();
-    _.defaultsDeep( config, defaultConfig );
-    this.setUiConfigDefaults( config );
-    this.setAssocTableDefaults( config );
-    return config;
+    this.config = await adminConfig();
+    this.config = _.defaultsDeep( this.config, defaultConfig );
+    this.setUiConfigDefaults();
+    this.setAssocTableDefaults();
+    return this.config;
   }
 
   private buildDefaultConfig( metaData:any[] ):AdminConfigType {
@@ -169,12 +170,12 @@ export class AdminConfig {
 
   }
 
-  private setUiConfigDefaults( config:AdminConfigType ):void {
-    _.forEach( config.entities, config => {
-      if( _.isUndefined( config.name) ) config.name = this.guessNameValue;
-      _.forEach( ['index','show','form'], uiType => this.setDefaults( config, uiType ) );
-      if( _.isUndefined( config.form.data ) ) config.form.data =
-        _.compact( _.map( config.form.fields, (field:FieldConfigType) => field.path ) );
+  private setUiConfigDefaults():void {
+    _.forEach( this.config.entities, entityConfig => {
+      if( _.isUndefined( entityConfig.name) ) entityConfig.name = this.guessNameValue;
+      _.forEach( ['index','show','form'], uiType => this.setDefaults( entityConfig, uiType ) );
+      if( _.isUndefined( entityConfig.form.data ) ) entityConfig.form.data =
+        _.compact( _.map( entityConfig.form.fields, (field:FieldConfigType) => field.path ) );
 
     });
   }
@@ -200,12 +201,12 @@ export class AdminConfig {
     uiConfig.fields = _.compact( _.map( uiConfig.fields, field => this.setFieldDefault( field, entityConfig ) ) );
   }
 
-  private setAssocTableDefaults( config:AdminConfigType ):void {
-    _.forEach( config.entities, entityConfig => {
+  private setAssocTableDefaults():void {
+    _.forEach( this.config.entities, entityConfig => {
       _.forEach( ['index','show','form'], uiType => {
         const uiConfig:UiConfigType = entityConfig[uiType];
         _.forEach( uiConfig.table, table => {
-          const tableEntityConfig = config.entities[table.path];
+          const tableEntityConfig = this.config.entities[table.path];
           if( ! tableEntityConfig ) return console.warn(`no such tableEntityConfig '${table.path}'`);
           this.setFieldsDefaults( table, tableEntityConfig );
          });
@@ -238,13 +239,15 @@ export class AdminConfig {
 
   private fieldFromAssoc( field:string|FieldConfigType, assoc:AssocType, entityConfig:EntityConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { path: field };
+    const assocEntityConfig = this.config.entities[assoc.path];
+    if( ! assocEntityConfig ) return field;
     const values = (data:any) => _.map( _.get( data, assoc.typesQuery ), data => ({
-      value: _.get( data, 'id'), label: entityConfig.name( data ) }));
+      value: _.get( data, 'id'), label: assocEntityConfig.name( data ) }));
     const value = (item:any) => {
       const assocValue = _.get( item, assoc.query );
       return _.isArray( assocValue ) ?
-        _.map( assocValue, value => this.linkValue( field as FieldConfigType, assoc, value, entityConfig.name ) ) :
-        this.linkValue( field as FieldConfigType, assoc, assocValue, entityConfig.name );
+        _.map( assocValue, value => this.linkValue( field as FieldConfigType, assoc, value, assocEntityConfig.name ) ) :
+        this.linkValue( field as FieldConfigType, assoc, assocValue, assocEntityConfig.name );
     };
     const keyValue = (item:any) => {
       const assocValue = _.get( item, assoc.query );

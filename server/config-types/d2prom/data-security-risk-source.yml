@@ -197,7 +197,7 @@ entity:
         validation:
           length:
             maximum: 20
-    assocTo: Client
+    assocTo: Client!
     assocToMany: Industry
     assocFrom:
       - type: OrganisationalUnit
