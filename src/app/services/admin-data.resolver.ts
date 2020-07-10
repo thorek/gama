@@ -33,7 +33,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
         route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index, parent ) :
         route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id, parent ) :
         route.component === EditComponent ? this.loadItemData( entityConfig, entityConfig.form, id, parent ) :
-        route.component === CreateComponent ? async () => ({}) :
+        route.component === CreateComponent ? this.loadDataForCreate( entityConfig, entityConfig.form, parent ) :
         undefined;
       const adminData = await load;
       resolve( adminData );
@@ -54,6 +54,19 @@ export class AdminDataResolver implements Resolve<AdminData> {
     const data = await this.loadData( query );
     return new AdminData( data, entityConfig, uiConfig, parent );
   }
+
+  private async loadDataForCreate(
+    entityConfig:EntityConfigType,
+    uiConfig:UiConfigType,
+    parent?:AdminData ):Promise<any> {
+  const expressions = _.compact( _.map( uiConfig.data, data => this.getDataLoadExpression( data, uiConfig ) ) );
+  const expression = `query { ${ _.join(expressions, '\n') } }`;
+  const query = { query: gql(expression), variables: {}, fetchPolicy: 'network-only' };
+  const data = await this.loadData( query );
+  _.set( data, uiConfig.query, {} );
+  return new AdminData( data, entityConfig, uiConfig, parent );
+}
+
 
   private async loadItemData(
       entityConfig:EntityConfigType,

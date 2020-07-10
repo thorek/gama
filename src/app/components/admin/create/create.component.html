@@ -10,15 +10,6 @@
   </nz-page-header-extra>
 </nz-page-header>
 
-<form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
-  <nz-form-item *ngFor="let field of fields">
-    <nz-form-label [nzSpan]="6" [nzRequired]="field.required" [nzFor]="field.name">
-      {{ label( field )}}
-    </nz-form-label>
-    <nz-form-control [nzSpan]="14" [nzErrorTip]="errorTip(field)">
-      <input nz-input [formControlName]="field.name" [id]="field.name" />
-    </nz-form-control>
-  </nz-form-item >
-</form>
+<app-form [data]="data" [submit]="submit" (saveSuccess)="onSuccess($event)"></app-form>
 
 <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>

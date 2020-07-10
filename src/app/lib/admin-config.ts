@@ -101,13 +101,17 @@ export type AssocType = {
 
 export type ActionEventType = {id:any, action:string};
 
-export type TitlePurposeType = 'menu'|'index'|'show'|'edit'|'detailTable'
+export type TitlePurposeType = 'menu'|'index'|'show'|'form'|'detailTable'
+
+export type SaveReturnType = {
+  id?:string
+  violations:ViolationType[]
+}
 
 export type ViolationType = {
   attribute:string
   message:string
 }
-
 
 
 /**
@@ -225,6 +229,7 @@ export class AdminConfig {
   }
 
   private linkValue( field:FieldConfigType, assoc:AssocType, assocValue:any, name:( item:any )=> string ){
+    if( _.isNil( assocValue ) ) return null;
     const link =
       field.link === false ? undefined :
       field.link ? field.link : ['/admin', assoc.path, 'show', assocValue.id ];
@@ -243,7 +248,7 @@ export class AdminConfig {
     };
     const keyValue = (item:any) => {
       const assocValue = _.get( item, assoc.query );
-      return _.isArray( assocValue ) ? _.map( assocValue, value => value.id ) : assocValue.id;
+      return _.isArray( assocValue ) ? _.map( assocValue, value => _.get(value, 'id' ) ) : _.get( assocValue, 'id' );
     }
 
     return _.defaults( field, { values, value, keyValue,

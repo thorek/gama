@@ -47,6 +47,7 @@ import { GraphQLModule } from './graphql.module';
 import { IconsProviderModule } from './icons-provider.module';
 import { AdminService } from './services/admin.service';
 import { AdminDataResolver } from './services/admin-data.resolver';
+import { AdminFormComponent } from './components/shared/admin-form.component';
 
 registerLocaleData(en);
 
@@ -72,7 +73,8 @@ export function initializeApp1(adminService:AdminService) {
     EditComponent,
     CreateComponent,
     DynContentComponent,
-    BreadcrumComponent
+    BreadcrumComponent,
+    AdminFormComponent
   ],
   imports: [
     BrowserModule,

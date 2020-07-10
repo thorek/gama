@@ -11,7 +11,7 @@ import { Sort } from 'graph-on-rails/core/data-store';
 //
 export class NotFoundError extends Error {
 
-  constructor(message?: string) {
+  constructor(message?:string) {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
     this.name = NotFoundError.name; // stack traces display correctly now

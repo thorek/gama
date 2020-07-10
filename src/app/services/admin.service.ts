@@ -4,8 +4,9 @@ import gql from 'graphql-tag';
 import * as _ from 'lodash';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
-import { AdminConfig, AdminConfigType, EntityConfigType, ViolationType } from '../lib/admin-config';
+import { AdminConfig, AdminConfigType, EntityConfigType, ViolationType, SaveReturnType as SaveResultType } from '../lib/admin-config';
 import { MetaDataService } from './meta-data.service';
+import { DocumentNode } from 'graphql';
 
 @Injectable({providedIn: 'root'})
 export class AdminService {
@@ -46,23 +47,47 @@ export class AdminService {
     });
   }
 
-  update( id:string, input:any, config:EntityConfigType ):Promise<ViolationType[]>{
-    const updateMutation =
-      gql`mutation($input: ${config.updateInput}) {
-        ${config.updateMutation}(${config.typeQuery}: $input ){
-          validationViolations{ attribute message }
-        }
-      }`;
-    input = _.set( input, 'id', id );
+  save( id:string|undefined, input:any, config:EntityConfigType ):Promise<SaveResultType> {
+    return id ? this.update( id, input, config ) : this.create( input, config );
+  }
+
+  private create( input:any, config:EntityConfigType ):Promise<SaveResultType> {
+    const createMutation = this.getCreateMutation( config );
     return new Promise( resolve => {
       this.apollo.mutate({
-        mutation: updateMutation,
-        variables: { input },
-        errorPolicy: 'all'
-      }).subscribe(({data}) => {
-        const violations = _.get( data, [config.updateMutation, 'validationViolations'] );
-        resolve( violations );
-      });
+        mutation: createMutation, variables: { input } }).subscribe(({data}) => resolve({
+          violations: _.get( data, [config.createMutation, 'validationViolations'] ),
+          id: _.get( data, [config.createMutation, config.typeQuery, 'id'] )
+        }));
     });
+  }
+
+  private getCreateMutation( config:EntityConfigType ):DocumentNode {
+    return gql`mutation($input: ${config.createInput}) {
+      ${config.createMutation}(${config.typeQuery}: $input ){
+        validationViolations{ attribute message }
+        ${config.typeQuery} { id }
+      }
+    }`;
+  }
+
+  private update( id:string, input:any, config:EntityConfigType ):Promise<SaveResultType>{
+    input = _.set( input, 'id', id );
+    const updateMutation = this.getUpdateMutation( config );
+    return new Promise( resolve => {
+      this.apollo.mutate({mutation: updateMutation, variables: { input } }).subscribe(({data}) => resolve({
+        violations: _.get( data, [config.updateMutation, 'validationViolations'] ),
+        id: _.get( data, [config.updateMutation, config.typeQuery, 'id'] )
+      }));
+    });
+  }
+
+  private getUpdateMutation( config:EntityConfigType ):DocumentNode {
+    return gql`mutation($input: ${config.updateInput}) {
+      ${config.updateMutation}(${config.typeQuery}: $input ){
+        validationViolations{ attribute message }
+        ${config.typeQuery} { id }
+      }
+    }`;
   }
 }

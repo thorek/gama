@@ -90,7 +90,7 @@ export class EntityResolver extends EntityModule {
    */
   async resolveAssocToType( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
     const id = _.get( resolverCtx.root, refEntity.foreignKey );
-    if( _.isUndefined(id) ) return null;
+    if( _.isNil(id) ) return null;
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocTo( refEntity, resolverCtx, id );
     const enit = await refEntity.findById( id );
     return enit.item;
