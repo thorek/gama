@@ -128,6 +128,13 @@ export class AdminConfig {
     return this.adminConfig;
   }
 
+  static guessNameValue = (item:any) => {
+    const candidate = _.find( nameProperties, candidate => _.has( item, candidate ) );
+    if( candidate ) return _.get( item, candidate );
+    if( _.has( item, 'id' ) ) return `#${_.get(item, 'id' ) }`;
+    return _.toString( item );
+  }
+
   async getConfig( metaData:any, adminConfig:() => Promise<AdminConfigType> ){
     const defaultConfig = this.buildDefaultConfig( metaData );
     this.config = await adminConfig();
@@ -162,17 +169,9 @@ export class AdminConfig {
     return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique']);
   }
 
-  private guessNameValue = (item:any) => {
-    const candidate = _.find( nameProperties, candidate => _.has( item, candidate ) );
-    if( candidate ) return _.get( item, candidate );
-    if( _.has( item, 'id' ) ) return `#${_.get(item, 'id' ) }`;
-    return _.toString( item );
-
-  }
-
   private setUiConfigDefaults():void {
     _.forEach( this.config.entities, entityConfig => {
-      if( _.isUndefined( entityConfig.name) ) entityConfig.name = this.guessNameValue;
+      if( _.isUndefined( entityConfig.name) ) entityConfig.name = AdminConfig.guessNameValue;
       _.forEach( ['index','show','form'], uiType => this.setDefaults( entityConfig, uiType ) );
       if( _.isUndefined( entityConfig.form.data ) ) entityConfig.form.data =
         _.compact( _.map( entityConfig.form.fields, (field:FieldConfigType) => field.path ) );

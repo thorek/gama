@@ -48,7 +48,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
   }
 
   private async loadItemsData( entityConfig:EntityConfigType, uiConfig:UiConfigType, parent?:AdminData ):Promise<AdminData> {
-    const parentCondition = '' // this.getParentCondition();
+    const parentCondition = this.getParentCondition( parent );
     const expression = `query{ ${uiConfig.query}${parentCondition} ${ this.buildFieldQuery( entityConfig, uiConfig ) } }`;
     const query = { query: gql(expression), fetchPolicy: 'network-only' };
     const data = await this.loadData( query );
@@ -133,13 +133,12 @@ export class AdminDataResolver implements Resolve<AdminData> {
     ).join( ' ' );
   }
 
-
-  // protected getParentCondition():string {
-  //   const config = this.adminService.getEntityConfig( this.parent.path );
-  //   if( ! config ) return this.warn(`no such config '${this.parent.path}'`, '');
-  //   return `(filter: {${config.foreignKey}: "${this.parent.id}"})`;
-  // }
-
+  protected getParentCondition( parent?:AdminData ):string {
+    if( ! parent ) return '';
+    const config = this.adminService.getEntityConfig( parent.path );
+    if( ! config ) return this.warn(`no such config '${parent.path}'`, '');
+    return `(filter: {${config.foreignKey}: "${parent.id}"})`;
+  }
 
   protected warn<T>( message:string, type:T ):T {
     console.warn(message);

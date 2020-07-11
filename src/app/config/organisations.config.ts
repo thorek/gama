@@ -3,18 +3,12 @@ import { EntityConfigType } from '../lib/admin-config';
 
 export const organisationsConfig:EntityConfigType = {
   index: {
-    assoc: [
-      'industries',
-      { path: 'clients', fields: ['id', 'name'], assoc: [ {path: 'users'}  ] }
-    ],
     fields: [
       'name',
       {
         path: 'industries',
         label: 'Assigned Industries',
-        filter: {
-          multiple: true,
-        }
+        filter: { multiple: true }
       },
       {
         path: 'clients',

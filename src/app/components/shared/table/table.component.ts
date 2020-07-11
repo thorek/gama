@@ -6,7 +6,8 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { AdminComponent } from '../../admin/admin.component';
-import { AdminTableConfig, UiConfigType, FieldConfigType } from 'src/app/lib/admin-config';
+import { AdminTableConfig, UiConfigType, FieldConfigType, AdminConfig } from 'src/app/lib/admin-config';
+import { AdminService } from 'src/app/services/admin.service';
 
 interface ColumnItem {
   name:string;
@@ -39,6 +40,8 @@ export class TableComponent extends AdminComponent {
     this.prepareColumns();
     this.prepareSearch();
   }
+
+  constructor( private adminService:AdminService ){ super() }
 
   searchTerm:string;
   private filtered = false;
@@ -86,6 +89,7 @@ export class TableComponent extends AdminComponent {
 
   private prepareColumns(){
     this.columns = _.compact( _.map( this.config.fields, (field:FieldConfigType) => {
+      if( _.get( field, 'path' ) === this.parent ) return;
       if( _.has( field, 'parent' ) && field.parent === this.parent) return;
       return { field, name: field.name, label: this.label(field), sortOrder: null,
         sortFn: (a:any, b:any) => this.sortFn( a, b, field.name ),
@@ -141,7 +145,16 @@ export class TableComponent extends AdminComponent {
       field.filter.value : _.isFunction( field.value ) ?
         field.value : (item:any) => _.get( item, field.name )
     let value = valueFn( item );
-    if( _.isArray( value ) ) return _.map( value, v => _.isString( v ) ? v : ((((v.name)))) );
-    return _.isString( value ) ? value : (((value.name))) ; // !!!!! TODO !!!!!
+
+    if( _.isArray( value ) ) return _.map( value, v => _.isString( v ) ? v : this.guessNameValue( field, v ) );
+    return _.isString( value ) ? value : this.guessNameValue( field, value );
+  }
+
+  private guessNameValue( field:FieldConfigType, item:any ):string {
+    if( _.has( item, 'value' ) ) return item.value;
+    const nameFn = field.path ?
+      _.get( this.adminService.getEntityConfig( field.path ), 'name' ) : AdminConfig.guessNameValue;
+    const value = nameFn( item );
+    return _.isString( value ) ? value : _.toString( value );
   }
 }
