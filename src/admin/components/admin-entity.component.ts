@@ -4,9 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType, LinkValueType } from 'src/app/lib/admin-config';
-import { AdminData } from 'src/app/lib/admin-data';
-import { AdminService } from 'src/app/services/admin.service';
+import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType, LinkValueType } from 'src/admin/lib/admin-config';
+import { AdminData } from 'src/admin/lib/admin-data';
+import { AdminService } from 'src/admin/services/admin.service';
 
 import { AdminComponent } from './admin.component';
 

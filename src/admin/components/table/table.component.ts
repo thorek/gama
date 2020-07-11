@@ -4,10 +4,9 @@ import MiniSearch from 'minisearch';
 import { NzTableFilterFn, NzTableFilterList, NzTableSortFn, NzTableSortOrder } from 'ng-zorro-antd/table';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-
-import { AdminComponent } from '../../admin/admin.component';
-import { AdminTableConfig, UiConfigType, FieldConfigType, AdminConfig } from 'src/app/lib/admin-config';
-import { AdminService } from 'src/app/services/admin.service';
+import { AdminComponent } from 'src/admin/components/admin.component';
+import { AdminConfig, AdminTableConfig, FieldConfigType, UiConfigType } from 'src/admin/lib/admin-config';
+import { AdminService } from 'src/admin/services/admin.service';
 
 interface ColumnItem {
   name:string;

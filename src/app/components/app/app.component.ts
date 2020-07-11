@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
 import * as inflection from 'inflection';
 import { Component, OnInit } from '@angular/core';
-import { AdminService } from 'src/app/services/admin.service';
-import { EntityConfigType } from 'src/app/lib/admin-config';
+import { AdminService } from 'src/admin/services/admin.service';
+import { EntityConfigType } from 'src/admin/lib/admin-config';
 
 import {Event,
 NavigationCancel,

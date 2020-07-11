@@ -1,16 +1,15 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
+import * as _ from 'lodash';
+import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { AdminData } from 'src/admin/lib/admin-data';
+import { AdminService } from './admin.service';
+import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType } from 'src/admin/lib/admin-config';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
-import * as _ from 'lodash';
-import { CreateComponent } from 'src/admin/components/create/create.component';
-import { EditComponent } from 'src/admin/components/edit/edit.component';
 import { IndexComponent } from 'src/admin/components/index/index.component';
 import { ShowComponent } from 'src/admin/components/show/show.component';
-import { AdminData } from 'src/admin/lib/admin-data';
-
-import { AssocConfigType, EntityConfigType, FieldConfigType, UiConfigType } from '../../admin/lib/admin-config';
-import { AdminService } from './admin.service';
+import { EditComponent } from 'src/admin/components/edit/edit.component';
+import { CreateComponent } from 'src/admin/components/create/create.component';
+import { Injectable } from '@angular/core';
 
 
 @Injectable({ providedIn: 'root' })

@@ -1,8 +1,8 @@
 import { PortalModule } from '@angular/cdk/portal';
-import { registerLocaleData } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import en from '@angular/common/locales/en';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -25,34 +25,48 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { AdminModule } from 'src/admin/admin.module';
-import { AdminService } from 'src/admin/services/admin.service';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AboutComponent } from './components/about/about.component';
-import { AppComponent } from './components/app/app.component';
-import { ClientComponent } from './components/client/client.component';
-import { ClientsComponent } from './components/clients/clients.component';
-import { OrganisationComponent } from './components/organisation/organisation.component';
-import { OrganisationsComponent } from './components/organisations/organisations.component';
-import { WelcomeComponent } from './components/welcome/welcome.component';
+import { AdminFormComponent } from './components/admin-form.component';
+import { BreadcrumComponent } from './components/breadcumb.component';
+import { CreateComponent } from './components/create/create.component';
+import { DynContentComponent } from './components/dyn-content.component';
+import { EditComponent } from './components/edit/edit.component';
+import { IndexComponent } from './components/index/index.component';
+import { ShowComponent } from './components/show/show.component';
+import { TableComponent } from './components/table/table.component';
+import { GraphQLModule } from './graphql.module';
+import { IconsProviderModule } from './icons-provider.module';
+import { AdminDataResolver } from './services/admin-data.resolver';
+import { AdminService } from './services/admin.service';
+import { adminConfig } from './config/admin.config';
+import { AdminRoutingModule } from './admin-routing.module';
+import { AdminComponent } from './components/admin.component';
+import { AdminEntityComponent } from './components/admin-entity.component';
 
 registerLocaleData(en);
 
+export function initializeApp1(adminService:AdminService) {
+  return ():Promise<any> => {
+    return adminService.init( adminConfig );
+  }
+}
+
 @NgModule({
   declarations: [
-    AppComponent,
-    WelcomeComponent,
-    ClientsComponent,
-    ClientComponent,
-    OrganisationsComponent,
-    OrganisationComponent,
-    AboutComponent
+    IndexComponent,
+    TableComponent,
+    ShowComponent,
+    EditComponent,
+    CreateComponent,
+    DynContentComponent,
+    BreadcrumComponent,
+    AdminFormComponent
   ],
   imports: [
-    AdminModule,
+    AdminRoutingModule,
+    CommonModule,
     BrowserModule,
-    AppRoutingModule,
+    IconsProviderModule,
     NzLayoutModule,
     NzMenuModule,
     NzTableModule,
@@ -75,12 +89,21 @@ registerLocaleData(en);
     ReactiveFormsModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    PortalModule
+    PortalModule,
+    GraphQLModule
+  ],
+  exports: [
+    IndexComponent,
+    ShowComponent,
+    EditComponent,
+    CreateComponent,
+    TableComponent
   ],
   providers: [
     AdminService,
+    AdminDataResolver,
+    { provide: APP_INITIALIZER ,useFactory: initializeApp1, deps: [AdminService], multi: true },
     { provide: NZ_I18N, useValue: en_US }
-  ],
-  bootstrap: [AppComponent]
+  ]
 })
-export class AppModule { }
+export class AdminModule { }

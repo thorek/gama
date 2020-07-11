@@ -6,28 +6,12 @@ import { ClientComponent } from './components/client/client.component';
 import { OrganisationsComponent } from './components/organisations/organisations.component';
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { AboutComponent } from './components/about/about.component';
-import { IndexComponent } from './components/admin/index/index.component';
-import { ShowComponent } from './components/admin/show/show.component';
-import { EditComponent } from './components/admin/edit/edit.component';
-import { CreateComponent } from './components/admin/create/create.component';
-import { AdminDataResolver } from './services/admin-data.resolver';
 
 const routes:Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/welcome' },
   { path: 'welcome', pathMatch: 'full', component: WelcomeComponent },
   { path: 'about', pathMatch: 'full', component: AboutComponent },
-  { path: 'admin', children: [
-    { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
-    { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
-    { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
-    { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } },
-    { path: ':parent/:parentId', children: [
-      { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
-      { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
-      { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
-      { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } }
-    ]},
-  ]},
+  { path: 'admin', loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule) },
   { path: 'clients', children:[
     {path: '', component: ClientsComponent},
     {path: ':id', component: ClientComponent},

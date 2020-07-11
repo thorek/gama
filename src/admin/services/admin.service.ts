@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
+import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import {
+  AdminConfig,
+  AdminConfigType,
+  EntityConfigType,
+  SaveReturnType as SaveResultType,
+} from 'src/admin/lib/admin-config';
 
-import { AdminConfig, AdminConfigType, EntityConfigType, ViolationType, SaveReturnType as SaveResultType } from '../../admin/lib/admin-config';
 import { MetaDataService } from './meta-data.service';
-import { DocumentNode } from 'graphql';
 
 @Injectable({providedIn: 'root'})
 export class AdminService {

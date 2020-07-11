@@ -3,11 +3,11 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as _ from 'lodash';
 
 import { Subject } from 'rxjs';
-import { FieldConfigType, ViolationType } from 'src/app/lib/admin-config';
-import { AdminData } from 'src/app/lib/admin-data';
-import { AdminService } from 'src/app/services/admin.service';
+import { FieldConfigType, ViolationType } from 'src/admin/lib/admin-config';
+import { AdminData } from 'src/admin/lib/admin-data';
+import { AdminService } from 'src/admin/services/admin.service';
 
-import { AdminComponent } from '../admin/admin.component';
+import { AdminComponent } from 'src/admin/components/admin.component';
 
 @Component({
   selector: 'app-form',
