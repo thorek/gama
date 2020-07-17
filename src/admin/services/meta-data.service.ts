@@ -53,16 +53,15 @@ export class MetaDataService {
   constructor(private apollo:Apollo) {}
 
   async getMetaData():Promise<any[]> {
-    if( ! this.metaData ) await this.loadMetaData();
+    if( ! this.metaData ) this.metaData = await this.loadMetaData();
     return this.metaData;
   }
 
-  private loadMetaData():Promise<void>{
+  private loadMetaData():Promise<any[]>{
     return new Promise( (resolve, reject) => {
       this.apollo.watchQuery<any>({ query }).valueChanges.subscribe(({ data, loading }) => {
         if( loading ) return;
-        this.metaData = data.metaData;
-        resolve();
+        resolve(data.metaData);
       });
     });
   }

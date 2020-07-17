@@ -35,6 +35,7 @@ import { ClientComponent } from './components/client/client.component';
 import { ClientsComponent } from './components/clients/clients.component';
 import { OrganisationComponent } from './components/organisation/organisation.component';
 import { OrganisationsComponent } from './components/organisations/organisations.component';
+import { HeaderComponent } from './components/shared/header/header.component';
 import { WelcomeComponent } from './components/welcome/welcome.component';
 
 registerLocaleData(en);
@@ -47,7 +48,8 @@ registerLocaleData(en);
     ClientComponent,
     OrganisationsComponent,
     OrganisationComponent,
-    AboutComponent
+    AboutComponent,
+    HeaderComponent,
   ],
   imports: [
     AdminModule,

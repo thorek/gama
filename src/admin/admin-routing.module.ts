@@ -7,15 +7,17 @@ import { EditComponent } from './components/edit/edit.component';
 import { ShowComponent } from './components/show/show.component';
 
 const routes:Routes = [
-  { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
-  { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
-  { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
-  { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } },
-  { path: ':parent/:parentId', children: [
+  { path: 'admin', children: [
     { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
     { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
     { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
-    { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } }
+    { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } },
+    { path: ':parent/:parentId', children: [
+      { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
+      { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
+      { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
+      { path: ':path/show/:id', component: ShowComponent, resolve: { data: AdminDataResolver } }
+    ]}
   ]}
 ];
 

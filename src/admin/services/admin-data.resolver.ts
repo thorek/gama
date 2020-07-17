@@ -21,14 +21,16 @@ export class AdminDataResolver implements Resolve<AdminData> {
     ) {}
 
   resolve(route:ActivatedRouteSnapshot, state:RouterStateSnapshot):Promise<AdminData> {
-    return new Promise( async resolve => {
-      const id = route.params['id'];
+    return new Promise( async (resolve, reject) => {
       const path = route.params['path'];
+      if( ! path ) resolve( null ); // dont know why but its calles when it shouldnt
+      const id = route.params['id'];
       const parentPath = route.params['parent'];
       const parentId = route.params['parentId'];
 
       const parent = await this.getParentData( parentPath, parentId );
       const entityConfig = this.adminService.getEntityConfig(path);
+      if( ! entityConfig ) reject( `no such config '${path}'` );
       const load =
         route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index, parent ) :
         route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id, parent ) :
