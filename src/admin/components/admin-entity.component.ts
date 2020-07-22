@@ -7,6 +7,10 @@ import { AdminData } from 'src/admin/lib/admin-data';
 import { AdminService } from 'src/admin/services/admin.service';
 
 import { AdminComponent } from './admin.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogModel, ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MessageDialogComponent } from './message-dialog/message-dialog.component';
 
 export abstract class AdminEntityComponent extends AdminComponent implements OnInit {
 
@@ -17,8 +21,8 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     protected adminService:AdminService,
     protected route:ActivatedRoute,
     protected router:Router,
-    protected modal:any,
-    protected message:any,
+    protected dialog:MatDialog,
+    protected snackBar:MatSnackBar,
     protected fb:FormBuilder) { super() }
 
 
@@ -46,23 +50,31 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
 
   onDelete(id?:string) {
     if( ! id ) id = this.data.id;
-    this.modal.confirm({
-      nzTitle: `Are you sure delete this ${this.data.entityName}?`,
-      nzContent: '<b style="color: red;">All related entities will be deleted too!</b>',
-      nzOkText: 'Yes',
-      nzOkType: 'danger',
-      nzOnOk: () => this.delete( id ),
-      nzCancelText: 'No',
-      nzOnCancel: () => this.message.info('Nothing was deleted')
-    });
+    const message = `Are you sure delete this ${this.data.entityName}?`;
+    const dialogData = new ConfirmDialogModel('Confirm Delete', message);
+    this.dialog.open( ConfirmDialogComponent, { maxWidth: '400px', data: dialogData } ).
+      afterClosed().subscribe(dialogResult => {
+        dialogResult ?
+          this.delete( id ) :
+          this.snackBar.open('Alright', 'Nothing was deleted', {
+            duration: 1000, horizontalPosition: 'center', verticalPosition: 'top',
+          });
+      });
   }
 
   private async delete( id:string ){
     const violations = await this.adminService.delete( id, this.data.entityConfig.deleteMutation );
-    if( _.size( violations ) === 0 ) {
-      this.message.info(`This ${this.title('show')} was deleted!` );
-      setTimeout( ()=> this.onList(), 500 );
-    } else this.message.error( _.join(violations, '\n') );
+    if( _.size( violations ) === 0 ) return this.onDeleteSuccess();
+    const message = _.join(violations, '\n');
+    const dialogData = new ConfirmDialogModel('Could not delete', message);
+    this.dialog.open( MessageDialogComponent, { maxWidth: '400px', data: dialogData } );
+  }
+
+  private onDeleteSuccess(){
+    this.snackBar.open('Alright', `This ${this.title('show')} was deleted!`, {
+      duration: 1000, horizontalPosition: 'center', verticalPosition: 'top',
+    });
+    setTimeout( ()=> this.onList(), 500 );
   }
 
   gotoList( path:string, parent?:AdminData ){

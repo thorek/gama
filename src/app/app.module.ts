@@ -57,7 +57,7 @@ registerLocaleData(en);
     AppComponent,
     WelcomeComponent,
     AboutComponent,
-    HeaderComponent,
+    HeaderComponent
   ],
   imports: [
     AdminModule,

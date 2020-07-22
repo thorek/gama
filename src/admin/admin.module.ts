@@ -18,6 +18,9 @@ import { adminConfig } from './config/admin.config';
 import { GraphQLModule } from './graphql.module';
 import { AdminDataResolver } from './services/admin-data.resolver';
 import { AdminService } from './services/admin.service';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { MessageDialogComponent } from './components/message-dialog/message-dialog.component';
+
 
 registerLocaleData(en);
 
@@ -36,7 +39,9 @@ export function initializeApp1(adminService:AdminService) {
     CreateComponent,
     DynContentComponent,
     BreadcrumComponent,
-    AdminFormComponent
+    AdminFormComponent,
+    ConfirmDialogComponent,
+    MessageDialogComponent
   ],
   imports: [
     AdminRoutingModule,
