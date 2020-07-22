@@ -62,6 +62,9 @@ export class MetaDataService {
       this.apollo.watchQuery<any>({ query }).valueChanges.subscribe(({ data, loading }) => {
         if( loading ) return;
         resolve(data.metaData);
+      }, error => {
+        console.error( 'could not load metaData', error );
+        resolve( [] );
       });
     });
   }

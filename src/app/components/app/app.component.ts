@@ -24,12 +24,10 @@ export class AppComponent implements OnInit{
   entities:EntityConfigType[]
 
   constructor(
-    private adminService:AdminService,
     private router:Router
   ) {}
 
   ngOnInit(){
-    this.entities = this.adminService.getMenuEntities();
     this.router.events.subscribe((event: Event) => {
       switch (true) {
         case event instanceof NavigationStart: {

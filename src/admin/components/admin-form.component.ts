@@ -13,7 +13,7 @@ import { AdminComponent } from 'src/admin/components/admin.component';
   selector: 'app-form',
   template: `
     <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
-      <nz-form-item *ngFor="let field of fields">
+      <!--nz-form-item *ngFor="let field of fields">
         <nz-form-label [nzSpan]="6" [nzRequired]="field.required" [nzFor]="field.name">
           {{ label( field ) }}
         </nz-form-label>
@@ -52,7 +52,7 @@ import { AdminComponent } from 'src/admin/components/admin.component';
         </ng-container>
 
         </nz-form-control>
-      </nz-form-item >
+      </nz-form-item -->
     </form>
   `
 })

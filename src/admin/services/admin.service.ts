@@ -3,7 +3,6 @@ import { Apollo } from 'apollo-angular';
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 import * as _ from 'lodash';
-import { NzMessageService } from 'ng-zorro-antd/message';
 import {
   AdminConfig,
   AdminConfigType,
@@ -20,8 +19,7 @@ export class AdminService {
 
   constructor(
     private metaDataService:MetaDataService,
-    protected apollo:Apollo,
-    protected message:NzMessageService ){}
+    protected apollo:Apollo ){}
 
   async init( adminConfig:() => Promise<AdminConfigType> ):Promise<any>{
     const metaData = await this.metaDataService.getMetaData();

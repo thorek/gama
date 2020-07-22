@@ -179,14 +179,14 @@ export class AdminConfig {
     });
   }
 
-  private setDefaults( config:EntityConfigType, uiType:string ):EntityConfigType {
-    if( ! _.has(config, uiType ) ) _.set( config, uiType, {} );
-    const uiConfig:UiConfigType = _.get( config, uiType );
+  private setDefaults( entityConfig:EntityConfigType, uiType:string ):EntityConfigType {
+    if( ! _.has(entityConfig, uiType ) ) _.set( entityConfig, uiType, {} );
+    const uiConfig:UiConfigType = _.get( entityConfig, uiType );
     if( ! _.has( uiConfig, 'query' ) ) _.set( uiConfig, 'query',
-      uiType === 'index' ? config.typesQuery : config.typeQuery );
-    this.setFieldsDefaults( uiConfig, config );
+      uiType === 'index' ? entityConfig.typesQuery : entityConfig.typeQuery );
+    this.setFieldsDefaults( uiConfig, entityConfig );
     if( _.isUndefined( uiConfig.search ) ) uiConfig.search = true;
-    return config;
+    return entityConfig;
   }
 
   private setFieldsDefaults( uiConfig:UiConfigType|AssocTableConfigType, entityConfig:EntityConfigType ):void {
@@ -215,10 +215,10 @@ export class AdminConfig {
 
   private setFieldDefault( field:string|FieldConfigType, entityConfig:EntityConfigType ):FieldConfigType | undefined {
     const fieldName = _.isString( field ) ? field : _.get( field, 'name' );
-    const fieldConfig = entityConfig.fields[fieldName];
+    const fieldConfig = _.get( entityConfig.fields, fieldName );
     if( fieldConfig ) return this.fieldFromEntityField( field, fieldConfig );
     const pathName = _.isString( field ) ? field : _.get( field, 'path' );
-    const assoc = entityConfig.assocs[pathName];
+    const assoc = _.get( entityConfig.assocs, pathName );
     if( assoc ) return this.fieldFromAssoc( field, assoc, entityConfig );
     return this.warn( `neither field nor assoc : '${field}'`, undefined );
   }

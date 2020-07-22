@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   template: `
     <app-dyn-content selector="#breadcrumb">
 
-      <nz-breadcrumb>
+      <!--nz-breadcrumb>
         <nz-breadcrumb-item>
           <i nz-icon nzType="home"></i>
         </nz-breadcrumb-item>
@@ -15,7 +15,7 @@ import { Component, Input } from '@angular/core';
             <span>{{ item.text }}</span>
           </a>
         </nz-breadcrumb-item>
-      </nz-breadcrumb>
+      </nz-breadcrumb-->
 
     </app-dyn-content>
   `,

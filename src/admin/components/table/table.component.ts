@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import * as _ from 'lodash';
 import MiniSearch from 'minisearch';
-import { NzTableFilterFn, NzTableFilterList, NzTableSortFn, NzTableSortOrder } from 'ng-zorro-antd/table';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminComponent } from 'src/admin/components/admin.component';
@@ -12,12 +11,12 @@ interface ColumnItem {
   name:string;
   field:FieldConfigType;
   label:string;
-  sortOrder?:NzTableSortOrder;
-  sortFn?:NzTableSortFn;
-  filterList?:NzTableFilterList;
-  filterFn?:NzTableFilterFn;
+  sortOrder?:any;
+  sortFn?:any;
+  filterList?:any;
+  filterFn?:any;
   filterMultiple?:boolean;
-  sortDirections?:NzTableSortOrder[];
+  sortDirections?:any[];
 }
 
 export type TableFieldType = string|{name:string, label?:string, value?:(entity:any) => any }

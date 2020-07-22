@@ -1,5 +1,4 @@
-
-<nz-page-header class="site-page-header" nzBackIcon>
+<!--nz-page-header class="site-page-header" nzBackIcon>
   <nz-page-header-title>
     <span>{{ name() }}</span>
   </nz-page-header-title>
@@ -8,13 +7,13 @@
     <button nz-button nzType="primary" (click)="onEdit()">Edit</button>
     <button nz-button nzType="secondary" (click)="onDelete()">Delete</button>
   </nz-page-header-extra>
-</nz-page-header>
+</nz-page-header-->
 
-<nz-descriptions nzTitle="Entity data" nzBordered [nzColumn]="1">
+<!--nz-descriptions nzTitle="Entity data" nzBordered [nzColumn]="1">
   <nz-descriptions-item *ngFor="let field of fields" [nzTitle]="label( field )">
     <span [innerHTML]="value( field )"></span>
   </nz-descriptions-item>
-</nz-descriptions>
+</nz-descriptions-->
 
 <div *ngFor="let table of data.entityConfig.show.table">
   <hr>

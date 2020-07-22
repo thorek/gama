@@ -2,8 +2,6 @@ import { OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash';
-import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType, LinkValueType } from 'src/admin/lib/admin-config';
 import { AdminData } from 'src/admin/lib/admin-data';
 import { AdminService } from 'src/admin/services/admin.service';
@@ -19,8 +17,8 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     protected adminService:AdminService,
     protected route:ActivatedRoute,
     protected router:Router,
-    protected modal:NzModalService,
-    protected message:NzMessageService,
+    protected modal:any,
+    protected message:any,
     protected fb:FormBuilder) { super() }
 
 
