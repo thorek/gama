@@ -77,7 +77,7 @@ export type FieldConfigType = {
   required?:boolean
   virtual?:boolean
   type?:string,
-  unique?:boolean,
+  unique?:boolean
 }
 
 export type AssocTableConfigType = AdminTableConfig & {
