@@ -10,53 +10,10 @@ import { AdminService } from 'src/admin/services/admin.service';
 import { AdminComponent } from 'src/admin/components/admin.component';
 
 @Component({
-  selector: 'app-form',
-  template: `
-    <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
-      <!--nz-form-item *ngFor="let field of fields">
-        <nz-form-label [nzSpan]="6" [nzRequired]="field.required" [nzFor]="field.name">
-          {{ label( field ) }}
-        </nz-form-label>
-        <nz-form-control [nzSpan]="14" [nzErrorTip]="errorTip(field)">
-
-          <ng-container [ngSwitch]="field.control">
-
-            <nz-select
-                *ngSwitchCase="'tags'"
-                nzShowSearch
-                nzAllowClear
-                nzMode="tags"
-                nzPlaceHolder="Select a value"
-                [formControlName]="field.name">
-              <nz-option
-                *ngFor="let value of field.values(data.data)"
-                [nzLabel]="value.label"
-                [nzValue]="value.value">
-              </nz-option>
-            </nz-select>
-
-            <nz-select
-                *ngSwitchCase="'select'"
-                nzShowSearch
-                nzAllowClear
-                nzPlaceHolder="Select a value"
-                [formControlName]="field.name">
-              <nz-option
-                *ngFor="let value of field.values(data.data)"
-                [nzLabel]="value.label"
-                [nzValue]="value.value">
-              </nz-option>
-            </nz-select>
-
-            <input *ngSwitchDefault nz-input [formControlName]="field.name" [id]="field.name" />
-        </ng-container>
-
-        </nz-form-control>
-      </nz-form-item -->
-    </form>
-  `
+  selector: 'admin-form',
+  templateUrl: './form.component.html'
 })
-export class AdminFormComponent extends AdminComponent implements OnInit {
+export class FormComponent extends AdminComponent implements OnInit {
 
   @Input() data:AdminData;
   @Input() submit:Subject<any>;

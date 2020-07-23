@@ -1,16 +1,14 @@
-<!--nz-page-header class="site-page-header" nzBackIcon>
-  <nz-page-header-title>{{ title('index') }}</nz-page-header-title>
-  <nz-page-header-extra>
-    <button (click)="onNew()" nz-button nzType="primary">New {{ data.entityName }}</button>
-  </nz-page-header-extra>
-</nz-page-header-->
+<div class="header">
+  <h2> {{ title('index') }}</h2>
+  <button mat-stroked-button color="primary" (click)="onNew()"> New {{ data.entityName }} </button>
+</div>
 
-<app-table
+<admin-table
   [parent]="data.parent?.path"
   [config]="data.entityConfig.index"
   [items]="data.items"
   (selectItem)="onSelect($event)"
   (actionItem)="onAction($event)">
-</app-table>
+</admin-table>
 
-<app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+<admin-breadcrumb [items]="breadcrumbs"></admin-breadcrumb>

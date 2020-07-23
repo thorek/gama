@@ -1,10 +1,10 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-breadcrumb',
+  selector: 'admin-breadcrumb',
   template: `
-    <app-dyn-content selector="#breadcrumb">
-
+    <admin-dyn-content selector="#breadcrumb">
+      Breadcrumbs
       <!--nz-breadcrumb>
         <nz-breadcrumb-item>
           <i nz-icon nzType="home"></i>
@@ -17,7 +17,7 @@ import { Component, Input } from '@angular/core';
         </nz-breadcrumb-item>
       </nz-breadcrumb-->
 
-    </app-dyn-content>
+    </admin-dyn-content>
   `,
   styles:[`
     nz-breadcrumb {

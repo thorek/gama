@@ -2,7 +2,7 @@ import {AfterViewInit, ApplicationRef, Component, ComponentFactoryResolver, Inje
 import {CdkPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 @Component({
-  selector: 'app-dyn-content',
+  selector: 'admin-dyn-content',
   template: `
     <ng-container *cdkPortal>
       <ng-content> </ng-content>
@@ -30,7 +30,7 @@ export class DynContentComponent implements AfterViewInit, OnDestroy {
         this.injector
     );
 
-    this.outlet.attach(this.portal);
+    if( this.outlet.outletElement ) this.outlet.attach(this.portal);
   }
 
   ngOnDestroy():void {

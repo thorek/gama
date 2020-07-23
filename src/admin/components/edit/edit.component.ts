@@ -14,7 +14,9 @@ export class EditComponent extends AdminEntityComponent {
   onSave = () => this.submit.next();
   onCancel = () => this.onShow();
   onSuccess = () => {
-    this.message.info(`This ${this.title() } was successfully updated!` );
+    this.snackBar.open('Alright', `This ${this.title() } was successfully updated!`, {
+      duration: 1000, horizontalPosition: 'center', verticalPosition: 'top',
+    });
     setTimeout( ()=> this.onShow(), 200 );
   }
 

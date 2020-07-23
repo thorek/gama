@@ -1,14 +1,10 @@
-<!--nz-page-header class="site-page-header" nzBackIcon>
-  <nz-page-header-title>
-    <span>{{ name() }}</span>
-  </nz-page-header-title>
-  <nz-page-header-subtitle>{{ title('show') }}</nz-page-header-subtitle>
-  <nz-page-header-extra>
-    <button nz-button nzType="primary" (click)="onSave()">Save</button>
-    <button nz-button nzType="secondary" (click)="onCancel()">Cancel</button>
-  </nz-page-header-extra>
-</nz-page-header-->
+<div class="header">
+  <h2> Edit {{ title() }}</h2>
 
-<app-form [data]="data" [submit]="submit" (saveSuccess)="onSuccess()"></app-form>
+  <button mat-stroked-button color="primary"(click)="onSave()"> Save </button>
+  <button mat-stroked-button (click)="onCancel()"> Cancel </button>
+</div>
 
-<app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+<admin-form [data]="data" [submit]="submit" (saveSuccess)="onSuccess()"></admin-form>
+
+<admin-breadcrumb [items]="breadcrumbs"></admin-breadcrumb>

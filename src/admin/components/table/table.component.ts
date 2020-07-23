@@ -22,7 +22,7 @@ interface ColumnItem {
 export type TableFieldType = string|{name:string, label?:string, value?:(entity:any) => any }
 
 @Component({
-  selector: 'app-table',
+  selector: 'admin-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss']
 })
