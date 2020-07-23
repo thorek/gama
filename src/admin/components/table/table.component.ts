@@ -28,6 +28,8 @@ export type TableFieldType = string|{name:string, label?:string, value?:(entity:
 })
 export class TableComponent extends AdminComponent {
 
+  get displayedColumns() { return _.map( this.columns, column => column.name ) } 
+
   @Input() parent:string|undefined
   @Input() config:AdminTableConfig|UiConfigType;
   @Output() selectItem = new EventEmitter<any>();
