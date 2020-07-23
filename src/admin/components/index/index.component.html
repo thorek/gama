@@ -1,6 +1,8 @@
 <div class="header">
+  <div mat-dialog-actions align="end">
+    <button mat-stroked-button color="primary" (click)="onNew()"> New {{ data.entityName }} </button>
+  </div>
   <h2> {{ title('index') }}</h2>
-  <button mat-stroked-button color="primary" (click)="onNew()"> New {{ data.entityName }} </button>
 </div>
 
 <admin-table
