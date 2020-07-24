@@ -245,7 +245,9 @@ export class AdminConfig {
       value: _.get( data, 'id'), label: assocEntityConfig.name( data ) }));
     const value = (item:any) => {
       const assocValue = _.get( item, assoc.query );
-      return _.isArray( assocValue ) ? _.join( assocValue, ', ' ) : assocValue;
+      return _.isArray( assocValue ) ?
+        _.join( _.map( assocValue, value => assocEntityConfig.name( value ) ) , ', ' ) :
+        assocEntityConfig.name( assocValue );
     };
     const render = this.getFieldRenderDefaultMethod( field, assoc, assocEntityConfig );
     const keyValue = (item:any) => {

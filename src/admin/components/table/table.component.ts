@@ -21,22 +21,19 @@ export class TableComponent extends AdminComponent {
   @Output() selectItem = new EventEmitter<any>();
   @Output() actionItem = new EventEmitter<{id:any, action:string}>();
   @Input() config:AdminTableConfig|UiConfigType;
-  @Input() set items( items:any[]){
-    if( ! items ) return;
-    this.dataSource = new MatTableDataSource(items);
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-    // this.dataSource.sortingDataAccessor = (item, property) => {
-      //   console.log({item, property})
-      //   switch (property) {
-        //     default: return item[property];
-        //   }
-        // };
-  }
+  @Input() set items( items:any[]){ this.setItems( items ) }
 
   dataSource:MatTableDataSource<any> = null;
   searchTerm:string;
   private searchEntered:Subject<string> = new Subject<string>();
+
+  private setItems( items:any ){
+    if( ! items ) return;
+    this.dataSource = new MatTableDataSource(items);
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.dataSource.sortingDataAccessor = (item, property) => this.fieldConfig( property ).value( item );
+  }
 
   get columns() { return _.map( this.config.fields, (field:FieldConfigType) => field.name ) }
   get fields():FieldConfigType[] { return this.config.fields as FieldConfigType[] }
@@ -60,5 +57,9 @@ export class TableComponent extends AdminComponent {
   //   this.searchTerm = undefined;
   //   this.doSearch();
   // }
+
+  private fieldConfig( property:string ):FieldConfigType {
+    return _.find( this.config.fields, (field:FieldConfigType) => field.name === property ) as FieldConfigType;
+  }
 
 }
