@@ -35,8 +35,8 @@ export class TableComponent extends AdminComponent {
     this.dataSource.sortingDataAccessor = (item, property) => this.fieldConfig( property ).value( item );
   }
 
-  get columns() { return _.map( this.config.fields, (field:FieldConfigType) => field.name ) }
-  get fields():FieldConfigType[] { return this.config.fields as FieldConfigType[] }
+  get columns() { return _.map( this.fields, field => field.name ) }
+  get fields():FieldConfigType[] { return _.filter( this.config.fields, field => this.showField( field ) ) as FieldConfigType[] }
   get search() { return this.config.search }
 
   get defaultActions() { return this.config.defaultActions || ['show', 'edit', 'delete'] }
@@ -60,6 +60,12 @@ export class TableComponent extends AdminComponent {
 
   private fieldConfig( property:string ):FieldConfigType {
     return _.find( this.config.fields, (field:FieldConfigType) => field.name === property ) as FieldConfigType;
+  }
+
+  private showField( field:FieldConfigType|string ):boolean {
+    if( _.get( field, 'path' ) === this.parent ) return false;
+    if( _.has( field, 'parent' ) && _.get( field, 'parent' ) === this.parent) return false;
+    return true;
   }
 
 }
