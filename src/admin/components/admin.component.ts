@@ -25,18 +25,14 @@ export abstract class AdminComponent {
     return _.toString(field);
   }
 
-  value( field:FieldConfigType, item:any ){
-    if( ! _.isFunction( field.value ) ) field.value = (item) => _.get( item, field.name );
-    const value = field.value( item );
-    return _.isArray( value ) ?
-      _.join( _.map( value, fieldValue => this.linkOrPlain( fieldValue ) ), ', ') :
-      this.linkOrPlain( value );
+  render( field:FieldConfigType, item:any ){
+    if( ! _.isFunction( field.render ) ) field.render = (item) => _.get( item, field.name );
+    return field.render( item );
   }
 
-  protected linkOrPlain( value:string|LinkValueType ):string {
-    if( ! value ) return '';
-    if( _.isString( value ) ) return value;
-    return `<a href="${_.join(value.link, '/')}">${ value.value }</a>`;
+  value( field:FieldConfigType, item:any ){
+    if( ! _.isFunction( field.value ) ) field.value = (item) => _.get( item, field.name );
+    return field.value( item );
   }
 
   protected warn<T>( message:string, type:T ):T {

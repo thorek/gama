@@ -6,6 +6,7 @@ const nameProperties = ['name', 'title', 'key', 'lastname', 'firstname', 'last_n
 export type AdminConfigType = {
   entities?:{ [entity:string]:EntityConfigType}
   menu?:string[]
+  showLink?:(path:string, id:string) => string[]
 }
 
 export type EntityConfigType = {
@@ -65,10 +66,11 @@ export type FieldConfigType = {
   name?:string
   path?:string
   label?:string|(() => string)
-  value?:(item:any) => string|LinkValueType|(string|LinkValueType)[]
+  value?:(item:any) => any
+  render?:(item:any) => string
   keyValue?:(item:any) => string|string[]
   filter?:boolean|FieldFilterConfigType
-  link?:boolean|((item:any) => any[])
+  link?:boolean|string|string[]|((item:any) => any[])
   searchable?:boolean
   sortable?:boolean
   parent?:string
@@ -135,6 +137,10 @@ export class AdminConfig {
     return _.toString( item );
   }
 
+  static defaultShowLink = ( path:string, id:string ) => {
+    return ['/admin', path, 'show', id ];
+  }
+
   async getConfig( metaData:any, adminConfig:() => Promise<AdminConfigType> ){
     const defaultConfig = this.buildDefaultConfig( metaData );
     this.config = await adminConfig();
@@ -145,9 +151,12 @@ export class AdminConfig {
   }
 
   private buildDefaultConfig( metaData:any[] ):AdminConfigType {
-    return _.set( {}, 'entities', _.reduce( metaData, (entities, data) => {
+    const config:AdminConfigType = _.set( {}, 'entities', _.reduce( metaData, (entities, data) => {
       return _.set( entities, data.path, this.buildEntityConfig( data ));
     }, {} ));
+    _.set( config, 'showLink', AdminConfig.defaultShowLink );
+    _.set( config, 'menu', _.sortBy( _.keys( config.entities ) ) );
+    return config;
   }
 
   private buildEntityConfig( data:any ):EntityConfigType {
@@ -228,14 +237,6 @@ export class AdminConfig {
     return _.defaults( field, fieldConfig );
   }
 
-  private linkValue( field:FieldConfigType, assoc:AssocType, assocValue:any, name:( item:any )=> string ){
-    if( _.isNil( assocValue ) ) return null;
-    const link =
-      field.link === false ? undefined :
-      field.link ? field.link : ['/admin', assoc.path, 'show', assocValue.id ];
-    return link ? { value: name(assocValue), link } : name(assocValue);
-  }
-
   private fieldFromAssoc( field:string|FieldConfigType, assoc:AssocType, entityConfig:EntityConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { path: field };
     const assocEntityConfig = this.config.entities[assoc.path];
@@ -244,19 +245,43 @@ export class AdminConfig {
       value: _.get( data, 'id'), label: assocEntityConfig.name( data ) }));
     const value = (item:any) => {
       const assocValue = _.get( item, assoc.query );
-      return _.isArray( assocValue ) ?
-        _.map( assocValue, value => this.linkValue( field as FieldConfigType, assoc, value, assocEntityConfig.name ) ) :
-        this.linkValue( field as FieldConfigType, assoc, assocValue, assocEntityConfig.name );
+      return _.isArray( assocValue ) ? _.join( assocValue, ', ' ) : assocValue;
     };
+    const render = this.getFieldRenderDefaultMethod( field, assoc, assocEntityConfig );
     const keyValue = (item:any) => {
       const assocValue = _.get( item, assoc.query );
       return _.isArray( assocValue ) ? _.map( assocValue, value => _.get(value, 'id' ) ) : _.get( assocValue, 'id' );
     }
-
-    return _.defaults( field, { values, value, keyValue,
+    return _.defaults( field, { values, render, keyValue, value,
       control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'tags' : undefined,
       label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );
   }
+
+  private getFieldRenderDefaultMethod( field:FieldConfigType, assoc:AssocType, assocEntityConfig:EntityConfigType ) {
+    return (item:any) => {
+      const assocValue = _.get( item, assoc.query );
+      return _.isArray( assocValue ) ?
+        _.join(
+          _.map( assocValue, value =>
+            this.decorateLink( field as FieldConfigType, assoc, assocValue, assocEntityConfig.name( value ) ) ), ', ' ) :
+        this.decorateLink( field as FieldConfigType, assoc, assocValue, assocEntityConfig.name( assocValue ) );
+    };
+  }
+
+  private decorateLink( field:FieldConfigType, assoc:AssocType, assocValue:any, content:string ){
+    if( field.link === false ) return content;
+    if( field.link === true ) field.link = undefined;
+    let link =
+      _.isFunction( field.link ) ? field.link( assocValue ) :
+      _.isString( field.link ) ? field.link :
+      _.isArray( field.link ) ? field.link :
+      this.config.showLink( assoc.path, assocValue.id );
+
+    if( ! link ) return content;
+    if( _.isArray( link ) ) link = _.join( link, '/' );
+    return `<a href="${ link }">${ content }</a>`;
+  }
+
 
   private warn<T>( message:string, type:T ):T {
     console.warn(message);
