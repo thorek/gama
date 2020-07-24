@@ -37,7 +37,8 @@ export class TableComponent extends AdminComponent {
 
   get columns() { return _.concat( _.map( this.fields, field => field.name ), 'actions' ) }
   get fields():FieldConfigType[] { return _.filter( this.config.fields, field => this.showField( field ) ) as FieldConfigType[] }
-  get search() { return this.config.search }
+  get search():boolean { return this.config.search }
+  get pageSizeOptions() { return ! _.has( this.config, 'path' )  ? [10, 20, 50] : null }
 
   get defaultActions() { return this.config.defaultActions || ['show', 'edit', 'delete'] }
   get actions() { return _.map(this.config.actions, (action, name) => _.set( action, 'name', name ) ) }

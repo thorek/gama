@@ -1,15 +1,12 @@
-
-
-<div class="header">
-  <div mat-dialog-actions align="end">
-    <button mat-stroked-button color="primary" (click)="onList()"> All </button>
-    <button mat-stroked-button (click)="onEdit()"> Edit </button>
-    <button mat-stroked-button (click)="onDelete()"> Delete </button>
-  </div>
+<mat-toolbar-row>
   <h1> {{ name() }} </h1>
-  <h2> {{ title('show') }}</h2>
-</div>
-
+  <span style="flex: 1 1 auto;"></span>
+  <div mat-dialog-actions align="end">
+    <button mat-flat-button color="primary" (click)="onList()"> All </button>
+    <button mat-flat-button (click)="onEdit()"> Edit </button>
+    <button mat-flat-button (click)="onDelete()"> Delete </button>
+  </div>
+</mat-toolbar-row>
 
 <div>
   <table class="showTable">
@@ -25,7 +22,7 @@
 <div *ngFor="let table of data.entityConfig.show.table">
 
   <a [routerLink]="['/admin', this.data.path, this.data.id, table.path]">
-    <h2>{{ title( 'detailTable', table )}}</h2>
+    <h3>{{ title( 'detailTable', table )}}</h3>
   </a>
 
   <admin-table
