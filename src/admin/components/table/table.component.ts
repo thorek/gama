@@ -32,10 +32,10 @@ export class TableComponent extends AdminComponent {
     this.dataSource = new MatTableDataSource(items);
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    this.dataSource.sortingDataAccessor = (item, property) => this.fieldConfig( property ).value( item );
+    this.dataSource.sortingDataAccessor = (item, property) => this.value( this.fieldConfig( property ), item );
   }
 
-  get columns() { return _.map( this.fields, field => field.name ) }
+  get columns() { return _.concat( _.map( this.fields, field => field.name ), 'actions' ) }
   get fields():FieldConfigType[] { return _.filter( this.config.fields, field => this.showField( field ) ) as FieldConfigType[] }
   get search() { return this.config.search }
 

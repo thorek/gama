@@ -1,3 +1,10 @@
+
 table {
   width: 100%;
+
+  .action {
+    text-align: right;
+  }
+
+  a { cursor: pointer; }
 }

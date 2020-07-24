@@ -1,22 +1,17 @@
 .showTable {
 
   border: none;
-  width: 90%;
-
-  tr {
-    border-bottom: solid lavender;
-  }
-
-  tr:last-child {
-    border: none;
-  }
+  width: 100%;
 
   th {
-    width: 38%;
+    font-weight: lighter;
+    width: 20%;
     background-color: lavender;
+    padding: 10px 5px 10px 5px;
   }
 
   td {
-    width: 62%;
+    width: 80%;
+    padding: 10px 5px 10px 5px;
   }
 }

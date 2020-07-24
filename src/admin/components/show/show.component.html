@@ -1,26 +1,29 @@
-<div class="header">
-  <h1> {{ name }} </h1>
-  <h2> {{ title('show') }}</h2>
 
-  <mat-action-list>
+
+<div class="header">
+  <div mat-dialog-actions align="end">
     <button mat-stroked-button color="primary" (click)="onList()"> All </button>
     <button mat-stroked-button (click)="onEdit()"> Edit </button>
     <button mat-stroked-button (click)="onDelete()"> Delete </button>
-  </mat-action-list>
+  </div>
+  <h1> {{ name() }} </h1>
+  <h2> {{ title('show') }}</h2>
 </div>
 
 
-<table class="showTable">
-  <tbody>
-    <tr *ngFor="let field of fields">
-      <th> {{ label( field ) }} </th>
-      <td [innerHTML]="value( field )"></td>
-    </tr>
-  </tbody>
-</table>
+<div>
+  <table class="showTable">
+    <tbody>
+      <tr  class="mat-elevation-z1" *ngFor="let field of fields">
+        <th align="right"> {{ label( field ) }} </th>
+        <td [innerHTML]="render( field )"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <div *ngFor="let table of data.entityConfig.show.table">
-  <hr>
+
   <a [routerLink]="['/admin', this.data.path, this.data.id, table.path]">
     <h2>{{ title( 'detailTable', table )}}</h2>
   </a>
