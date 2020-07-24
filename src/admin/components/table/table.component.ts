@@ -21,13 +21,13 @@ export class TableComponent extends AdminComponent {
   @Output() selectItem = new EventEmitter<any>();
   @Output() actionItem = new EventEmitter<{id:any, action:string}>();
   @Input() config:AdminTableConfig|UiConfigType;
-  @Input() set items( items:any[]){ this.setItems( items ) }
+  @Input() set items( items:any[]){ this.setDataSource( items ) }
 
   dataSource:MatTableDataSource<any> = null;
   searchTerm:string;
   private searchEntered:Subject<string> = new Subject<string>();
 
-  private setItems( items:any ){
+  private setDataSource( items:any ){
     if( ! items ) return;
     this.dataSource = new MatTableDataSource(items);
     this.dataSource.paginator = this.paginator;
