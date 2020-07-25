@@ -255,7 +255,7 @@ export class AdminConfig {
       return _.isArray( assocValue ) ? _.map( assocValue, value => _.get(value, 'id' ) ) : _.get( assocValue, 'id' );
     }
     return _.defaults( field, { values, render, keyValue, value,
-      control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'tags' : undefined,
+      control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'multiple' : undefined,
       label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );
   }
 

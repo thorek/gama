@@ -1,6 +1,42 @@
-Form
-<form [formGroup]="validateForm" (ngSubmit)="submitForm()">
-  <!--nz-form-item *ngFor="let field of fields">
+<form [formGroup]="validateForm">
+  <mat-list>
+    <mat-list-item *ngFor="let field of fields">
+
+
+      <mat-form-field class="full-width">
+        <mat-label>{{ label( field ) }}</mat-label>
+
+        <ng-container [ngSwitch]="field.control">
+
+          <mat-select *ngSwitchCase="'select'" [formControl]="validateForm.controls[field.name]">
+            <mat-option *ngFor="let option of options[field.name]" [value]="option.value">
+              {{option.label}}
+            </mat-option>
+          </mat-select>
+
+          <mat-select *ngSwitchCase="'multiple'" [multiple]="true" [formControl]="validateForm.controls[field.name]">
+            <mat-option *ngFor="let option of options[field.name]" [value]="option.value">
+              {{option.label}}
+            </mat-option>
+          </mat-select>
+
+          <input *ngSwitchDefault matInput [formControl]="validateForm.controls[field.name]">
+
+        </ng-container>
+
+        <mat-error *ngIf="validateForm.controls[field.name].invalid">
+          {{errorTip(field)}}
+        </mat-error>
+
+      </mat-form-field>
+
+    </mat-list-item>
+   </mat-list>
+</form>
+
+
+<!--form [formGroup]="validateForm" (ngSubmit)="submitForm()">
+  <nz-form-item *ngFor="let field of fields">
     <nz-form-label [nzSpan]="6" [nzRequired]="field.required" [nzFor]="field.name">
       {{ label( field ) }}
     </nz-form-label>
@@ -39,5 +75,5 @@ Form
     </ng-container>
 
     </nz-form-control>
-  </nz-form-item -->
-</form>
+  </nz-form-item>
+</form-->

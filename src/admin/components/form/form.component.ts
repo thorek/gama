@@ -11,7 +11,8 @@ import { AdminComponent } from 'src/admin/components/admin.component';
 
 @Component({
   selector: 'admin-form',
-  templateUrl: './form.component.html'
+  templateUrl: './form.component.html',
+  styleUrls:['./form.component.scss']
 })
 export class FormComponent extends AdminComponent implements OnInit {
 
@@ -22,6 +23,7 @@ export class FormComponent extends AdminComponent implements OnInit {
   violations:ViolationType[]
   validateForm!:FormGroup
   get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
+  options = {}
 
   constructor(
     private fb:FormBuilder,
@@ -68,6 +70,7 @@ export class FormComponent extends AdminComponent implements OnInit {
 
   protected buildForm(){
     const definition = _.reduce( this.fields, (definition, field) => {
+      this.options[field.name] = _.isFunction( field.values ) ? field.values( this.data.data ) : [];
       const validators = field.required ? [Validators.required] : [];
       const value = field.path ? field.keyValue( this.data.item ) : this.value( field, this.data.item );
       return _.set(definition, field.name, [value, validators]);
