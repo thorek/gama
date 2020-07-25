@@ -22,6 +22,6 @@ import { Component, Input } from '@angular/core';
     <admin-breadcrumb></admin-breadcrumb>
   `
 })
-export class AdminHomeComponent {
+export class HomeComponent {
 
 }

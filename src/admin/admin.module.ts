@@ -39,7 +39,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { AdminRoutingModule } from './admin-routing.module';
-import { AdminHomeComponent } from './components/admin-home.component';
+import { HomeComponent } from './components/home.component';
 import { BreadcrumComponent } from './components/breadcumb.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { CreateComponent } from './components/create/create.component';
@@ -76,7 +76,7 @@ export function initializeApp1(adminService:AdminService) {
     FormComponent,
     ConfirmDialogComponent,
     MessageDialogComponent,
-    AdminHomeComponent
+    HomeComponent
   ],
   imports: [
     AdminRoutingModule,
