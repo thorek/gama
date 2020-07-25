@@ -4,18 +4,13 @@ import { Component, Input } from '@angular/core';
   selector: 'admin-breadcrumb',
   template: `
     <admin-dyn-content selector="#breadcrumb">
-      &nbsp;
-      /
+      &nbsp; /
       <a [routerLink]="['/admin/home']">Admin</a>
-      /
-      Clients / Ein Kunde / Organisations / Eine Organisation
+      <ng-container *ngFor="let item of items">
+        &nbsp; / <a [routerLink]="item.link">{{ item.text }}</a>
+      </ng-container>
     </admin-dyn-content>
-  `,
-  styles: [`
-    a, a:visited, a:hover, a:active {
-      color: inherit;
-    }
-  `]
+  `
 })
 export class BreadcrumComponent {
 

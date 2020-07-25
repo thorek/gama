@@ -106,12 +106,37 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
 
   protected buildBreadcrumbs(){
-    this.breadcrumbs = [ { text: this.title('index') } ];
+    const config = this.data.entityConfig;
     if( this.data.parent ) {
-      const config = this.adminService.getEntityConfig( this.data.parent.path );
-      this.breadcrumbs.unshift( ...[
-        { text: this.title( 'index', config ) }
-      ]);
+      const parentConfig = this.data.parent.entityConfig;
+      this.breadcrumbs = [{
+        text: this.title( 'index', parentConfig ),
+        link: ['/admin', parentConfig.path]
+      }, {
+        text: this.name( this.data.parent.item, parentConfig ),
+        link: ['/admin', parentConfig.path, 'show', this.data.parent.item.id ]
+      }, {
+        text: this.title( 'index', config ),
+        link: ['/admin', parentConfig.path, this.data.parent.item.id, config.path]
+      }];
+      if( this.data.item ) this.breadcrumbs.push({
+        text: this.name(),
+        link: [
+          '/admin',
+          parentConfig.path,
+          this.data.parent.item.id,
+          config.path,
+          'show',
+          this.data.item.id ]
+      });
+    } else {
+      this.breadcrumbs = [
+        { text: this.title('index'), link: ['/admin', config.path] }
+      ];
+      if( this.data.item ) this.breadcrumbs.push({
+        text: this.name(),
+        link: [ '/admin', config.path, 'show', this.data.item.id ]
+      });
     }
   }
 
