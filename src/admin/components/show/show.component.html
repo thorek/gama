@@ -1,10 +1,11 @@
-
 <mat-toolbar-row>
   <h1> {{ name() }} </h1>
   <span style="flex: 1 1 auto;"></span>
   <div mat-dialog-actions align="end">
     <button mat-flat-button color="primary" (click)="onList()"> All </button>
+    &nbsp;
     <button mat-flat-button (click)="onEdit()"> Edit </button>
+    &nbsp;
     <button mat-flat-button (click)="onDelete()"> Delete </button>
   </div>
 </mat-toolbar-row>

@@ -13,7 +13,6 @@ export class CreateComponent extends AdminEntityComponent {
   submit = new Subject<any>();
 
   onSave = () => this.submit.next();
-  onCancel = () => this.onShow();
   onSuccess = ( id:string ) => {
     this.snackBar.open('Alright', `This ${this.title() } was successfully created!`, {
       duration: 1000, horizontalPosition: 'center', verticalPosition: 'top',

@@ -1,9 +1,12 @@
-<div class="header">
-  <h2> Edit {{ title() }}</h2>
-
-  <button mat-stroked-button color="primary"(click)="onSave()"> Save </button>
-  <button mat-stroked-button (click)="onCancel()"> Cancel </button>
-</div>
+<mat-toolbar-row>
+  <h1> Edit {{ name() }} </h1>
+  <span style="flex: 1 1 auto;"></span>
+  <div mat-dialog-actions align="end">
+    <button mat-flat-button color="primary" (click)="onSave()"> Save </button>
+    &nbsp;
+    <button mat-flat-button (click)="onShow()"> Cancel </button>
+  </div>
+</mat-toolbar-row>
 
 <admin-form [data]="data" [submit]="submit" (saveSuccess)="onSuccess()"></admin-form>
 
