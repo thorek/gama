@@ -9,10 +9,10 @@
   </div>
 </mat-toolbar-row>
 
-<div>
+<div class="mat-elevation-z4">
   <table class="showTable">
     <tbody>
-      <tr  class="mat-elevation-z1" *ngFor="let field of fields">
+      <tr class="mat-row cdk-row" *ngFor="let field of fields">
         <th align="right"> {{ label( field ) }} </th>
         <td [innerHTML]="render( field )"></td>
       </tr>

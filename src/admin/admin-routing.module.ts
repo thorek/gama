@@ -5,9 +5,11 @@ import { AdminDataResolver } from './services/admin-data.resolver';
 import { CreateComponent } from './components/create/create.component';
 import { EditComponent } from './components/edit/edit.component';
 import { ShowComponent } from './components/show/show.component';
+import { AdminHomeComponent } from './components/admin-home.component';
 
 const routes:Routes = [
   { path: 'admin', children: [
+    { path: 'home', component: AdminHomeComponent },
     { path: ':path', component: IndexComponent, resolve: { data: AdminDataResolver } },
     { path: ':path/new', component: CreateComponent, resolve: { data: AdminDataResolver } },
     { path: ':path/edit/:id', component: EditComponent, resolve: { data: AdminDataResolver } },
