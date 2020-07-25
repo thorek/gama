@@ -1,4 +1,4 @@
-import { OnInit } from '@angular/core';
+import { OnInit, HostListener } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash';
@@ -136,6 +136,14 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   render( field:FieldConfigType, item?:any ){
     if( ! item ) item = this.data.item;
     return super.render( field, item );
+  }
+
+  @HostListener('click', ['$event'])
+  public onClick(event:any) {
+    if (event.target.tagName === 'A' && _.includes(event.target.classList, 'router-link')) {
+      this.router.navigate([event.target.getAttribute('href')]);
+      event.preventDefault();
+    }
   }
 
 }

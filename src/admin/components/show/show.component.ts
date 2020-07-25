@@ -17,5 +17,4 @@ export class ShowComponent extends AdminEntityComponent {
     return _.get( this.data.item, query );
   }
 
-
 }

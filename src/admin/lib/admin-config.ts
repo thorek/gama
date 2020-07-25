@@ -265,7 +265,7 @@ export class AdminConfig {
       return _.isArray( assocValue ) ?
         _.join(
           _.map( assocValue, value =>
-            this.decorateLink( field as FieldConfigType, assoc, assocValue, assocEntityConfig.name( value ) ) ), ', ' ) :
+            this.decorateLink( field as FieldConfigType, assoc, value, assocEntityConfig.name( value ) ) ), ', ' ) :
         this.decorateLink( field as FieldConfigType, assoc, assocValue, assocEntityConfig.name( assocValue ) );
     };
   }
@@ -281,7 +281,7 @@ export class AdminConfig {
 
     if( ! link ) return content;
     if( _.isArray( link ) ) link = _.join( link, '/' );
-    return `<a href="${ link }">${ content }</a>`;
+    return `<a class="router-link" href="${ link }">${ content }</a>`;
   }
 
 
