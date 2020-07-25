@@ -41,8 +41,18 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   onSelect = (id:string) => this.gotoShow( this.data.path, id, this.data.parent );
   onChildSelect = (id:string, path:string) => this.gotoShow( path, id, this.data );
 
+  onChildAction = (event:ActionEventType, path:string) => {
+    switch( event.action ){
+      case 'edit': return this.gotoEdit( path, event.id, this.data );
+      case 'delete': return this.onDelete( event.id );
+    }
+    if( _.isFunction( this.data.entityConfig.action ) ) this.data.entityConfig.action( event );
+
+  }
+
   onAction = ( event:ActionEventType ) => {
     switch( event.action ){
+
       case 'delete': return this.onDelete( event.id );
     }
     if( _.isFunction( this.data.entityConfig.action ) ) this.data.entityConfig.action( event );

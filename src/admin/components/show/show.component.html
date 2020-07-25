@@ -32,7 +32,7 @@
     [config]="table"
     [items]="tableItems(table)"
     (selectItem)="onChildSelect( $event, table.path )"
-    (actionItem)="onAction($event)">
+    (actionItem)="onChildAction($event, table.path )">
   </admin-table>
 
 </div>
