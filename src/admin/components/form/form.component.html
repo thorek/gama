@@ -8,19 +8,30 @@
 
         <ng-container [ngSwitch]="field.control">
 
-          <mat-select *ngSwitchCase="'select'" [formControl]="validateForm.controls[field.name]">
+          <mat-select
+              *ngSwitchCase="'select'"
+              [required]="field.required"
+              [formControl]="validateForm.controls[field.name]">
             <mat-option *ngFor="let option of options[field.name]" [value]="option.value">
               {{option.label}}
             </mat-option>
           </mat-select>
 
-          <mat-select *ngSwitchCase="'multiple'" [multiple]="true" [formControl]="validateForm.controls[field.name]">
+          <mat-select
+              *ngSwitchCase="'multiple'"
+              [multiple]="true"
+              [required]="field.required"
+              [formControl]="validateForm.controls[field.name]">
             <mat-option *ngFor="let option of options[field.name]" [value]="option.value">
               {{option.label}}
             </mat-option>
           </mat-select>
 
-          <input *ngSwitchDefault matInput [formControl]="validateForm.controls[field.name]">
+          <input
+            *ngSwitchDefault
+            matInput
+            [required]="field.required"
+            [formControl]="validateForm.controls[field.name]">
 
         </ng-container>
 

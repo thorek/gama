@@ -189,7 +189,6 @@ export class AdminConfig {
     if( ! _.has( uiConfig, 'query' ) ) _.set( uiConfig, 'query',
       uiType === 'index' ? entityConfig.typesQuery : entityConfig.typeQuery );
     this.setFieldsDefaults( uiConfig, entityConfig );
-    if( _.isUndefined( uiConfig.search ) ) uiConfig.search = true;
     return entityConfig;
   }
 
@@ -272,7 +271,7 @@ export class AdminConfig {
       _.isFunction( field.link ) ? field.link( assocValue ) :
       _.isString( field.link ) ? field.link :
       _.isArray( field.link ) ? field.link :
-      this.config.showLink( assoc.path, assocValue.id );
+      this.config.showLink( assoc.path, _.get(assocValue, 'id') );
 
     if( ! link ) return content;
     if( _.isArray( link ) ) link = _.join( link, '/' );

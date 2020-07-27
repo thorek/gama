@@ -17,4 +17,8 @@ export class ShowComponent extends AdminEntityComponent {
     return _.get( this.data.item, query );
   }
 
+  onChildNew( table:AssocTableConfigType ){
+    this.router.navigate( ['/admin', this.data.path, this.data.id, table.path, 'new' ] );
+  }
+
 }

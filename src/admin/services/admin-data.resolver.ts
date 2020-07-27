@@ -65,7 +65,8 @@ export class AdminDataResolver implements Resolve<AdminData> {
   const expression = `query { ${ _.join(expressions, '\n') } }`;
   const query = { query: gql(expression), variables: {}, fetchPolicy: 'network-only' };
   const data = await this.loadData( query );
-  _.set( data, uiConfig.query, {} );
+  const item = parent ? _.set( {}, parent.entityConfig.typeQuery, parent.item ) : {};
+  _.set( data, uiConfig.query, item );
   return new AdminData( data, entityConfig, uiConfig, parent );
 }
 

@@ -73,7 +73,8 @@ export class FormComponent extends AdminComponent implements OnInit {
       this.options[field.name] = _.isFunction( field.values ) ? field.values( this.data.data ) : [];
       const validators = field.required ? [Validators.required] : [];
       const value = field.path ? field.keyValue( this.data.item ) : this.value( field, this.data.item );
-      return _.set(definition, field.name, [value, validators]);
+      const disabled = _.has( field, 'path' ) && _.get( field, 'path' ) === _.get( this.data.parent, 'path' );
+      return _.set(definition, field.name, [{value, disabled}, validators]);
     }, {} );
     this.validateForm = this.fb.group(definition);
   }

@@ -24,11 +24,19 @@
   </table>
 </div>
 
-<div *ngFor="let table of data.entityConfig.show.table">
+<div *ngFor="let table of data.entityConfig.show.table" class="childTable">
+  <mat-toolbar-row>
+    <a [routerLink]="['/admin', this.data.path, this.data.id, table.path]">
+      <h3>{{ title( 'detailTable', table )}}</h3>
+    </a>
+    <span style="flex: 1 1 auto;"></span>
+    <div mat-dialog-actions align="end">
+      <button mat-icon-button color="accent" (click)="onChildNew(table)">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar-row>
 
-  <a [routerLink]="['/admin', this.data.path, this.data.id, table.path]">
-    <h3>{{ title( 'detailTable', table )}}</h3>
-  </a>
 
   <admin-table
     [parent]="{path:data.path, id:data.id}"

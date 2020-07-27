@@ -1,6 +1,7 @@
 import * as inflection from 'inflection';
 import * as _ from 'lodash';
-import { EntityConfigType, TitlePurposeType, FieldConfigType, UiConfigType } from './admin-config';
+
+import { EntityConfigType, UiConfigType } from './admin-config';
 
 
 export class AdminData { 
