@@ -1,3 +1,21 @@
+<mat-toolbar-row *ngIf="search">
+  <mat-form-field>
+    <input
+      [(ngModel)]="searchTerm"
+      matInput
+      (input)="onSearch($event)"
+      placeholder="Search ..."
+      autocomplete="off">
+    <button
+      mat-button
+      mat-icon-button
+      matSuffix
+      (click)="cancelSearch()"
+      *ngIf="searchTerm">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+</mat-toolbar-row>
 
 <div class="mat-elevation-z4">
   <table mat-table matSort [dataSource]="dataSource">
@@ -30,21 +48,4 @@
 </div>
 
 
-<!--ng-container *ngIf="search">
-  <nz-input-group [nzSuffix]="inputClearTpl">
-    <input
-      nz-input
-      placeholder="Search data..."
-      (input)="onSearch($event)"
-      [(ngModel)]="searchTerm" />
-  </nz-input-group>
-  <ng-template #inputClearTpl>
-    <i nz-icon
-      *ngIf="searchTerm"
-      (click)="cancelSearch()"
-      [nzType]="'close-circle'"
-      [nzTheme]="'outline'">
-    </i>
-  </ng-template>
-</ng-container-->
 

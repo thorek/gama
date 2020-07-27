@@ -2,7 +2,7 @@ import { OnInit, HostListener } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash';
-import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType, LinkValueType } from 'src/admin/lib/admin-config';
+import { ActionEventType, TitlePurposeType, EntityConfigType, FieldConfigType } from 'src/admin/lib/admin-config';
 import { AdminData } from 'src/admin/lib/admin-data';
 import { AdminService } from 'src/admin/services/admin.service';
 
@@ -124,13 +124,15 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
         link: ['/admin', parentConfig.path]
       }, {
         text: this.name( this.data.parent.item, parentConfig ),
-        link: ['/admin', parentConfig.path, 'show', this.data.parent.item.id ]
+        link: ['/admin', parentConfig.path, 'show', this.data.parent.item.id ],
+        class: 'item'
       }, {
         text: this.title( 'index', config ),
         link: ['/admin', parentConfig.path, this.data.parent.item.id, config.path]
       }];
       if( this.data.item ) this.breadcrumbs.push({
         text: this.name(),
+        class: 'item',
         link: [
           '/admin',
           parentConfig.path,
@@ -145,6 +147,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
       ];
       if( this.data.item ) this.breadcrumbs.push({
         text: this.name(),
+        class: 'item',
         link: [ '/admin', config.path, 'show', this.data.item.id ]
       });
     }

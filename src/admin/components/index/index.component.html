@@ -1,5 +1,8 @@
 <mat-toolbar-row>
-  <h1> {{ title('index') }} </h1>
+  <div>
+    <h1> {{ title('index') }} </h1>
+    <h2 *ngIf="data.parent"> {{ name( data.parent.item, data.parent.entityConfig ) }} </h2>
+  </div>
   <span style="flex: 1 1 auto;"></span>
   <div mat-dialog-actions align="end">
     <button mat-flat-button color="primary" (click)="onNew()"> New {{ data.entityName }} </button>

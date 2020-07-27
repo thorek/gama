@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as inflection from 'inflection';
-import { EntityConfigType, TitlePurposeType, FieldConfigType, LinkValueType } from 'src/admin/lib/admin-config';
+import { EntityConfigType, TitlePurposeType, FieldConfigType } from 'src/admin/lib/admin-config';
 
 export abstract class AdminComponent {
 

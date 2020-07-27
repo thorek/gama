@@ -4,6 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminComponent } from 'src/admin/components/admin.component';
 import { AdminTableConfig, FieldConfigType, UiConfigType } from 'src/admin/lib/admin-config';
 
@@ -33,6 +34,7 @@ export class TableComponent extends AdminComponent {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     this.dataSource.sortingDataAccessor = (item, property) => this.value( this.fieldConfig( property ), item );
+    this.prepareSearch();
   }
 
   get columns() { return _.concat( _.map( this.fields, field => field.name ), 'actions' ) }
@@ -48,16 +50,27 @@ export class TableComponent extends AdminComponent {
   onEdit = (id:any) => this.actionItem.emit({ id, action: 'edit'} );
   onDelete = (id:any) => this.actionItem.emit({ id, action: 'delete'} );
 
-  // private doSearch(){
-  //   this.filtered = _.size(this.searchTerm) > 0;
-  //   if( this.filtered ) this.filteredIds =
-  //     _.map( this.miniSearch.search(this.searchTerm), item => item.id );
-  // }
+  private prepareSearch(){
+    this.searchTerm = undefined;
+    this.dataSource.filterPredicate = (item:any, filter:string ) => {
+      return _.some( this.fields, field => {
+        if( _.isFunction( field.search ) ) return field.search( _.get( item, field.name ), filter );
+        const value = _.toLower( this.value( field, item ) );
+        return _.includes( value, _.toLower( filter ) );
+      });
+    }
+    this.searchEntered.pipe( debounceTime(400), distinctUntilChanged() ).
+      subscribe( () => this.doSearch() );
+  }
 
-  // cancelSearch(){
-  //   this.searchTerm = undefined;
-  //   this.doSearch();
-  // }
+  private doSearch(){
+    this.dataSource.filter = this.searchTerm;
+  }
+
+  cancelSearch(){
+    this.searchTerm = undefined;
+    this.doSearch();
+  }
 
   private fieldConfig( property:string ):FieldConfigType {
     return _.find( this.config.fields, (field:FieldConfigType) => field.name === property ) as FieldConfigType;

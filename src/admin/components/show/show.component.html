@@ -1,5 +1,5 @@
 <mat-toolbar-row>
-  <h1> {{ name() }} </h1>
+  <h2> {{ title('show') }} </h2>
   <span style="flex: 1 1 auto;"></span>
   <div mat-dialog-actions align="end">
     <button mat-flat-button color="primary" (click)="onList()"> All </button>
@@ -8,6 +8,9 @@
     &nbsp;
     <button mat-flat-button (click)="onDelete()"> Delete </button>
   </div>
+</mat-toolbar-row>
+<mat-toolbar-row>
+  <h1> {{ name() }} </h1>
 </mat-toolbar-row>
 
 <div class="mat-elevation-z4">

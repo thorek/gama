@@ -57,11 +57,6 @@ export type FieldFilterConfigType = {
   multiple?:boolean
 }
 
-export type LinkValueType = {
-  value:string
-  link:string[]
-}
-
 export type FieldConfigType = {
   name?:string
   path?:string
@@ -71,7 +66,7 @@ export type FieldConfigType = {
   keyValue?:(item:any) => string|string[]
   filter?:boolean|FieldFilterConfigType
   link?:boolean|string|string[]|((item:any) => any[])
-  searchable?:boolean
+  search?:(data:any, searchTerm:string) => boolean
   sortable?:boolean
   parent?:string
   control?:string
