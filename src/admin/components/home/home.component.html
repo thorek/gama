@@ -11,8 +11,8 @@
         </mat-card-header>
         <hr>
         <mat-card-content>
-          <p>
-            some info about {{ title( 'index', entity ) }} ...
+          <p *ngFor="let field of fields( entity )">
+            {{ field.name }} ({{field.type}}) {{ field.required && '*' }}
           </p>
         </mat-card-content>
       </mat-card>

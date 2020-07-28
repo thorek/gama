@@ -77,7 +77,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
     if( _.size( violations ) === 0 ) return this.onDeleteSuccess();
     const message = _.join(violations, '\n');
     const dialogData = new ConfirmDialogModel('Could not delete', message);
-    this.dialog.open( MessageDialogComponent, { maxWidth: '400px', data: dialogData } );
+    this.dialog.open( MessageDialogComponent, { maxWidth: '600px', data: dialogData } );
   }
 
   private onDeleteSuccess(){

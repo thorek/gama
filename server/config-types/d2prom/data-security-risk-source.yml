@@ -169,19 +169,19 @@ entity:
         name: Verkauf
         Organisation: papyr
       hrPapyr:
-        name: Personal
+        name: Papyr Personal
         Organisation: papyr
       hrLogotech:
-        name: Personal
+        name: Logotech Personal
         Organisation: logotech
       mtpInnen:
-        name: Bestandsverwaltung / Innendienst
+        name: MTP Bestandsverwaltung / Innendienst
         Organisation: mtp
       mtpVertrieb:
-        name: Vertrieb
+        name: MTP Vertrieb
         Organisation: mtp
       mtpTraining:
-        name: Schulungsabteilung
+        name: MTP Schulungsabteilung
         Organisation: mtp
 
   Organisation:

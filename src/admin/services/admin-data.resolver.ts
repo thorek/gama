@@ -58,18 +58,22 @@ export class AdminDataResolver implements Resolve<AdminData> {
   }
 
   private async loadDataForCreate(
-    entityConfig:EntityConfigType,
-    uiConfig:UiConfigType,
-    parent?:AdminData ):Promise<any> {
-  const expressions = _.compact( _.map( uiConfig.data, data => this.getDataLoadExpression( data, uiConfig ) ) );
-  const expression = `query { ${ _.join(expressions, '\n') } }`;
-  const query = { query: gql(expression), variables: {}, fetchPolicy: 'network-only' };
-  const data = await this.loadData( query );
-  const item = parent ? _.set( {}, parent.entityConfig.typeQuery, parent.item ) : {};
-  _.set( data, uiConfig.query, item );
-  return new AdminData( data, entityConfig, uiConfig, parent );
-}
+      entityConfig:EntityConfigType,
+      uiConfig:UiConfigType,
+      parent?:AdminData ):Promise<any> {
+    const data = await this.loadOnlyExpressions( uiConfig );
+    const item = parent ? _.set( {}, parent.entityConfig.typeQuery, parent.item ) : {};
+    _.set( data, uiConfig.query, item );
+    return new AdminData( data, entityConfig, uiConfig, parent );
+  }
 
+  private async loadOnlyExpressions( uiConfig:UiConfigType ):Promise<any> {
+    const expressions = _.compact( _.map( uiConfig.data, data => this.getDataLoadExpression( data, uiConfig ) ) );
+    if( _.size( expressions ) == 0 ) return {};
+    const expression = `query { ${ _.join(expressions, '\n') } }`;
+    const query = { query: gql(expression), variables: {}, fetchPolicy: 'network-only' };
+    return this.loadData( query );
+  }
 
   private async loadItemData(
       entityConfig:EntityConfigType,

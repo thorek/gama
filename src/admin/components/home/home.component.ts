@@ -17,4 +17,5 @@ export class HomeComponent extends AdminComponent {
     this.entities = this.adminService.getMenuEntities();
   }
 
+  fields = ( entity:EntityConfigType ) => Object.values( entity.fields )
 }
