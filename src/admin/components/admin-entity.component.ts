@@ -52,7 +52,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
 
   onAction = ( event:ActionEventType ) => {
     switch( event.action ){
-
+      case 'edit': return this.gotoEdit( this.data.path, event.id );
       case 'delete': return this.onDelete( event.id );
     }
     if( _.isFunction( this.data.entityConfig.action ) ) this.data.entityConfig.action( event );
