@@ -2,6 +2,8 @@ h1, .content {
   padding: 16px;
 }
 
-.content > mat-card {
+.content mat-card {
   margin-bottom: 16px;
 }
+
+a { text-decoration: none; }
