@@ -33,6 +33,7 @@ export class AppComponent implements OnInit{
     this.router.events.subscribe((event:Event) => {
       switch (true) {
         case event instanceof NavigationStart: {
+          // setTimeout(() => { this.loading = true }, 100);
           this.loading = true;
           break;
         }

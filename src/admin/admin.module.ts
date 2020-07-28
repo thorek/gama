@@ -37,15 +37,16 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { AdminRoutingModule } from './admin-routing.module';
-import { HomeComponent } from './components/home.component';
 import { BreadcrumComponent } from './components/breadcumb.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { CreateComponent } from './components/create/create.component';
 import { DynContentComponent } from './components/dyn-content.component';
 import { EditComponent } from './components/edit/edit.component';
 import { FormComponent } from './components/form/form.component';
+import { HomeComponent } from './components/home/home.component';
 import { IndexComponent } from './components/index/index.component';
 import { MessageDialogComponent } from './components/message-dialog/message-dialog.component';
 import { ShowComponent } from './components/show/show.component';
@@ -118,9 +119,11 @@ export function initializeApp1(adminService:AdminService) {
     MatSortModule,
     MatStepperModule,
     MatTableModule,
-    MatTabsModule
+    MatTabsModule,
+    FlexLayoutModule
   ],
   exports: [
+    HomeComponent,
     IndexComponent,
     ShowComponent,
     EditComponent,

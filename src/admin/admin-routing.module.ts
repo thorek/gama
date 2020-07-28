@@ -5,7 +5,7 @@ import { AdminDataResolver } from './services/admin-data.resolver';
 import { CreateComponent } from './components/create/create.component';
 import { EditComponent } from './components/edit/edit.component';
 import { ShowComponent } from './components/show/show.component';
-import { HomeComponent } from './components/home.component';
+import { HomeComponent } from './components/home/home.component';
 
 const routes:Routes = [
   { path: 'admin', children: [

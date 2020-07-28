@@ -64,72 +64,9 @@
     </mat-sidenav-container>
 </div>
 
-
-<!--nz-layout class="app-layout">
-
-  <nz-sider class="menu-sidebar"
-            nzCollapsible
-            nzWidth="256px"
-            nzBreakpoint="md"
-            [(nzCollapsed)]="isCollapsed"
-            [nzTrigger]="null">
-    <div class="sidebar-logo">
-      <a href="/">
-        <i nz-icon nzType="safety" style="font-size: 24px; color: #08c;"></i>
-        <h1>D2PROM</h1>
-      </a>
-    </div>
-    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-      <li nz-submenu nzOpen nzTitle="General" nzIcon="home">
-        <ul>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/welcome">Welcome</a>
-          </li>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/about">About</a>
-          </li>
-        </ul>
-      </li>
-      <li nz-submenu nzOpen nzTitle="Clients" nzIcon="usergroup-delete">
-        <ul>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/clients">Clients</a>
-          </li>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/organisations">Organisations</a>
-          </li>
-        </ul>
-      </li>
-      <li nz-submenu nzOpen nzTitle="Admin" nzIcon="usergroup-delete">
-        <ul>
-          <li *ngFor="let entity of entities" nz-menu-item nzMatchRouter>
-            <a [routerLink]="['admin', entity.path]">{{ title(entity) }}</a>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </nz-sider>
-  <nz-layout>
-    <nz-header>
-      <div class="app-header">
-        <span class="header-trigger" (click)="isCollapsed = !isCollapsed">
-            <i class="trigger"
-               nz-icon
-               [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
-            ></i>
-        </span>
-
-        <span id="breadcrumb"></span>
-
-      </div>
-    </nz-header>
-    <nz-content>
-    </nz-content>
-  </nz-layout>
-</nz-layout>
-<nz-footer>GAMA Demo App</nz-footer-->
-
 <div class="loading" [ngClass]="{'on': loading}">
-  <mat-spinner></mat-spinner>
+  <div class="center">
+    <mat-spinner></mat-spinner>
+  </div>
 </div>
 

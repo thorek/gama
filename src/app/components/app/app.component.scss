@@ -23,6 +23,12 @@ mat-sidenav-content {
 	transition: visibility 2.5s;
 }
 
+.center {
+  padding-top: 100px;
+  display: table;
+  margin: 0 auto;
+}
+
 .breadcrumb {
   font-weight: lighter;
   font-size: smaller;
