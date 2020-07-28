@@ -11,11 +11,7 @@ export const processingActivitiesConfig:EntityConfigType = {
         value: (processingActivity) =>
         _.get( _.first( processingActivity.organisationalUnits ), 'organisation.name' )
       },
-      {
-        path: 'organisational_units',
-        value: (processingActivity) =>
-          _(processingActivity.organisationalUnits).map( ou => ou.name ).join(', ')
-      }
+      'organisational_units'
     ]
   }
 }

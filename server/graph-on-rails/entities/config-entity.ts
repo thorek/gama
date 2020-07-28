@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Entity, AssocFromType, AssocToType } from './entity';
+import { Entity, AssocFromType, AssocToType, AssocToManyType } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { EntityPermissionType } from './entity-permissions';
 import { Context } from '../core/context';
@@ -39,7 +39,7 @@ export type EntityConfig  = {
 
   attributes?:{[name:string]:string|AttributeConfig};
   assocTo?:string|(string|AssocToType)[];
-  assocToMany?:string|(string|AssocToType)[];
+  assocToMany?:string|(string|AssocToManyType)[];
   assocFrom?:string|string[]|AssocFromType[];
 
   plural?:string

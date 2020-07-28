@@ -25,6 +25,10 @@ export type AssocToType = AssocType & {
   input?:boolean
 }
 
+export type AssocToManyType = AssocToType & {
+  scope?:string
+}
+
 
 //
 //
@@ -108,7 +112,7 @@ export abstract class Entity {
   protected getCollection() { return this.plural }
   protected getAttributes():{[name:string]:TypeAttribute} { return {} };
   protected getAssocTo():AssocToType[] { return [] }
-  protected getAssocToMany():AssocToType[] { return [] }
+  protected getAssocToMany():AssocToManyType[] { return [] }
   protected getAssocFrom():AssocFromType[] { return [] }
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
   protected getSeeds():{[name:string]:any} { return {} }

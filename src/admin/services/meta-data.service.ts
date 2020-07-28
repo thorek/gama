@@ -34,6 +34,7 @@ const query = gql`
         required
         typesQuery
         foreignKey
+        scope
       }
       assocFrom {
         path

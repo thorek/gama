@@ -94,6 +94,7 @@ export type AssocType = {
   type:'assocTo'|'assocToMany'|'assocFrom'
   foreignKey:string
   typesQuery:string // for lookups
+  scope:string
 }
 
 export type ActionEventType = {id:any, action:string};
@@ -170,7 +171,7 @@ export class AdminConfig {
   };
 
   private buildField( data:any ):FieldConfigType {
-    return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique']);
+    return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique', 'scope']);
   }
 
   private setUiConfigDefaults():void {
@@ -235,8 +236,7 @@ export class AdminConfig {
     if( _.isString( field ) ) field = { path: field };
     const assocEntityConfig = this.config.entities[assoc.path];
     if( ! assocEntityConfig ) return field;
-    const values = (data:any) => _.map( _.get( data, assoc.typesQuery ), data => ({
-      value: _.get( data, 'id'), label: assocEntityConfig.name( data ) }));
+    const values = this.getFieldValuesDefaultMethod( assoc, assocEntityConfig, entityConfig );
     const value = (item:any) => {
       const assocValue = _.get( item, assoc.query );
       return _.isArray( assocValue ) ?
@@ -251,6 +251,20 @@ export class AdminConfig {
     return _.defaults( field, { values, render, keyValue, value,
       control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'multiple' : undefined,
       label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );
+  }
+
+  private getFieldValuesDefaultMethod(assoc:AssocType, assocEntityConfig:EntityConfigType, entityConfig:EntityConfigType ){
+    return (data:any) => _.compact( _.map( _.get( data, assoc.typesQuery ), item => {
+      if( assoc.scope ){
+        const scopeConfig = this.config.entities[ assoc.scope ];
+        if( scopeConfig ) {
+          const itemScopedId = _.get( data, [entityConfig.typeQuery, scopeConfig.typeQuery, 'id'] );
+          const assocScopedId = _.get( item, [scopeConfig.typeQuery, 'id'] );
+          if( itemScopedId != assocScopedId ) return undefined;
+        }
+      }
+      return { value: _.get( item, 'id'), label: assocEntityConfig.name( item ) };
+    }));
   }
 
   private getFieldRenderDefaultMethod( field:FieldConfigType, assoc:AssocType, assocEntityConfig:EntityConfigType ) {

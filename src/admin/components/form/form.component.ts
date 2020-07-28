@@ -68,6 +68,17 @@ export class FormComponent extends AdminComponent implements OnInit {
       join(', ');
   }
 
+  onSelectionChange(field:FieldConfigType, value:any ){
+    const assocConfig = this.adminService.getEntityConfig( field.path );
+    if( ! assocConfig ) return;
+    _.set( this.data.item, [assocConfig.typeQuery, 'id'], value );
+    _.forEach( this.fields, field => {
+      const config = this.data.entityConfig.assocs[field.path];
+      if( config && config.scope ) this.options[field.name] =
+        _.isFunction( field.values ) ? field.values( this.data.data ) : [];
+    });
+  }
+
   protected buildForm(){
     const definition = _.reduce( this.fields, (definition, field) => {
       this.options[field.name] = _.isFunction( field.values ) ? field.values( this.data.data ) : [];

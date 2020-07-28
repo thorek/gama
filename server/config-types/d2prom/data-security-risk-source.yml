@@ -106,7 +106,9 @@ entity:
       purpose: string
       description: string
     assocTo: Organisation
-    assocToMany: OrganisationalUnit
+    assocToMany:
+        type: OrganisationalUnit
+        scope: Organisation
     assocFrom:
       - type: DataAtom
         delete: cascade

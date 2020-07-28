@@ -29,7 +29,8 @@ export class MetaDataBuilder extends SchemaBuilder {
         query: { type: GraphQLString },
         required: { type: GraphQLBoolean },
         typesQuery: { type: GraphQLString },
-        foreignKey: { type: GraphQLString }
+        foreignKey: { type: GraphQLString },
+        scope: { type: GraphQLString }
       }
     });
 
@@ -105,12 +106,14 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.assocToMany, assocToMany => {
       const refEntity = this.context.entities[assocToMany.type];
+      const scopeEntity = assocToMany.scope ? this.context.entities[assocToMany.scope] : undefined;
       return {
         path: refEntity.path,
         query: refEntity.plural,
         required: assocToMany.required,
         typesQuery: refEntity.typesQuery,
-        foreignKey: refEntity.foreignKeys
+        foreignKey: refEntity.foreignKeys,
+        scope: _.get( scopeEntity, 'path' )
       };
     });
   }
