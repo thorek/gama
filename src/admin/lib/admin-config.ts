@@ -254,17 +254,19 @@ export class AdminConfig {
   }
 
   private getFieldValuesDefaultMethod(assoc:AssocType, assocEntityConfig:EntityConfigType, entityConfig:EntityConfigType ){
-    return (data:any) => _.compact( _.map( _.get( data, assoc.typesQuery ), item => {
-      if( assoc.scope ){
-        const scopeConfig = this.config.entities[ assoc.scope ];
-        if( scopeConfig ) {
-          const itemScopedId = _.get( data, [entityConfig.typeQuery, scopeConfig.typeQuery, 'id'] );
-          const assocScopedId = _.get( item, [scopeConfig.typeQuery, 'id'] );
-          if( itemScopedId != assocScopedId ) return undefined;
-        }
-      }
-      return { value: _.get( item, 'id'), label: assocEntityConfig.name( item ) };
+    return (data:any) => _.compact( _.map( _.get( data, assoc.typesQuery ), assocItem => {
+      if( ! this.isNoneOrMatchingScoped(assoc, entityConfig, data, assocItem ) ) return;
+      return { value: _.get( assocItem, 'id'), label: assocEntityConfig.name( assocItem ) };
     }));
+  }
+
+  private isNoneOrMatchingScoped(assoc:AssocType, entityConfig:EntityConfigType, data:any, assocItem:any):boolean {
+    if( ! assoc.scope ) return true;
+    const scopeConfig = this.config.entities[ assoc.scope ];
+    if( scopeConfig ) return true;
+    const itemScopedId = _.get( data, [entityConfig.typeQuery, scopeConfig.typeQuery, 'id'] );
+    const assocScopedId = _.get( assocItem, [scopeConfig.typeQuery, 'id'] );
+    return itemScopedId != assocScopedId;
   }
 
   private getFieldRenderDefaultMethod( field:FieldConfigType, assoc:AssocType, assocEntityConfig:EntityConfigType ) {
