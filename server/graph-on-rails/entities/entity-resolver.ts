@@ -166,14 +166,13 @@ export class EntityResolver extends EntityModule {
    */
   private getAndUnsetFilePromises( attributes:any ):Dictionary<Promise<any>> {
     const filePromises = {};
-    _(this.entity.attributes).
-      filter( attribute => this.isFileType( attribute ) ).
-      keys().forEach( name => {
-        const filePromise = _.get( attributes, name );
-        if( ! filePromise ) return;
-        _.unset( attributes, name );
-        _.set( filePromises, name, filePromise );
-      } )
+    _.forEach( this.entity.attributes, (attribute, name) => {
+      if( ! this.isFileType( attribute ) ) return;
+      const filePromise = _.get( attributes, name );
+      if( ! filePromise ) return;
+      _.unset( attributes, name );
+      _.set( filePromises, name, filePromise );
+    });
     return filePromises;
   }
 
