@@ -263,10 +263,10 @@ export class AdminConfig {
   private isNoneOrMatchingScoped(assoc:AssocType, entityConfig:EntityConfigType, data:any, assocItem:any):boolean {
     if( ! assoc.scope ) return true;
     const scopeConfig = this.config.entities[ assoc.scope ];
-    if( scopeConfig ) return true;
+    if( ! scopeConfig ) return true;
     const itemScopedId = _.get( data, [entityConfig.typeQuery, scopeConfig.typeQuery, 'id'] );
     const assocScopedId = _.get( assocItem, [scopeConfig.typeQuery, 'id'] );
-    return itemScopedId != assocScopedId;
+    return itemScopedId === assocScopedId;
   }
 
   private getFieldRenderDefaultMethod( field:FieldConfigType, assoc:AssocType, assocEntityConfig:EntityConfigType ) {
