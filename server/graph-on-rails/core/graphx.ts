@@ -28,6 +28,7 @@ export class GraphX {
     this.createQueryType();
     this.createMutationType();
     this.createValidationViolationType();
+    this.createFileType();
   }
 
   /**
@@ -68,7 +69,7 @@ export class GraphX {
    *
    */
   private createValidationViolationType():void {
-    this.createType('ValidationViolation', {
+    this.type('ValidationViolation', {
       name: 'ValidationViolation',
       fields: () => ({
         attribute: { type: GraphQLString },
@@ -76,6 +77,21 @@ export class GraphX {
       })
     });
   }
+
+  /**
+   *
+   */
+  private createFileType( ):void {
+    this.type('File', {
+      name: 'File',
+      fields: () => ({
+        filename: { type: GraphQLNonNull(GraphQLString) },
+        mimetype: { type: GraphQLNonNull(GraphQLString) },
+        encoding: { type: GraphQLNonNull(GraphQLString) }
+      })
+    });
+  }
+
 
 
   //

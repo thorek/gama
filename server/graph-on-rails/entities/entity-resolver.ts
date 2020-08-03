@@ -1,10 +1,11 @@
-import _ from 'lodash';
+import _, { at } from 'lodash';
 
 import { ResolverContext } from '../core/resolver-context';
 import { Entity } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
 import { Sort } from 'graph-on-rails/core/data-store';
+import { TypeAttribute } from './type-attribute';
 
 //
 //
@@ -63,6 +64,7 @@ export class EntityResolver extends EntityModule {
    */
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
     const attributes = _.get( resolverCtx.args, this.entity.singular );
+    await this.resolveFileAttributes( attributes );
     const result = await this.accessor.save( attributes );
     return result instanceof EntityItem ?
       _.set( {validationViolations: []}, this.entity.singular, result.item ) :
@@ -154,6 +156,45 @@ export class EntityResolver extends EntityModule {
    */
   async truncate():Promise<boolean>{
     return this.accessor.truncate();
+  }
+
+  /**
+   *
+   */
+  private async resolveFileAttributes( attributes:any ):Promise<void> {
+    for( const name of _.keys(this.entity.attributes) ){
+      if( this.isFileType( this.entity.attributes[name]) ) await this.resolveFileAttribute( attributes, name );
+    }
+  }
+
+  /**
+   *
+   */
+  private async resolveFileAttribute( attributes:any, name:string ):Promise<void> {
+    const fileValues = _.get( attributes, name );
+    if( !  fileValues ) return;
+    return new Promise( resolve => {
+      Promise.resolve(fileValues).then(function(value) {
+        const resolved = _.pick( value, 'filename', 'encoding', 'mimetype' );
+        const data:any[] = [];
+        value.stream.on('data', (chunk:any) => data.push(chunk) );
+        value.stream.on('end', () => {
+          _.set( resolved, 'data', Buffer.concat(data) );
+          _.set( attributes, name, resolved );
+          resolve();
+        });
+      });
+    })
+  }
+
+
+  /**
+   *
+   */
+  private isFileType( attribute:TypeAttribute ):boolean {
+    const name = _.isString( attribute.graphqlType ) ?
+      attribute.graphqlType : _.get( attribute.graphqlType, 'name' );
+    return name === 'File';
   }
 
 }

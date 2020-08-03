@@ -1,3 +1,4 @@
+import { GraphQLUpload } from 'apollo-server-express';
 import {
   GraphQLBoolean,
   GraphQLEnumType,
@@ -9,6 +10,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLScalarType,
   GraphQLString,
   GraphQLType,
   GraphQLUnionType,
@@ -16,13 +18,13 @@ import {
 import _, { Dictionary } from 'lodash';
 
 import { Context } from '../core/context';
-import { Entity, AssocType, AssocToType } from '../entities/entity';
+import { AssocToType, AssocType, Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { SchemaBuilder } from './schema-builder';
 
 
-const scalarTypes:{[scalar:string]:GraphQLType} = {
+const scalarTypes:{[scalar:string]:GraphQLScalarType} = {
   id: GraphQLID,
   string: GraphQLString,
   int: GraphQLInt,
@@ -87,7 +89,7 @@ export class EntityBuilder extends SchemaBuilder {
     this.addReferences();
     this.addQueries();
     this.addMutations();
-	}
+  }
 
   //
   //
@@ -248,12 +250,12 @@ export class EntityBuilder extends SchemaBuilder {
     });
   }
 
-	//
-	//
-	protected addAssocFrom( entity?:Entity ):void {
+  //
+  //
+  protected addAssocFrom( entity?:Entity ):void {
     if( ! entity ) entity = this.entity;
     const assocFrom = _.filter( entity.assocFrom, assocFrom => this.checkReference( 'assocFrom', assocFrom ) );
-		this.graphx.type(this.entity.typeName).extendFields(
+    this.graphx.type(this.entity.typeName).extendFields(
       () => _.reduce( assocFrom, (fields, ref) => this.addAssocFromReferenceToType( fields, ref ), {} ));
   }
 
@@ -288,21 +290,21 @@ export class EntityBuilder extends SchemaBuilder {
    *
    */
   protected createCreateInputType():void {
-		const name = this.entity.createInput;
-		this.graphx.type( name, { name,
+    const name = this.entity.createInput;
+    this.graphx.type( name, { name,
     from: GraphQLInputObjectType, fields: () => this.getAttributeFields( 'createInput' ) });
-	}
+  }
 
   /**
    *
    */
   protected createUpdateInputType():void {
-		const name = this.entity.updateInput;
-		this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
-			const fields = { id: { type: new GraphQLNonNull(GraphQLID) }};
-			return _.merge( fields, this.getAttributeFields( 'updateInput' ) );
-		}});
-	}
+    const name = this.entity.updateInput;
+    this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
+      const fields = { id: { type: new GraphQLNonNull(GraphQLID) }};
+      return _.merge( fields, this.getAttributeFields( 'updateInput' ) );
+    }});
+  }
 
   /**
    *
@@ -318,7 +320,7 @@ export class EntityBuilder extends SchemaBuilder {
   private getFieldConfig(name:string, attribute:TypeAttribute, purpose:AttributePurpose ):AttrFieldConfig|undefined {
     const addNonNull = this.addNonNull( name, attribute, purpose);
     const fieldConfig = {
-      type: this.getGraphQLType(attribute, addNonNull ),
+      type: this.getGraphQLType(attribute, addNonNull, purpose ),
       description: attribute.description
     };
     if( this.skipVirtual( name, attribute, purpose, fieldConfig ) ) return;
@@ -466,17 +468,16 @@ export class EntityBuilder extends SchemaBuilder {
   /**
    *
    */
-  private getGraphQLType( attr:TypeAttribute, addNonNull:boolean ):GraphQLType {
-    const type = _.isString( attr.graphqlType ) ? this.getTypeForName(attr.graphqlType ) : attr.graphqlType;
+  private getGraphQLType( attr:TypeAttribute, addNonNull:boolean, purpose:AttributePurpose ):GraphQLType {
+    const type = _.isString( attr.graphqlType ) ? this.getTypeForName(attr.graphqlType, purpose ) : attr.graphqlType;
     return addNonNull ? new GraphQLNonNull( type ) : type;
   }
 
   /**
    *
-   * @param name
    */
-  private getTypeForName( name:string ):GraphQLType {
-    let type = scalarTypes[_.toLower(name)];
+  private getTypeForName( name:string, purpose:AttributePurpose ):GraphQLType {
+    const type = this.getScalarType( name, purpose );
     if( type ) return type;
     try {
       return this.graphx.type(name);
@@ -486,7 +487,16 @@ export class EntityBuilder extends SchemaBuilder {
     return GraphQLString;
   }
 
-    /**
+  /**
+   *
+   */
+  private getScalarType( name:string, purpose:AttributePurpose ):GraphQLScalarType | undefined {
+    if( name === 'File' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
+    const type = scalarTypes[_.toLower(name)];
+    if( type ) return type;
+  }
+
+  /**
    *
    */
   private getFilterType( attr:TypeAttribute):FilterType|undefined {

@@ -111,7 +111,7 @@ export class MongoDbDataStore extends DataStore {
   /**
    *
    */
-  async create( entity:Entity, attrs: any ):Promise<any> {
+  async create( entity:Entity, attrs:any ):Promise<any> {
     const collection = this.getCollection( entity );
     const result = await collection.insertOne( attrs );
     return this.findById( entity, result.insertedId );
