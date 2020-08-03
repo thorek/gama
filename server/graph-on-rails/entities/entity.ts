@@ -10,6 +10,7 @@ import { EntityResolver } from './entity-resolver';
 import { EntitySeeder } from './entity-seeder';
 import { EntityValidator, ValidationViolation } from './entity-validator';
 import { TypeAttribute } from './type-attribute';
+import { EntityFileSave } from './entity-file-save';
 
 export type AssocType = {
   type:string
@@ -42,12 +43,14 @@ export abstract class Entity {
   get resolver() { return this._entityResolver }
   get validator() { return this._entityValidator }
   get accessor() { return this._entityAccessor }
+  get fileSave() { return this._entityFileSave }
 
   protected _entitySeeder!:EntitySeeder;
   protected _entityResolver!:EntityResolver;
   protected _entityPermissions!:EntityPermissions;
   protected _entityValidator!:EntityValidator;
   protected _entityAccessor!:EntityAccessor;
+  protected _entityFileSave!:EntityFileSave;
 
 
   /**
@@ -59,6 +62,7 @@ export abstract class Entity {
     this._entityResolver = this.context.entityResolver( this );
     this._entitySeeder = this.context.entitySeeder( this );
     this._entityPermissions = this.context.entityPermissions( this );
+    this._entityFileSave = this.context.entityFileSave( this );
     this._entityValidator = new EntityValidator( this );
     this._entityAccessor = new EntityAccessor( this );
   }

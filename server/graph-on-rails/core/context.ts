@@ -8,6 +8,7 @@ import { MetaDataBuilder } from '../builder/meta-data-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { EntityConfig } from '../entities/config-entity';
 import { Entity } from '../entities/entity';
+import { EntityFileSave } from '../entities/entity-file-save';
 import { EntityPermissions } from '../entities/entity-permissions';
 import { EntityResolver } from '../entities/entity-resolver';
 import { EntitySeeder } from '../entities/entity-seeder';
@@ -29,6 +30,7 @@ export type GorConfig = {
   validator?:(entity:Entity) => Validator
   entityResolver?:(entity:Entity) => EntityResolver
   entityPermissions?:(entity:Entity) => EntityPermissions
+  entityFileSave?:(entity:Entity) => EntityFileSave
   entitySeeder?:(entity:Entity) => EntitySeeder
   contextUser?:string
   contextRoles?:string
@@ -74,6 +76,7 @@ export class Context {
       validator: ( entity:Entity ) => new ValidateJs( entity ),
       entityResolver: ( entity:Entity ) => new EntityResolver( entity ),
       entityPermissions: ( entity:Entity ) => new EntityPermissions( entity ),
+      entityFileSave: ( entity:Entity ) => new EntityFileSave( entity ),
       entitySeeder: ( entity:Entity ) => new EntitySeeder( entity ),
       metaDataBuilder: new MetaDataBuilder(),
       contextUser: 'user',
@@ -99,6 +102,12 @@ export class Context {
     if( ! this.config.entityPermissions ) throw new Error('Context - you must provide an entityPermissions factory method' );
     return this.config.entityPermissions(entity);
   }
+
+  entityFileSave( entity:Entity ) {
+    if( ! this.config.entityFileSave ) throw new Error('Context - you must provide an entityFileSave factory method' );
+    return this.config.entityFileSave(entity);
+  }
+
 
   entitySeeder( entity:Entity ) {
     if( ! this.config.entitySeeder ) throw new Error('Context - you must provide an entitySeeder factory method' );
