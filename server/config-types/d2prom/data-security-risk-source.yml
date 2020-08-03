@@ -105,7 +105,7 @@ entity:
         unique: Organisation
       purpose: string
       description: string
-    assocTo: Organisation
+    assocTo: Organisation!
     assocToMany:
         type: OrganisationalUnit
         scope: Organisation

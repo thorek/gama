@@ -1,4 +1,4 @@
-<form [formGroup]="validateForm">
+<form [formGroup]="form" (ngSubmit)="submitForm()">
   <mat-list>
     <mat-list-item *ngFor="let field of fields">
 
@@ -12,7 +12,7 @@
               *ngSwitchCase="'select'"
               [required]="field.required"
               (selectionChange)="onSelectionChange(field, $event.value)"
-              [formControl]="validateForm.controls[field.name]">
+              [formControl]="form.controls[field.name]">
             <mat-option *ngFor="let option of options[field.name]" [value]="option.value">
               {{option.label}}
             </mat-option>
@@ -22,7 +22,7 @@
               *ngSwitchCase="'multiple'"
               [multiple]="true"
               [required]="field.required"
-              [formControl]="validateForm.controls[field.name]">
+              [formControl]="form.controls[field.name]">
             <mat-option *ngFor="let option of options[field.name]" [value]="option.value">
               {{option.label}}
             </mat-option>
@@ -32,11 +32,11 @@
             *ngSwitchDefault
             matInput
             [required]="field.required"
-            [formControl]="validateForm.controls[field.name]">
+            [formControl]="form.controls[field.name]">
 
         </ng-container>
 
-        <mat-error *ngIf="validateForm.controls[field.name].invalid">
+        <mat-error *ngIf="form.controls[field.name].invalid">
           {{errorTip(field)}}
         </mat-error>
 

@@ -21,7 +21,7 @@ export class FormComponent extends AdminComponent implements OnInit {
   @Output() saveSuccess = new EventEmitter<any>();
 
   violations:ViolationType[]
-  validateForm!:FormGroup
+  form!:FormGroup
   get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
   options = {}
 
@@ -36,15 +36,17 @@ export class FormComponent extends AdminComponent implements OnInit {
   }
 
   async submitForm():Promise<void> {
-    _.forEach( this.validateForm.controls, control => {
+    this.form.markAsDirty();
+    _.forEach( this.form.controls, control => {
       control.markAsDirty();
+      control.markAsTouched();
       control.updateValueAndValidity();
     });
-    if( this.validateForm.valid ) this.save();
+    if( this.form.valid ) this.save();
   }
 
   protected async save(){
-    const saveResult = await this.adminService.save( this.data.id, this.validateForm.value, this.data.entityConfig );
+    const saveResult = await this.adminService.save( this.data.id, this.form.value, this.data.entityConfig );
     _.isUndefined( saveResult.id ) ?
       this.onSaveViolations( saveResult.violations ) :
       this.saveSuccess.emit( saveResult.id );
@@ -53,13 +55,13 @@ export class FormComponent extends AdminComponent implements OnInit {
   protected onSaveViolations( violations:ViolationType[] ){
     this.violations = violations;
     _.forEach( violations, violation => {
-      const control = this.validateForm.controls[violation.attribute];
+      const control = this.form.controls[violation.attribute];
       if( control ) control.setErrors( { invalid: true } );
     });
   }
 
   errorTip(field:FieldConfigType):string {
-    const control = this.validateForm.controls[field.name];
+    const control = this.form.controls[field.name];
     if( ! control ) return undefined;
     if( control.hasError('required') ) return 'is required';
     if( control.hasError('invalid') ) return _(this.violations).
@@ -87,7 +89,7 @@ export class FormComponent extends AdminComponent implements OnInit {
       const disabled = _.has( field, 'path' ) && _.get( field, 'path' ) === _.get( this.data.parent, 'path' );
       return _.set(definition, field.name, [{value, disabled}, validators]);
     }, {} );
-    this.validateForm = this.fb.group(definition);
+    this.form = this.fb.group(definition);
   }
 
 }
