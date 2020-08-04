@@ -178,12 +178,9 @@ export class EntityResolver extends EntityModule {
   private async setFileValuesAndGetFileInfo( name:string, attributes:any ):Promise<FileInfo|undefined>{
     const filePromise = _.get( attributes, name );
     if( ! filePromise ) return;
-    _.unset( attributes, name );
     return new Promise( resolve => Promise.resolve(filePromise).then( value => {
-      _.set( attributes, `${name}_filename`, _.get(value, 'filename') );
-      _.set( attributes, `${name}_encoding`, _.get(value, 'encoding') );
-      _.set( attributes, `${name}_mimetype`, _.get(value, 'mimetype') );
-      resolve({ name, filename: _.get(value, 'filename'), stream: _.get(value, 'stream') });
+      _.set( attributes, name, _.pick(value, 'filename', 'encoding', 'mimetype') );
+      resolve({ name, filename: _.get(value, 'filename'), stream: value.createReadStream() });
     }));
   }
 
