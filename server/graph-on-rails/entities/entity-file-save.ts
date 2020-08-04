@@ -4,23 +4,32 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import { EntityModule } from './entity-module';
 
-export type FileAttribute = {
+
+export type FileInfo = {
+  name:string
   filename:string
-  encoding:string
-  mimetype:string
-  data:Buffer
+  stream:any
 }
 
 //
 //
 export class EntityFileSave extends EntityModule {
 
-  saveFile( id:string, name:string, fileAttribute:FileAttribute ):Promise<void> {
+  saveFile( id:string, fileAttribute:FileInfo ):Promise<void> {
     return new Promise( async (resolve, reject) => {
-      const dirname = ['server', 'uploads', this.entity.typeName, _.toString(id), name ];
+      const dirname = ['server', 'uploads', this.entity.typeName, _.toString(id), fileAttribute.name ];
       await mkdirp( path.join(...dirname) );
       const filename = path.join( ...dirname, fileAttribute.filename );
-      fs.writeFile( filename, fileAttribute.data, (error) => error ? reject( error ) : resolve() );
+      const data = await this.getData( fileAttribute.stream );
+      fs.writeFile( filename, data, (error) => error ? reject( error ) : resolve() );
+    });
+  }
+
+  getData( stream:any ):Promise<Buffer>{
+    return new Promise(resolve => {
+      const data:any[] = [];
+      stream.on('data', (chunk:any) => data.push(chunk) );
+      stream.on('end', () => resolve( Buffer.concat(data) ) );
     });
   }
 }

@@ -6,7 +6,7 @@ import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
 import { Sort } from 'graph-on-rails/core/data-store';
 import { TypeAttribute } from './type-attribute';
-import { FileAttribute } from './entity-file-save';
+import { FileInfo } from './entity-file-save';
 
 //
 //
@@ -65,10 +65,10 @@ export class EntityResolver extends EntityModule {
    */
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
     const attributes = _.get( resolverCtx.args, this.entity.singular );
-    const filePromises = this.getAndUnsetFilePromises( attributes );
+    const fileInfos = await this.setFileValuesAndGetFileInfos( attributes );
     const result = await this.accessor.save( attributes );
     if( result instanceof EntityItem ) {
-      this.saveFiles( result.item.id, filePromises );
+      this.saveFiles( result.item.id, fileInfos );
       return _.set( {validationViolations: []}, this.entity.singular, result.item );
     }
     return { validationViolations: result };
@@ -164,39 +164,36 @@ export class EntityResolver extends EntityModule {
   /**
    *
    */
-  private getAndUnsetFilePromises( attributes:any ):Dictionary<Promise<any>> {
-    const filePromises = {};
-    _.forEach( this.entity.attributes, (attribute, name) => {
-      if( ! this.isFileType( attribute ) ) return;
-      const filePromise = _.get( attributes, name );
-      if( ! filePromise ) return;
-      _.unset( attributes, name );
-      _.set( filePromises, name, filePromise );
-    });
-    return filePromises;
-  }
-
-  /**
-   *
-   */
-  private async saveFiles( id:string, filePromises:Dictionary<Promise<any>> ):Promise<void> {
-    for( const name of _.keys(filePromises) ) {
-      const fileAttribute = await this.resolveFileAttribute( filePromises[name] );
-      this.entity.fileSave.saveFile( id, name, fileAttribute );
+  private async setFileValuesAndGetFileInfos( attributes:any ):Promise<FileInfo[]> {
+    const fileInfos:FileInfo[] = [];
+    for( const name of _.keys( this.entity.attributes ) ){
+      const attribute = this.entity.attributes[name];
+      if( ! this.isFileType( attribute ) ) continue;
+      const fileInfo = await this.setFileValuesAndGetFileInfo( name, attributes )
+      if( fileInfo ) fileInfos.push( fileInfo );
     }
+    return fileInfos;
   }
 
-  /**
-   *
-   */
-  private async resolveFileAttribute( filePromise:Promise<any> ):Promise<FileAttribute> {
-    return new Promise( resolve => Promise.resolve(filePromise).then(function(value) {
-      const resolved = _.pick( value, 'filename', 'encoding', 'mimetype', 'data' );
-      const data:any[] = [];
-      value.stream.on('data', (chunk:any) => data.push(chunk) );
-      value.stream.on('end', () => resolve( _.set( resolved, 'data', Buffer.concat(data) ) ) );
+  private async setFileValuesAndGetFileInfo( name:string, attributes:any ):Promise<FileInfo|undefined>{
+    const filePromise = _.get( attributes, name );
+    if( ! filePromise ) return;
+    _.unset( attributes, name );
+    return new Promise( resolve => Promise.resolve(filePromise).then( value => {
+      _.set( attributes, `${name}_filename`, _.get(value, 'filename') );
+      _.set( attributes, `${name}_encoding`, _.get(value, 'encoding') );
+      _.set( attributes, `${name}_mimetype`, _.get(value, 'mimetype') );
+      resolve({ name, filename: _.get(value, 'filename'), stream: _.get(value, 'stream') });
     }));
   }
+
+  /**
+   *
+   */
+  private async saveFiles( id:string, fileInfos:FileInfo[] ):Promise<void> {
+    for( const fileInfo of fileInfos ) await this.entity.fileSave.saveFile( id, fileInfo );
+  }
+
 
   /**
    *
