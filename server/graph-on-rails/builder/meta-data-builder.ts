@@ -18,7 +18,8 @@ export class MetaDataBuilder extends SchemaBuilder {
         required: { type: GraphQLBoolean },
         unique: { type: GraphQLString },
         virtual: { type: GraphQLBoolean },
-        filter: {type: GraphQLString }
+        filter: {type: GraphQLString },
+        mediaType: {type: GraphQLString }
       }
     });
 
@@ -85,7 +86,7 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.attributes, (attribute, name) => ({
       name, type: attribute.graphqlType, required: attribute.required, virtual: attribute.virtual,
-      unique: _.toString(attribute.unique), filter: attribute.filterType }));
+      unique: _.toString(attribute.unique), filter: attribute.filterType, mediaType: attribute.mediaType }));
   }
 
   resolveAssocTo( root:any ) {

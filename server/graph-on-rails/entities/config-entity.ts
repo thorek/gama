@@ -22,6 +22,7 @@ export type AttributeConfig = {
 
   label?:string
   sortable?:string
+  mediaType?:'image'|'video'|'audio'
 }
 
 export type SeedEvalContextType = {
@@ -156,6 +157,7 @@ export class ConfigEntity extends Entity {
     this.resolveExclamationMark( attrConfig );
     this.resolveFilterType( attrConfig );
     this.warnVirtual( name, attrConfig );
+    this.resolveMediaType( attrConfig );
     return {
       graphqlType: attrConfig.type,
       filterType: attrConfig.filterType as string|false|undefined,
@@ -165,7 +167,8 @@ export class ConfigEntity extends Entity {
       description: attrConfig.description,
       virtual: attrConfig.virtual,
       // input: attrConfig.input,
-      defaultValue: attrConfig.default
+      defaultValue: attrConfig.default,
+      mediaType: attrConfig.mediaType
     }
   }
 
@@ -200,6 +203,23 @@ export class ConfigEntity extends Entity {
 
   private resolveFilterType( attrConfig:AttributeConfig ):void {
     if( attrConfig.filterType === true ) attrConfig.filterType === undefined;
+  }
+
+  private resolveMediaType( attrConfig:AttributeConfig ):void {
+    switch( attrConfig.type ){
+      case 'Image':
+        attrConfig.type = 'File';
+        attrConfig.mediaType = 'image';
+        break;
+      case 'Video':
+        attrConfig.type = 'File';
+        attrConfig.mediaType = 'video';
+        break;
+      case 'Audio':
+        attrConfig.type = 'File';
+        attrConfig.mediaType = 'audio';
+        break;
+    }
   }
 
   private warnVirtual( name: string, attrConfig:AttributeConfig ):void {

@@ -20,6 +20,7 @@ const query = gql`
         virtual
         required
         unique
+        mediaType
       }
       assocTo {
         path

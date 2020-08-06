@@ -117,14 +117,20 @@ export class AdminDataResolver implements Resolve<AdminData> {
   }
 
   protected buildFieldQuery( entityConfig:EntityConfigType, uiConfig:UiConfigType ):string {
-    const queryFields = _.intersection(
-      _.keys(entityConfig.fields),
-      _.map(uiConfig.fields, (field:FieldConfigType) => field.name ));
+    const knownFields = _.keys( entityConfig.fields );
+    const queryFields = _(uiConfig.fields).
+      filter( (field:FieldConfigType) => _.includes( knownFields, field.name ) ).
+      map( (field:FieldConfigType) => this.getFieldInFieldQuery( field ) ).
+      value();
     const assocs = _.compact( _.uniq( _.concat(
       uiConfig.assoc, _.map( uiConfig.fields, (field:FieldConfigType) => field.path ) ) ) );
     const assocFields = _.map( assocs, assoc =>
         this.getAssocFields( entityConfig, assoc)).join( ' ');
     return `{ id ${ _.join( _.concat( queryFields, assocFields ), ' ' ) } }`;
+  }
+
+  protected getFieldInFieldQuery( field:FieldConfigType ):string {
+    return field.type === 'File' ? `${field.name} { filename encoding mimetype }` : field.name;
   }
 
   protected getAssocFields( entityConfig:EntityConfigType, assoc:AssocConfigType ):string|undefined {
@@ -134,7 +140,11 @@ export class AdminDataResolver implements Resolve<AdminData> {
     const query = _.get( entityConfig.assocs, [assoc.path, 'query']);
     if( ! query ) return this.warn( `getAssocFields: no query for path '${assoc.path}' `, undefined);
     if( ! assoc.fields ) assoc.fields = _.keys( config.fields );
-    const fields = _.filter( assoc.fields, field => _.includes( _.keys( config.fields ), field ) );
+    const fields = _(assoc.fields).
+      map( field => config.fields[field] ).
+      compact().
+      map( field => this.getFieldInFieldQuery( field ) ).
+      value();
     return _.concat(
       query, '{ id ', fields, _.map( assoc.assoc, assoc => this.getAssocFields( config, assoc ) ), '}'
     ).join( ' ' );

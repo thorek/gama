@@ -111,25 +111,25 @@ export class GraphX {
     };
   }
 
-	//
-	//
-	type( name:string, obj?:any ){
-		if (obj === undefined) {
-			if (this.rawTypes[name] === undefined) throw new Error(`Type '${name}' does not exist in this GraphX.`);
-			return this.rawTypes[name];
-		}
-		return this.createType(name, obj);
-	}
+  //
+  //
+  type( name:string, obj?:any ){
+    if (obj === undefined) {
+      if (this.rawTypes[name] === undefined) throw new Error(`Type '${name}' does not exist in this GraphX.`);
+      return this.rawTypes[name];
+    }
+    return this.createType(name, obj);
+  }
 
   /**
    *
    */
-	generate = () => {
+  generate = () => {
     this.generateTypes();
-		return new GraphQLSchema({
-			query: this.type('query'),
-			mutation: this.type('mutation')
-		});
+    return new GraphQLSchema({
+      query: this.type('query'),
+      mutation: this.type('mutation')
+    });
   }
 
   /**

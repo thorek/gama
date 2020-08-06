@@ -7,7 +7,8 @@ export const clientsConfig:EntityConfigType = {
     fields: [
       'name',
       {name: 'city', filter: true},
-      'dsb'
+      'dsb',
+      'logo'
     ]
   },
   show: {

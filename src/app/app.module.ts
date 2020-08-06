@@ -49,7 +49,6 @@ import {MatStepperModule} from '@angular/material/stepper';
 import {MatTableModule} from '@angular/material/table';
 import {MatTabsModule} from '@angular/material/tabs';
 
-
 registerLocaleData(en);
 
 @NgModule({

@@ -1,3 +1,4 @@
+import path from 'path';
 import YAML from 'yaml';
 import { AuthenticationError } from 'apollo-server-express';
 import compression from 'compression';
@@ -16,6 +17,7 @@ import { seed } from 'faker';
   const app = express();
   app.use('*', cors());
   app.use(compression());
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
   const virtualResolver = _.set( {},
     'RiskAssessment', {

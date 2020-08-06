@@ -18,7 +18,7 @@
     <tbody>
       <tr class="mat-row cdk-row" *ngFor="let field of fields">
         <th align="right"> {{ label( field ) }} </th>
-        <td [innerHTML]="render( field )"></td>
+        <td [innerHTML]="render( field ) | safe: 'html'"></td>
       </tr>
     </tbody>
   </table>

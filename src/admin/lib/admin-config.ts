@@ -73,8 +73,9 @@ export type FieldConfigType = {
   values?:(data:any) => {value:any, label:string}[]
   required?:boolean
   virtual?:boolean
-  type?:string,
+  type?:string
   unique?:boolean
+  mediaType?:'image'|'video'|'audio'
 }
 
 export type AssocTableConfigType = AdminTableConfig & {
@@ -118,8 +119,9 @@ export type ViolationType = {
 export class AdminConfig {
 
   private static adminConfig:AdminConfig;
-  private constructor(){}
   private config:AdminConfigType;
+
+  private constructor(){}
 
   static getInstance() {
     if( _.isUndefined( this.adminConfig ) ) this.adminConfig = new AdminConfig();
@@ -171,7 +173,7 @@ export class AdminConfig {
   };
 
   private buildField( data:any ):FieldConfigType {
-    return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique', 'scope']);
+    return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique', 'scope', 'mediaType']);
   }
 
   private setUiConfigDefaults():void {
@@ -229,7 +231,19 @@ export class AdminConfig {
 
   private fieldFromEntityField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { name: field };
+    if( fieldConfig.mediaType ) fieldConfig.render = this.getMediaFieldDefaultRenderMethod( fieldConfig );
     return _.defaults( field, fieldConfig );
+  }
+
+  private getMediaFieldDefaultRenderMethod( fieldConfig:FieldConfigType ){
+    return ( data:any ) => {
+      const filename = _.get( data, [fieldConfig.name, 'filename'] );
+      if( ! filename ) return null;
+      const src = `http://localhost:3000/uploads/${data.__typename}/${data.id}/${fieldConfig.name}/${filename}`;
+      switch( fieldConfig.mediaType ){
+        case 'image': return `<img class="defaultImageRender" src="${src}">`
+      }
+    }
   }
 
   private fieldFromAssoc( field:string|FieldConfigType, assoc:AssocType, entityConfig:EntityConfigType ):FieldConfigType {

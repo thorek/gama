@@ -2,7 +2,7 @@ import { PortalModule } from '@angular/cdk/portal';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import en from '@angular/common/locales/en';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule, ModuleWithProviders } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -55,7 +55,11 @@ import { adminConfig } from './config/admin.config';
 import { GraphQLModule } from './graphql.module';
 import { AdminDataResolver } from './services/admin-data.resolver';
 import { AdminService } from './services/admin.service';
+import { SafePipe } from './pipes/safe.pipe';
 
+
+// const adminServerEndpoint =
+export const graphQLEndpoint = `http://localhost:3000/graphql`;
 
 registerLocaleData(en);
 
@@ -64,6 +68,7 @@ export function initializeApp1(adminService:AdminService) {
     return adminService.init( adminConfig );
   }
 }
+
 
 @NgModule({
   declarations: [
@@ -77,16 +82,17 @@ export function initializeApp1(adminService:AdminService) {
     FormComponent,
     ConfirmDialogComponent,
     MessageDialogComponent,
-    HomeComponent
+    HomeComponent,
+    SafePipe
   ],
   imports: [
     AdminRoutingModule,
+    GraphQLModule.forRoot({uri: 'http://localhost:3000/graphql'}),
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     PortalModule,
-    GraphQLModule,
     MatProgressSpinnerModule,
     MatToolbarModule,
     MatIconModule,
@@ -137,4 +143,7 @@ export function initializeApp1(adminService:AdminService) {
     { provide: APP_INITIALIZER ,useFactory: initializeApp1, deps: [AdminService], multi: true },
   ]
 })
-export class AdminModule { }
+export class AdminModule {
+
+}
+

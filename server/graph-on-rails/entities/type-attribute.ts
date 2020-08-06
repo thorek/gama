@@ -12,5 +12,6 @@ export type TypeAttribute = {
   virtual?:boolean
   // input?:boolean
   defaultValue?:any
+  mediaType?:'image'|'video'|'audio'
 }
 

@@ -9,3 +9,9 @@ table {
 
   a { cursor: pointer; }
 }
+
+
+:host ::ng-deep img.defaultImageRender {
+  max-height: 40px;
+  padding: -5px;
+}
