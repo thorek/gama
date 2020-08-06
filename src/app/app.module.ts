@@ -48,6 +48,7 @@ import {MatSortModule} from '@angular/material/sort';
 import {MatStepperModule} from '@angular/material/stepper';
 import {MatTableModule} from '@angular/material/table';
 import {MatTabsModule} from '@angular/material/tabs';
+import { GraphQLModule } from './graphql.module';
 
 registerLocaleData(en);
 
@@ -59,6 +60,7 @@ registerLocaleData(en);
     HeaderComponent
   ],
   imports: [
+    GraphQLModule.forRoot({uri: 'http://localhost:3000/graphql'}),
     AdminModule,
     BrowserModule,
     AppRoutingModule,

@@ -5,7 +5,7 @@ import { HttpLink, HttpLinkModule } from 'apollo-angular-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
 export type GRAPHGQL_MODULE_CONFIG = {
-  uri: string
+  uri:string
 }
 
 const headers = new HttpHeaders( { Authorization: `admin` } );
@@ -27,7 +27,7 @@ export class GraphQLModule {
 
   public static graphQLModuleConfig:GRAPHGQL_MODULE_CONFIG;
 
-  public static forRoot(graphQLModuleConfig: GRAPHGQL_MODULE_CONFIG): ModuleWithProviders<GraphQLModule> {
+  public static forRoot(graphQLModuleConfig:GRAPHGQL_MODULE_CONFIG): ModuleWithProviders<GraphQLModule> {
     return {
       ngModule: GraphQLModule,
       providers: (() => {

@@ -40,7 +40,8 @@ export type GorConfig = {
   schemaBuilder?:SchemaBuilder[]
   entities?:Entity[],
   metaDataBuilder?:SchemaBuilder,
-  domainConfiguration?:DomainConfigurationType
+  domainConfiguration?:DomainConfigurationType,
+  uploadRootDir?:string[]
 }
 
 export class Context {
@@ -80,7 +81,8 @@ export class Context {
       entitySeeder: ( entity:Entity ) => new EntitySeeder( entity ),
       metaDataBuilder: new MetaDataBuilder(),
       contextUser: 'user',
-      contextRoles: 'roles'
+      contextRoles: 'roles',
+      uploadRootDir: ['server', 'uploads']
     };
   }
 

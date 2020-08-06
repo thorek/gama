@@ -70,7 +70,7 @@ import { seed } from 'faker';
     throw new AuthenticationError( `Token '${token}' cannot be resolved to a valid user.`);
   }
 
-  const context = (contextExpress: {req: express.Request }) => {
+  const context = (contextExpress:{req: express.Request }) => {
     const token:string|undefined = contextExpress.req.headers.authorization;
     return { user: getUser(token), context: runtime.context };
   }

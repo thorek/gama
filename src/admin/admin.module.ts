@@ -51,15 +51,11 @@ import { IndexComponent } from './components/index/index.component';
 import { MessageDialogComponent } from './components/message-dialog/message-dialog.component';
 import { ShowComponent } from './components/show/show.component';
 import { TableComponent } from './components/table/table.component';
-import { adminConfig } from './config/admin.config';
-import { GraphQLModule } from './graphql.module';
 import { AdminDataResolver } from './services/admin-data.resolver';
 import { AdminService } from './services/admin.service';
 import { SafePipe } from './pipes/safe.pipe';
 
-
-// const adminServerEndpoint =
-export const graphQLEndpoint = `http://localhost:3000/graphql`;
+import { adminConfig } from './config/admin.config';
 
 registerLocaleData(en);
 
@@ -68,7 +64,6 @@ export function initializeApp1(adminService:AdminService) {
     return adminService.init( adminConfig );
   }
 }
-
 
 @NgModule({
   declarations: [
@@ -87,7 +82,6 @@ export function initializeApp1(adminService:AdminService) {
   ],
   imports: [
     AdminRoutingModule,
-    GraphQLModule.forRoot({uri: 'http://localhost:3000/graphql'}),
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -144,6 +138,16 @@ export function initializeApp1(adminService:AdminService) {
   ]
 })
 export class AdminModule {
+
+  public static forRoot(config:any): ModuleWithProviders<AdminModule> {
+    return {
+      ngModule: AdminModule,
+      providers: [{
+          provide: 'config',
+          useValue: config
+      }]
+    }
+  }
 
 }
 
