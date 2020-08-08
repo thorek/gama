@@ -28,6 +28,12 @@
             </mat-option>
           </mat-select>
 
+          <admin-file-upload
+              *ngSwitchCase="'file'"
+              [field]="field"
+              (onLoad)="this.onFileLoad($event)">
+          </admin-file-upload>
+
           <input
             *ngSwitchDefault
             matInput

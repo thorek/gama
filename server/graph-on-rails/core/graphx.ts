@@ -82,7 +82,7 @@ export class GraphX {
    *
    */
   private createFileType( ):void {
-    this.type('File', {
+    this.type('file', {
       name: 'File',
       fields: () => ({
         filename: { type: GraphQLNonNull(GraphQLString) },

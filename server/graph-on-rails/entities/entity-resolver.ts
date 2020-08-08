@@ -198,7 +198,7 @@ export class EntityResolver extends EntityModule {
   private isFileType( attribute:TypeAttribute ):boolean {
     const name = _.isString( attribute.graphqlType ) ?
       attribute.graphqlType : _.get( attribute.graphqlType, 'name' );
-    return name === 'File';
+    return name === 'file';
   }
 
 }

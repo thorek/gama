@@ -491,7 +491,7 @@ export class EntityBuilder extends SchemaBuilder {
    *
    */
   private getScalarType( name:string, purpose:AttributePurpose ):GraphQLScalarType | undefined {
-    if( name === 'File' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
+    if( name === 'file' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
     const type = scalarTypes[_.toLower(name)];
     if( type ) return type;
   }

@@ -253,7 +253,7 @@ entity:
       country:
         - type: string!
           default: DE
-      logo: Image
+      logo: image
     assocFrom:
       - type: Organisation
         delete: cascade

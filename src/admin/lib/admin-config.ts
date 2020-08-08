@@ -7,6 +7,7 @@ export type AdminConfigType = {
   entities?:{ [entity:string]:EntityConfigType}
   menu?:string[]
   showLink?:(path:string, id:string) => string[]
+  uploadsRootPath?:string
 }
 
 export type EntityConfigType = {
@@ -154,6 +155,7 @@ export class AdminConfig {
     }, {} ));
     _.set( config, 'showLink', AdminConfig.defaultShowLink );
     _.set( config, 'menu', _.sortBy( _.keys( config.entities ) ) );
+    _.set( config, 'uploadsRootPath', 'http://localhost:3000/uploads' );
     return config;
   }
 
@@ -232,6 +234,7 @@ export class AdminConfig {
   private fieldFromEntityField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { name: field };
     if( fieldConfig.mediaType ) fieldConfig.render = this.getMediaFieldDefaultRenderMethod( fieldConfig );
+    if( fieldConfig.type === 'file' ) fieldConfig.control = 'file';
     return _.defaults( field, fieldConfig );
   }
 
@@ -239,7 +242,7 @@ export class AdminConfig {
     return ( data:any ) => {
       const filename = _.get( data, [fieldConfig.name, 'filename'] );
       if( ! filename ) return null;
-      const src = `http://localhost:3000/uploads/${data.__typename}/${data.id}/${fieldConfig.name}/${filename}`;
+      const src = `${this.config.uploadsRootPath}/${data.__typename}/${data.id}/${fieldConfig.name}/${filename}`;
       switch( fieldConfig.mediaType ){
         case 'image': return `<img class="defaultImageRender" src="${src}">`
       }

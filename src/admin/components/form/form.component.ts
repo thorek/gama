@@ -45,6 +45,12 @@ export class FormComponent extends AdminComponent implements OnInit {
     if( this.form.valid ) this.save();
   }
 
+  onFileLoad( event:any ):void {
+    const field:FieldConfigType = event.field;
+    const result = event.result;
+    this.form.patchValue( _.set({}, field.name, result ) );
+  }
+
   protected async save(){
     const saveResult = await this.adminService.save( this.data.id, this.form.value, this.data.entityConfig );
     _.isUndefined( saveResult.id ) ?

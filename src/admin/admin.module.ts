@@ -2,7 +2,8 @@ import { PortalModule } from '@angular/cdk/portal';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import en from '@angular/common/locales/en';
-import { APP_INITIALIZER, NgModule, ModuleWithProviders } from '@angular/core';
+import { APP_INITIALIZER, ModuleWithProviders, NgModule } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -37,7 +38,6 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { AdminRoutingModule } from './admin-routing.module';
 import { BreadcrumComponent } from './components/breadcumb.component';
@@ -45,24 +45,22 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
 import { CreateComponent } from './components/create/create.component';
 import { DynContentComponent } from './components/dyn-content.component';
 import { EditComponent } from './components/edit/edit.component';
+import { FileUploadComponent } from './components/file-upload.component';
 import { FormComponent } from './components/form/form.component';
 import { HomeComponent } from './components/home/home.component';
 import { IndexComponent } from './components/index/index.component';
 import { MessageDialogComponent } from './components/message-dialog/message-dialog.component';
 import { ShowComponent } from './components/show/show.component';
 import { TableComponent } from './components/table/table.component';
+import { AdminConfigType } from './lib/admin-config';
+import { SafePipe } from './pipes/safe.pipe';
 import { AdminDataResolver } from './services/admin-data.resolver';
 import { AdminService } from './services/admin.service';
-import { SafePipe } from './pipes/safe.pipe';
-
-import { adminConfig } from './config/admin.config';
 
 registerLocaleData(en);
 
 export function initializeApp1(adminService:AdminService) {
-  return ():Promise<any> => {
-    return adminService.init( adminConfig );
-  }
+  return () => adminService.init( async ():Promise<AdminConfigType> => AdminModule.adminConfig );
 }
 
 @NgModule({
@@ -72,6 +70,7 @@ export function initializeApp1(adminService:AdminService) {
     ShowComponent,
     EditComponent,
     CreateComponent,
+    FileUploadComponent,
     DynContentComponent,
     BreadcrumComponent,
     FormComponent,
@@ -139,13 +138,18 @@ export function initializeApp1(adminService:AdminService) {
 })
 export class AdminModule {
 
-  public static forRoot(config:any): ModuleWithProviders<AdminModule> {
+  static adminConfig:AdminConfigType;
+
+  public static forRoot(adminConfig:AdminConfigType): ModuleWithProviders<AdminModule> {
     return {
       ngModule: AdminModule,
-      providers: [{
-          provide: 'config',
-          useValue: config
-      }]
+      providers: (() => {
+        AdminModule.adminConfig = adminConfig;
+        return [{
+          provide: 'adminConfig',
+          useValue: adminConfig
+        }];
+      })()
     }
   }
 
