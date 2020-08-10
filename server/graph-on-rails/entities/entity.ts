@@ -176,6 +176,16 @@ export abstract class Entity {
   /**
    *
    */
+  isFileAttribute( attribute:TypeAttribute ):boolean {
+    const name = _.isString( attribute.graphqlType ) ?
+      attribute.graphqlType : _.get( attribute.graphqlType, 'name' );
+    return name === 'file';
+  }
+
+
+  /**
+   *
+   */
   async getPermittedIds( action:CrudAction, resolverCtx:ResolverContext ):Promise<boolean|number[]> {
     if( ! this.entityPermissions ) throw new Error( 'no EntityPermission provider' );
     return this.entityPermissions.getPermittedIds( action, resolverCtx );

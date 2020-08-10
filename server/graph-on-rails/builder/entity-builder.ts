@@ -22,6 +22,7 @@ import { AssocToType, AssocType, Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { SchemaBuilder } from './schema-builder';
+import { UV_FS_O_FILEMAP } from 'constants';
 
 
 const scalarTypes:{[scalar:string]:GraphQLScalarType} = {
@@ -133,7 +134,7 @@ export class EntityBuilder extends SchemaBuilder {
     });
     _.set( this.graphx.type(this.entity.typeName), 'interfaceTypes',
       () => _.map( this.entity.implements, entity => this.graphx.type(entity.typeName)) );
-	}
+  }
 
   //
   //
@@ -144,25 +145,25 @@ export class EntityBuilder extends SchemaBuilder {
     this.graphx.type(this.entity.updateInput).extendFields( () => this.getAttributeFields( 'updateInput', entity ) );
   }
 
-	//
-	//
-	protected addReferences():void {
+  //
+  //
+  protected addReferences():void {
     this.addAssocTo();
     this.addAssocToMany();
     this.addAssocFrom();
-	}
+  }
 
-	//
-	//
-	protected addMutations():void {
+  //
+  //
+  protected addMutations():void {
     this.addSaveMutations();
     this.addDeleteMutation();
-	}
+  }
 
-	//
-	//
-	addQueries():void  {
-		if( ! this.entity.isPolymorph ) this.addTypeQuery();
+  //
+  //
+  addQueries():void  {
+    if( ! this.entity.isPolymorph ) this.addTypeQuery();
     this.addTypesQuery();
   }
 
@@ -312,12 +313,21 @@ export class EntityBuilder extends SchemaBuilder {
   protected getAttributeFields( purpose:AttributePurpose, entity?:Entity ):Dictionary<AttrFieldConfig> {
     const attributes = entity ? entity.attributes : this.attributes();
     const fields = _.mapValues( attributes, (attribute, name) => this.getFieldConfig(name, attribute, purpose));
+    if( _.includes(['type', 'filter'], purpose) ) this.addTimestampFields( fields, purpose );
     return _.pickBy( fields, _.identity) as Dictionary<AttrFieldConfig>;
   }
 
   //
   //
+  private addTimestampFields( fields:Dictionary<AttrFieldConfig|undefined>, purpose:AttributePurpose ) {
+    _.set( fields, 'createdAt', this.getFieldConfig( 'createdAt', { graphqlType: 'string' }, purpose ) );
+    _.set( fields, 'updatedAt', this.getFieldConfig( 'updatedAt', { graphqlType: 'string' }, purpose ) );
+  }
+
+  //
+  //
   private getFieldConfig(name:string, attribute:TypeAttribute, purpose:AttributePurpose ):AttrFieldConfig|undefined {
+    if( _.includes(['createInput', 'updateInput'], purpose) && this.entity.isFileAttribute( attribute ) ) return;
     const addNonNull = this.addNonNull( name, attribute, purpose);
     const fieldConfig = {
       type: this.getGraphQLType(attribute, addNonNull, purpose ),
@@ -334,7 +344,7 @@ export class EntityBuilder extends SchemaBuilder {
     if( attribute.required === true ) return _.includes( ['createInput', 'type'], purpose );
     if( attribute.required === 'create' ) return _.includes( ['createInput', 'type'], purpose );
     if( attribute.required === 'update' ) return false
-    throw `unallowed required attribute for '${this.entity.name}:{name}'`;
+    throw `unallowed required attribute for '${this.entity.name}:${name}'`;
   }
 
   //
@@ -433,6 +443,7 @@ export class EntityBuilder extends SchemaBuilder {
   protected addCreateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
       const args = _.set( {}, this.entity.singular, { type: this.graphx.type(this.entity.createInput)} );
+      this.addFilesToSaveMutation( args );
       return _.set( {}, this.entity.createMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
       });
@@ -445,12 +456,21 @@ export class EntityBuilder extends SchemaBuilder {
   protected addUpdateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
       const args = _.set( {}, this.entity.typeQuery, { type: this.graphx.type(this.entity.updateInput)} );
+      this.addFilesToSaveMutation( args );
       return _.set( {}, this.entity.updateMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
       });
     });
   }
 
+  /**
+   *
+   */
+  private addFilesToSaveMutation( args:any ){
+    _.forEach( this.entity.attributes, (attribute, name ) => {
+      if( this.entity.isFileAttribute( attribute) ) _.set( args, name, { type: GraphQLUpload } );
+    });
+  }
 
   /**
    *

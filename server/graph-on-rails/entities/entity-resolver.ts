@@ -7,6 +7,7 @@ import { EntityModule } from './entity-module';
 import { Sort } from 'graph-on-rails/core/data-store';
 import { TypeAttribute } from './type-attribute';
 import { FileInfo } from './entity-file-save';
+import { Timestamp } from 'mongodb';
 
 //
 //
@@ -65,7 +66,8 @@ export class EntityResolver extends EntityModule {
    */
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
     const attributes = _.get( resolverCtx.args, this.entity.singular );
-    const fileInfos = await this.setFileValuesAndGetFileInfos( attributes );
+    const fileInfos = await this.setFileValuesAndGetFileInfos( resolverCtx.args, attributes );
+    this.setTimestamps( attributes );
     const result = await this.accessor.save( attributes );
     if( result instanceof EntityItem ) {
       this.saveFiles( result.item.id, fileInfos );
@@ -164,19 +166,19 @@ export class EntityResolver extends EntityModule {
   /**
    *
    */
-  private async setFileValuesAndGetFileInfos( attributes:any ):Promise<FileInfo[]> {
+  private async setFileValuesAndGetFileInfos( args:any, attributes:any ):Promise<FileInfo[]> {
     const fileInfos:FileInfo[] = [];
     for( const name of _.keys( this.entity.attributes ) ){
       const attribute = this.entity.attributes[name];
-      if( ! this.isFileType( attribute ) ) continue;
-      const fileInfo = await this.setFileValuesAndGetFileInfo( name, attributes )
+      if( ! this.entity.isFileAttribute( attribute ) ) continue;
+      const fileInfo = await this.setFileValuesAndGetFileInfo( name, args, attributes )
       if( fileInfo ) fileInfos.push( fileInfo );
     }
     return fileInfos;
   }
 
-  private async setFileValuesAndGetFileInfo( name:string, attributes:any ):Promise<FileInfo|undefined>{
-    const filePromise = _.get( attributes, name );
+  private async setFileValuesAndGetFileInfo( name:string, args:any, attributes:any ):Promise<FileInfo|undefined>{
+    const filePromise = _.get( args, name );
     if( ! filePromise ) return;
     return new Promise( resolve => Promise.resolve(filePromise).then( value => {
       _.set( attributes, name, _.pick(value, 'filename', 'encoding', 'mimetype') );
@@ -191,14 +193,12 @@ export class EntityResolver extends EntityModule {
     for( const fileInfo of fileInfos ) await this.entity.fileSave.saveFile( id, fileInfo );
   }
 
-
   /**
    *
    */
-  private isFileType( attribute:TypeAttribute ):boolean {
-    const name = _.isString( attribute.graphqlType ) ?
-      attribute.graphqlType : _.get( attribute.graphqlType, 'name' );
-    return name === 'file';
+  private setTimestamps( attributes:any ):void {
+    const now = _.toString( Date.now() );
+    if( ! attributes.id ) _.set( attributes, 'createdAt', now );
+    _.set( attributes, 'updatedAt', now );
   }
-
 }
