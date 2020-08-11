@@ -58,13 +58,13 @@ export class AdminService {
   }
 
   private create( variables:any, config:EntityConfigType ):Promise<SaveResultType> {
-    const createMutation = this.getCreateMutation( config );
+    const mutation = this.getCreateMutation( config );
+    const context = this.getMutationContext( variables );
     return new Promise( resolve => {
-      this.apollo.mutate({
-        mutation: createMutation, variables }).subscribe(({data}) => resolve({
-          violations: _.get( data, [config.createMutation, 'validationViolations'] ),
-          id: _.get( data, [config.createMutation, config.typeQuery, 'id'] )
-        }));
+      this.apollo.mutate({ mutation, variables, context }).subscribe(({data}) => resolve({
+        violations: _.get( data, [config.createMutation, 'validationViolations'] ),
+        id: _.get( data, [config.createMutation, config.typeQuery, 'id'] )
+      }));
     });
   }
 
