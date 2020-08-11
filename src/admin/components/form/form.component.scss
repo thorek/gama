@@ -5,8 +5,8 @@ form {
   margin-bottom: 150px;
 }
 mat-form-field { width: 100%; }
-mat-list-item { margin-bottom: 30px;}
-
-:host ::ng-deep img.defaultImageRender {
-  max-height: 200px;
+mat-list-item {
+  margin-bottom: 30px;
+  height: auto !important;
 }
+

@@ -7,13 +7,14 @@ import { AdminComponent } from './admin.component';
   selector: 'admin-file-upload',
   template: `
     <div class="admin-file-upload">
-      <mat-label> {{ label( field ) }} </mat-label>
+      <label> {{ label( field ) }} </label>
       <div *ngIf="item" [innerHTML]="render( field, item ) | safe: 'html'"></div>
       <input type="file" (change)="onFileChange($event)" />
     </div>
   `,
   styles: [`
-    .admin-file-upload { margin-top: 60px; }
+    .admin-file-upload { margin-top: 20px; }
+    label { color: rgba(0,0,0,.54) }
   `]
 })
 export class FileUploadComponent extends AdminComponent {
