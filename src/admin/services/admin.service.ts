@@ -37,9 +37,6 @@ export class AdminService {
     return _.get( this.adminConfig, ['entities', path] );
   }
 
-  /**
-   *
-   */
   delete( id:string, deleteMutation:string ):Promise<string[]>{
     const deleteItem = gql`mutation { ${deleteMutation}(id: "${id}" )  }`;
     return new Promise( resolve => {
