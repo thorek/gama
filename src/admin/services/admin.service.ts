@@ -69,8 +69,10 @@ export class AdminService {
   }
 
   private getCreateMutation( config:EntityConfigType ):DocumentNode {
-    return gql`mutation($input: ${config.createInput}) {
-      ${config.createMutation}(${config.typeQuery}: $input ){
+    const fileVariableDeclaration = _(this.fileAttributes(config)).map( attr => `$${attr}: Upload` ).join(' ');
+    const fileVariableAssign = _(this.fileAttributes(config)).map( attr => `${attr}: $${attr}` ).join(' ');
+    return gql`mutation($input: ${config.createInput} ${fileVariableDeclaration} ) {
+      ${config.createMutation}(${config.typeQuery}: $input ${fileVariableAssign} ) {
         validationViolations{ attribute message }
         ${config.typeQuery} { id }
       }
@@ -93,7 +95,7 @@ export class AdminService {
     const fileVariableDeclaration = _(this.fileAttributes(config)).map( attr => `$${attr}: Upload` ).join(' ');
     const fileVariableAssign = _(this.fileAttributes(config)).map( attr => `${attr}: $${attr}` ).join(' ');
     return gql`mutation($input: ${config.updateInput} ${fileVariableDeclaration} ) {
-      ${config.updateMutation}(${config.typeQuery}: $input ${fileVariableAssign}){
+      ${config.updateMutation}(${config.typeQuery}: $input ${fileVariableAssign} ) {
         validationViolations{ attribute message }
         ${config.typeQuery} { id }
       }
