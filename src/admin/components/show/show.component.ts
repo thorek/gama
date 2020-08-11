@@ -21,4 +21,8 @@ export class ShowComponent extends AdminEntityComponent {
     this.router.navigate( ['/admin', this.data.path, this.data.id, table.path, 'new' ] );
   }
 
+  onAttributeClick( event:any ):void {
+    const url = _.get( event, 'srcElement.currentSrc' );
+    if( url ) window.open( url, '_blank' );
+  }
 }
