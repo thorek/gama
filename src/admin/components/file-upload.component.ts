@@ -7,7 +7,7 @@ import { AdminComponent } from './admin.component';
   selector: 'admin-file-upload',
   template: `
     <div class="admin-file-upload">
-      <mat-label> {{ label( field, item ) }} </mat-label>
+      <mat-label> {{ label( field ) }} </mat-label>
       <div *ngIf="item" [innerHTML]="render( field, item ) | safe: 'html'"></div>
       <input type="file" (change)="onFileChange($event)" />
     </div>
@@ -23,11 +23,9 @@ export class FileUploadComponent extends AdminComponent {
   @Output() onLoad = new EventEmitter<any>();
 
   onFileChange(event:any) {
-    if( _.size( _.get( event, 'target.files' ) ) === 0 ) return;
+    const file = _.get( event, 'target.files.[0]' )
+    if( ! file ) return;
     this.item = undefined;
-    const reader = new FileReader()
-    const [file] = event.target.files;
-    reader.readAsDataURL(file);
-    reader.onload = () => this.onLoad.emit( {field: this.field, result: reader.result } );
+    this.onLoad.emit( {field: this.field, file: file } );
   }
 }

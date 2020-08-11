@@ -24,6 +24,7 @@ export class FormComponent extends AdminComponent implements OnInit {
   form!:FormGroup
   get fields() { return this.data.entityConfig.form.fields as FieldConfigType[] }
   options = {}
+  files:_.Dictionary<File> = {}
 
   constructor(
     private fb:FormBuilder,
@@ -47,12 +48,11 @@ export class FormComponent extends AdminComponent implements OnInit {
 
   onFileLoad( event:any ):void {
     const field:FieldConfigType = event.field;
-    const result = event.result;
-    this.form.patchValue( _.set({}, field.name, result ) );
+    _.set( this.files, field.name, event.file );
   }
 
   protected async save(){
-    const saveResult = await this.adminService.save( this.data.id, this.form.value, this.data.entityConfig );
+    const saveResult = await this.adminService.save( this.data.id, this.form.value, this.files, this.data.entityConfig );
     _.isUndefined( saveResult.id ) ?
       this.onSaveViolations( saveResult.violations ) :
       this.saveSuccess.emit( saveResult.id );

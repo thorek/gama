@@ -50,15 +50,18 @@ export class AdminService {
     });
   }
 
-  save( id:string|undefined, input:any, config:EntityConfigType ):Promise<SaveResultType> {
-    return id ? this.update( id, input, config ) : this.create( input, config );
+  save( id:string|undefined, input:any, files:_.Dictionary<File>, config:EntityConfigType ):Promise<SaveResultType> {
+    _(config.fields).filter( field => field.type === 'file' ).forEach( field => _.unset( input, field.name ) );
+    const variables = _.set( {}, 'input', input );
+    _.merge( variables, files );
+    return id ? this.update( id, variables, config ) : this.create( variables, config );
   }
 
-  private create( input:any, config:EntityConfigType ):Promise<SaveResultType> {
+  private create( variables:any, config:EntityConfigType ):Promise<SaveResultType> {
     const createMutation = this.getCreateMutation( config );
     return new Promise( resolve => {
       this.apollo.mutate({
-        mutation: createMutation, variables: { input } }).subscribe(({data}) => resolve({
+        mutation: createMutation, variables }).subscribe(({data}) => resolve({
           violations: _.get( data, [config.createMutation, 'validationViolations'] ),
           id: _.get( data, [config.createMutation, config.typeQuery, 'id'] )
         }));
@@ -74,11 +77,12 @@ export class AdminService {
     }`;
   }
 
-  private update( id:string, input:any, config:EntityConfigType ):Promise<SaveResultType>{
-    input = _.set( input, 'id', id );
+  private update( id:string, variables:any, config:EntityConfigType ):Promise<SaveResultType>{
+    _.set( variables, 'input.id', id );
     const updateMutation = this.getUpdateMutation( config );
+    const context = this.getMutationContext( variables );
     return new Promise( resolve => {
-      this.apollo.mutate({mutation: updateMutation, variables: { input } }).subscribe(({data}) => resolve({
+      this.apollo.mutate({mutation: updateMutation, variables, context }).subscribe(({data}) => resolve({
         violations: _.get( data, [config.updateMutation, 'validationViolations'] ),
         id: _.get( data, [config.updateMutation, config.typeQuery, 'id'] )
       }));
@@ -86,11 +90,19 @@ export class AdminService {
   }
 
   private getUpdateMutation( config:EntityConfigType ):DocumentNode {
-    return gql`mutation($input: ${config.updateInput}) {
-      ${config.updateMutation}(${config.typeQuery}: $input ){
+    const fileVariableDeclaration = _(this.fileAttributes(config)).map( attr => `$${attr}: Upload` ).join(' ');
+    const fileVariableAssign = _(this.fileAttributes(config)).map( attr => `${attr}: $${attr}` ).join(' ');
+    return gql`mutation($input: ${config.updateInput} ${fileVariableDeclaration} ) {
+      ${config.updateMutation}(${config.typeQuery}: $input ${fileVariableAssign}){
         validationViolations{ attribute message }
         ${config.typeQuery} { id }
       }
     }`;
+  }
+
+  private getMutationContext = (variables:any) => ({ useMultipart: _.keys( variables ).length > 0 });
+
+  private fileAttributes( config:EntityConfigType ):string[] {
+    return _(config.fields).filter( field => field.type === 'file' ).map( field => field.name ).value();
   }
 }
