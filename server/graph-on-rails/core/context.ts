@@ -126,5 +126,9 @@ export class Context {
     } else return filterType;
   }
 
+  warn<T>( message:string, returnValue:T ):T{
+    console.warn( message );
+    return returnValue;
+  }
 
 }

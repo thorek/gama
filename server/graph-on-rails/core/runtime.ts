@@ -22,15 +22,15 @@ export class Runtime {
   /**
    *
    */
-  static async create( name:string = "default", config?:GorConfig ):Promise<Runtime>{
+  static async create( name:string = 'default', config?:GorConfig ):Promise<Runtime>{
     const context = await Context.create( name, config );
     return new Runtime( context, SchemaFactory.create( context ) );
   }
 
-	/**
+  /**
 	 *
 	 */
-	async server( config:ApolloServerExpressConfig = {} ): Promise<ApolloServer> {
+  async server( config:ApolloServerExpressConfig = {} ): Promise<ApolloServer> {
     config.schema = await this.schemaFactory.schema();
     _.defaultsDeep( config, { validationRules: [depthLimit(7)], context: { Context: this.context } } );
     return new ApolloServer( config );

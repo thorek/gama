@@ -30,7 +30,6 @@ export type AssocToManyType = AssocToType & {
   scope?:string
 }
 
-
 //
 //
 export abstract class Entity {
@@ -67,6 +66,8 @@ export abstract class Entity {
     this._entityAccessor = new EntityAccessor( this );
   }
 
+  abstract extendFn():undefined|(( context:Context ) => void|Promise<void>);
+
   get name() { return this.getName() }
   get typeName(){ return this.getTypeName() }
   get attributes() { return this.getAttributes() }
@@ -86,7 +87,6 @@ export abstract class Entity {
   get enum() { return this.getEnum() }
   get seeds() { return this.getSeeds() }
   get permissions() { return this.getPermissions() }
-  get equality() { return this.getEquality() }
   get description() { return this.getDescription() }
   get entities() { return this.getEntites() }
   get typeField() { return this.getTypeField() }
@@ -102,6 +102,7 @@ export abstract class Entity {
   get typesQuery():string { return this.getTypesQuery() }
   get typeQuery():string { return this.getTypeQuery() }
   get path() { return this.getPath() }
+  get assign() { return this.getAssign() }
 
   protected abstract getName():string;
   protected getTypeName() { return inflection.camelize( this.name ) }
@@ -121,7 +122,6 @@ export abstract class Entity {
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
   protected getSeeds():{[name:string]:any} { return {} }
   protected getPermissions():undefined|EntityPermissionType { return undefined }
-  protected getEquality():{[typeName:string]:string[]} {return {}}
   protected getDescription():string|undefined { return }
   protected getEntites():Entity[] { return [] }
   protected getIsInterface():boolean { return false }
@@ -135,6 +135,7 @@ export abstract class Entity {
   protected getTypeQuery():string { return this.singular }
   protected getDeleteMutation():string { return `delete${this.typeName}` }
   protected getPath() { return inflection.underscore( this.plural ) }
+  protected getAssign():string|undefined { return undefined }
 
   /**
    *

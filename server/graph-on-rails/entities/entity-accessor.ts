@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { AssocType } from './entity';
+import { AssocType, Entity } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityDeleter } from './entity-deleter';
 import { EntityModule } from './entity-module';
@@ -55,13 +55,9 @@ export class EntityAccessor extends EntityModule {
    *
    * @param filter as it comes from the graqpql request
    */
-  async findByFilter( filter:any, sort?:Sort ):Promise<EntityItem[]>{
+  async findByFilter( filter:any, sort?:Sort ):Promise<EntityItem[]> {
     const items = this.entity.isPolymorph ?
-      await this.dataStore.aggregateFind(
-        this.context.entities['Client'],
-        this.entity.entities,
-        filter,
-        sort) :
+      await this.dataStore.aggregateFind( this.entity.entities, filter, sort ) :
       await this.dataStore.findByFilter( this.entity, filter, sort );
     return Promise.all( _.map( items, item => EntityItem.create( this.entity, item ) ) );
   }

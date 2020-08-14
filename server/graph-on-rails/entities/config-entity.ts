@@ -32,7 +32,7 @@ export type SeedEvalContextType = {
 }
 
 export type SeedConfigType = {
-  [attribute:string]:object|(( evalContext:SeedEvalContextType) => any)
+  [attribute:string]:any|(( evalContext:SeedEvalContextType) => any)
 }
 
 export type EntityConfig  = {
@@ -50,16 +50,16 @@ export type EntityConfig  = {
   instance?:string;
   label?:string;
   path?:string;
-  parent?:string;
 
   seeds?:{[seedId:string]:SeedConfigType}
   permissions?:null|EntityPermissionType
-  equality?:null|string|{[typeName:string]:string[]}
+  assign?:string
   description?:string
 
   union?:string[]
   interface?:boolean
   implements?:string|string[]
+  extendFn?:( context:Context ) => void | Promise<void>
 }
 
 /**
@@ -84,6 +84,8 @@ export class ConfigEntity extends Entity {
       public readonly entityConfig:EntityConfig ){
    super();
   }
+
+  extendFn() { return this.entityConfig.extendFn }
 
   protected getName() { return this._name }
   protected getTypeName() { return this.entityConfig.typeName || super.getTypeName() }
@@ -130,11 +132,6 @@ export class ConfigEntity extends Entity {
   protected getCollection() { return this.entityConfig.collection || super.getCollection() }
   protected getSeeds() { return this.entityConfig.seeds || super.getSeeds() }
   protected getPermissions() { return this.entityConfig.permissions || super.getPermissions() }
-  protected getEquality() {
-    const sr = this.entityConfig.equality;
-    if( ! sr ) return super.getEquality();
-    return _.isString( sr ) ? _.set( {}, sr, _.map( this.assocTo, bt => bt.type ) ) : sr;
-  }
   protected getDescription():string|undefined { return this.entityConfig.description || super.getDescription() }
   protected getEntites():Entity[] {
     if( this.isInterface ) return _.filter( this.context.entities, entity => entity.implementsEntityInterface( this ) );
@@ -146,6 +143,7 @@ export class ConfigEntity extends Entity {
     return _.compact( _.map( this.entityConfig.implements, entity => this.context.entities[entity] ) );
   }
   protected getIsInterface():boolean { return this.entityConfig.interface === true }
+  protected getAssign() { return this.entityConfig.assign }
 
   /**
    *

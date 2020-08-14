@@ -41,12 +41,12 @@ export class GraphX {
         ping: {
           type: GraphQLString,
           args: { some: { type: GraphQLString } },
-          resolve: ( root: any, args: any ) => `pong, ${args.some}!`
+          resolve: ( root:any, args:any ) => `pong, ${args.some}!`
         },
         seed: {
           type: GraphQLString,
           args: { truncate: { type: GraphQLBoolean } },
-          resolve: ( root: any, args: any, context:any ) => Seeder.create(
+          resolve: ( root:any, args:any, context:any ) => Seeder.create(
             context.context as Context ).seed( args.truncate )
         }
       } )
@@ -163,7 +163,7 @@ export class GraphX {
           args: item.args,
           fields: this.fnFromArray(item.fields),
           values: item.values
-			  });
+        });
       }
     });
   }

@@ -18,7 +18,7 @@ export abstract class DataStore {
 
   abstract findByAttribute( entity:Entity, attrValue:{[name:string]:any} ):Promise<any[]>;
 
-  abstract aggregateFind( dummyEntity:Entity, entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>;
+  abstract aggregateFind( entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>;
 
   /**
    *

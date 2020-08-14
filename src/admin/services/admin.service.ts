@@ -26,6 +26,11 @@ export class AdminService {
     this.adminConfig = await AdminConfig.getInstance().getConfig( metaData, adminConfig );
   }
 
+  seed():Promise<any> {
+    const mutation = gql`mutation { seed( truncate: true ) }`;
+    return new Promise( resolve => this.apollo.mutate({ mutation }).subscribe(({data}) => resolve(data)) );
+  }
+
   getMenuEntities():EntityConfigType[] {
     return this.adminConfig.menu ?
       _.compact( _.map( this.adminConfig.menu, item => this.adminConfig.entities[item] ) ) :

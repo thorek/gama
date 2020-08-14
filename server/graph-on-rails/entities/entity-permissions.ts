@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import { AuthenticationError } from 'apollo-server-express';
-import { Entity } from './entity';
+import { Entity, AssocType, AssocToType } from './entity';
 import { EntityModule } from './entity-module';
 import { ResolverContext } from '../core/resolver-context';
 
-export type CrudAction = "read" | "create" | "update" | "delete";
+export type CrudAction = 'read' | 'create' | 'update' | 'delete';
 
 export type EntityPermissionActionType =
   boolean|
@@ -32,6 +32,34 @@ export type EntityPermissionType =
  */
 export class EntityPermissions extends EntityModule {
 
+  async addPermissionToFilter( resolverCtx:ResolverContext ) {
+    const filter = _.get( resolverCtx.args, 'filter', {} );
+    _.set( filter, 'id', this.getAssignedIds( resolverCtx ) );
+    _.set( resolverCtx, 'args', filter );
+  }
+
+  async getAssignedIds( resolverCtx:ResolverContext ):Promise<undefined|string[]> {
+    if( ! this.entity.assign ) return undefined;
+    const assocTo = _.find( this.entity.assocTo, assocTo => assocTo.type === this.entity.assign );
+    if( assocTo ) return this.getAssignedIdsFromAssoc( assocTo, resolverCtx );
+    return this.getAssignedIdsFromUser( resolverCtx );
+  }
+
+  private async getAssignedIdsFromAssoc( assoc:AssocToType, resolverCtx:ResolverContext ):Promise<string[]>{
+    const entity = this.context.entities[assoc.type];
+    if( ! entity ) throw new Error(`unknown type '${assoc.type}'`);
+    const ids = await entity.entityPermissions.getAssignedIds( resolverCtx );
+    const items = await this.entity.accessor.findByAttribute( _.set( {}, entity.foreignKey, ids ) );
+    return _.map( items, item => item.id );
+  }
+
+  private async getAssignedIdsFromUser( resolverCtx:ResolverContext ):Promise<string[]>{
+    if( ! this.entity.assign ) throw new Error(`no assign provided`);
+    if( ! this.context.contextUser ) throw new Error(`no contextUser provided`);
+    const user = _.get( resolverCtx.context, this.context.contextUser );
+    if( ! user ) throw new Error(`no such contextUser '${this.context.contextUser}'`);
+    return _.get( user, this.entity.assign );
+  }
 
   /**
    *
@@ -112,7 +140,7 @@ export class EntityPermissions extends EntityModule {
    */
   private async resolvePermittedIds( permission:object, resolverCtx:ResolverContext ):Promise<boolean|number[]>{
     try {
-      "return await this.entity.resolver.getPermittedIds( this.entity, permission, resolverCtx );"
+      'return await this.entity.resolver.getPermittedIds( this.entity, permission, resolverCtx );'
     } catch (error) {
       console.error(`'${this.entity.name}' resolver could not resolve permission`, permission, error);
     }
@@ -136,7 +164,7 @@ export class EntityPermissions extends EntityModule {
     const ids = await entity.entityPermissions.getPermittedIdsForRole( role, action as CrudAction, resolverCtx );
     if( _.isBoolean( ids ) ) return ids;
     try {
-      "return await this.entity.resolver.getPermittedIdsForForeignKeys( this.entity, entity.foreignKey, ids );"
+      'return await this.entity.resolver.getPermittedIdsForForeignKeys( this.entity, entity.foreignKey, ids );'
     } catch (error) {
       console.error(`'${this.entity.typeName}' resolver could not resolve permission for foreign keys for`,
         entity.foreignKey, error);
@@ -253,7 +281,7 @@ export class EntityPermissions extends EntityModule {
     const permissions = _.get( this.entity.permissions, role );
     if( _.isBoolean( permissions ) || _.isString( permissions ) ) return permissions;
     let actionPermission = _.get( permissions, action );
-    if( ! actionPermission ) actionPermission = _.get( permissions, "all" );
+    if( ! actionPermission ) actionPermission = _.get( permissions, 'all' );
     if( ! actionPermission ) return false;
     if( _.isBoolean( actionPermission ) ) return actionPermission;
     if( _.isArray( actionPermission ) ) return actionPermission;
@@ -273,7 +301,7 @@ export class EntityPermissions extends EntityModule {
    *
    */
   protected getUserRoles( user:string ):string[] {
-    if( ! user ) throw "should not happen, no user in context";
+    if( ! user ) throw 'should not happen, no user in context';
     let roles:any = _.get( user, this.context.contextRoles as string );
     if( ! roles ) throw new AuthenticationError( `User has no role - ${JSON.stringify( user ) }` );
     return _.isArray( roles ) ? roles : [roles];

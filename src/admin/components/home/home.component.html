@@ -1,4 +1,13 @@
-<h1>GAMA Admin UI</h1>
+<mat-toolbar-row>
+  <div>
+    <h1>GAMA Admin UI</h1>
+  </div>
+  <span style="flex: 1 1 auto;"></span>
+  <div mat-dialog-actions align="end">
+    <button mat-flat-button color="primary" (click)="onSeed()"> Seed data </button>
+  </div>
+</mat-toolbar-row>
+
 
 <div class="content" fxLayout="row wrap" fxLayoutGap="16px grid">
   <div fxFlex="25%" fxFlex.xs="100%" fxFlex.sm="33%" *ngFor="let entity of entities">

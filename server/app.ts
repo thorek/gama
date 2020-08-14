@@ -1,16 +1,15 @@
-import path from 'path';
-import YAML from 'yaml';
 import { AuthenticationError } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+import { Context } from 'graph-on-rails/core/context';
 import { createServer } from 'http';
 import _ from 'lodash';
+import path from 'path';
 
+import { LoginMutation } from './extras/login.mutation';
 import { Runtime } from './graph-on-rails/core/runtime';
-import { ResolverContext } from './graph-on-rails/core/resolver-context';
 import { Entity } from './graph-on-rails/entities/entity';
-import { seed } from 'faker';
 
 (async () => {
 
@@ -31,8 +30,7 @@ import { seed } from 'faker';
       }
     }
   );
-  const configFolder = [`${__dirname}/config-types/d2prom`];
-  const runtime = await Runtime.create( 'D2PROM', {configFolder, domainConfiguration: {
+  const domainConfiguration = {
     locale: 'de',
     entity: {
       ProcessingActivity: {
@@ -55,7 +53,11 @@ import { seed } from 'faker';
         }
       }
     }
-  }});
+  }
+
+  _.merge( domainConfiguration, LoginMutation.getConfiguration() );
+  const configFolder = [`${__dirname}/config-types/d2prom`];
+  const runtime = await Runtime.create( 'D2PROM', {configFolder, domainConfiguration});
 
   const users:{[token:string]:any} = {
     admin: { id: 100, username: 'Admin', roles: ['admin'], clientId: '5ec3b745d3a47f8284414125' },

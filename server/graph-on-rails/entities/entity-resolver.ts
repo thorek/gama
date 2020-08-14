@@ -28,6 +28,7 @@ export class EntityResolver extends EntityModule {
    *
    */
   async resolveTypes( resolverCtx:ResolverContext ):Promise<any[]> {
+    await this.entity.entityPermissions.addPermissionToFilter( resolverCtx );
     const filter = _.get( resolverCtx.args, 'filter');
     const sort = this.getSort( _.get( resolverCtx.args, 'sort') );
     // if( this.entity.isPolymorph ) return this.resolvePolymorphTypes( filter, sort );

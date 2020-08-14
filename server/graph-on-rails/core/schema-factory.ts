@@ -10,6 +10,7 @@ import { EnumConfigBuilder } from '../builder/enum-config-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity } from '../entities/config-entity';
 import { Context } from './context';
+import { Entity } from 'graph-on-rails/entities/entity';
 
 
 type DefinitionType = {
@@ -42,7 +43,7 @@ export class SchemaFactory {
    */
   async schema():Promise<GraphQLSchema> {
     if( this._schema ) return this._schema;
-    this._schema = this.createSchema( this.context );
+    this._schema = await this.createSchema( this.context );
     return this._schema;
   }
 
@@ -159,7 +160,7 @@ export class SchemaFactory {
   /**
    *
    */
-  createSchema(context:Context):GraphQLSchema {
+  async createSchema(context:Context):Promise<GraphQLSchema> {
     context.graphx.init();
     _.forEach( this.builders(), type => type.init( context ) );
     _.forEach( this.builders(), type => type.createTypes() );
@@ -168,7 +169,13 @@ export class SchemaFactory {
         builder => builder.createUnionType() );
     _.forEach( this.builders(), type => type.extendTypes() );
 
+    for( const entity of _.values( context.entities) ) {
+      const extendFn = entity.extendFn();
+      if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( context ) );
+    }
+
     if( _.isFunction( context.extendSchema ) ) context.extendSchema( context );
+
     const schema = context.graphx.generate();
     return schema;
   }

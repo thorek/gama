@@ -56,6 +56,7 @@ import { AdminConfigType } from './lib/admin-config';
 import { SafePipe } from './pipes/safe.pipe';
 import { AdminDataResolver } from './services/admin-data.resolver';
 import { AdminService } from './services/admin.service';
+import { LoginComponent } from './components/login/login.component';
 
 registerLocaleData(en);
 
@@ -77,6 +78,7 @@ export function initializeApp1(adminService:AdminService) {
     ConfirmDialogComponent,
     MessageDialogComponent,
     HomeComponent,
+    LoginComponent,
     SafePipe
   ],
   imports: [

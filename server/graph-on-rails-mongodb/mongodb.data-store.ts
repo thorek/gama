@@ -77,7 +77,7 @@ export class MongoDbDataStore extends DataStore {
     return this.findByExpression( entity, expression, sort );
   }
 
-  async aggregateFind( dummyEntity:Entity, entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>{
+  async aggregateFind( entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>{
     if( entities.length === 0 ) return [];
     const expression = this.buildExpression( _.first(entities) as Entity, filter );
     const lookups:any[] = _.map( entities, entity => {
@@ -104,7 +104,9 @@ export class MongoDbDataStore extends DataStore {
       { $sort: this.getSort( sort ) }
     ));
 
-    const items = await this.getCollection( dummyEntity ).aggregate( aggregate).toArray();
+    const randomEntity = _.first( entities );
+    if( ! randomEntity ) throw `no entitites given`;
+    const items = await this.getCollection( randomEntity ).aggregate( aggregate).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
   }
 

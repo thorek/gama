@@ -29,6 +29,7 @@ export class EntitySeeder extends EntityModule {
       await this.generateFaker( _.get(this.entity.seeds, 'Faker') );
       _.unset( this.entity.seeds, 'Faker' );
     }
+    await Promise.all( _.map( this.entity.seeds, (seed) => this.resolveFnProperties(seed ) ) );
     await Promise.all( _.map( this.entity.seeds, (seed, name) => this.seedInstanceAttributes( name, seed, ids ) ) );
     return _.set( {}, this.entity.typeName, ids );
   }
@@ -85,6 +86,19 @@ export class EntitySeeder extends EntityModule {
       _.set( seed, name, value );
     }
     return seed;
+  }
+
+  /**
+   *
+   */
+  private async resolveFnProperties( seed:any ){
+    for( const attribute of _.keys(this.entity.attributes) ){
+      const property = _.get( seed, attribute );
+      if( _.isFunction( property ) ){
+        const value = await Promise.resolve( property() );
+        _.set( seed, attribute, value );
+      }
+    }
   }
 
   /**

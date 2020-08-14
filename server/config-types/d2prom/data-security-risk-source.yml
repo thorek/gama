@@ -112,6 +112,10 @@ entity:
     assocFrom:
       - type: DataAtom
         delete: cascade
+    permissions:
+      admin: true
+      user: crud
+    assign: Organisation.Client
     seeds:
       Faker:
         count: 500
@@ -158,6 +162,7 @@ entity:
     assocFrom:
       - type: ProcessingActivity
         delete: prevent
+    assign: Organisation.Client
     seeds:
       Faker:
         count: 200
@@ -205,6 +210,10 @@ entity:
       - type: OrganisationalUnit
         delete: cascade
       - ProcessingActivity
+    permissions:
+      admin: true
+      user: r u
+    assign: Client
     seeds:
       Faker:
         count: 50
@@ -254,9 +263,14 @@ entity:
         - type: string!
           default: DE
       logo: image
+      status: string
     assocFrom:
       - type: Organisation
         delete: cascade
+    permissions:
+      admin: true
+      user: r
+    assign: Client
     seeds:
       Faker:
         count: 30
