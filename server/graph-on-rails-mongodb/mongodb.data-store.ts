@@ -192,7 +192,7 @@ export class MongoDbDataStore extends DataStore {
   protected async findByExpression( entity:Entity, filter:any, sort?:Sort ):Promise<any[]> {
     const collection = this.getCollection( entity );
     const sortStage = this.getSort( sort );
-    const items = await collection.find( filter ).sort(this.getSort(sort)).toArray();
+    const items = await collection.find( filter ).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
   }
 

@@ -67,8 +67,8 @@ export class EntityPermissions extends EntityModule {
 
   async addPermissionToFilter( resolverCtx:ResolverContext ) {
     const filter = _.get( resolverCtx.args, 'filter', {} );
-    _.set( filter, 'id', this.getAssignedIds( resolverCtx ) );
-    _.set( resolverCtx, 'args', filter );
+    // _.set( filter, 'id', this.getAssignedIds( resolverCtx ) );
+    _.set( resolverCtx.args, 'filter', filter );
   }
 
   async getAssignedIds( resolverCtx:ResolverContext ):Promise<undefined|string[]> {

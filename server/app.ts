@@ -61,8 +61,8 @@ import { Entity } from './graph-on-rails/entities/entity';
     return { user: login.getUser(token), context: runtime.context };
   }
 
-  const configFolder = [`${__dirname}/config-types/d2prom`];
-  const runtime = await Runtime.create( 'D2PROM', {configFolder, domainConfiguration});
+  const configFolder = [`${__dirname}/config-types/policentransfer`];
+  const runtime = await Runtime.create( 'GAMA', {configFolder});
 
   const server = await runtime.server({context});
   server.applyMiddleware({ app, path: '/graphql' });

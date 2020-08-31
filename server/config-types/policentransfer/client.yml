@@ -1,0 +1,54 @@
+enum:
+  ClientGroup:
+    - offerer
+    - bidder
+
+entity:
+  client:
+    attributes:
+      clientGroup: ClientGroup
+      firstname: string!
+      lastname: string!
+      address1: string!
+      address2: string
+      zip: string!
+      city: string!
+      email: string!
+      password: string!
+    seeds:
+      offerer1:
+        clientGroup: offerer
+        firstname: Max
+        lastname: Mustermann
+        address1: Blumwenweg 1
+        zip: 12345
+        city: Rosenhagen
+        email: max@mustermann.de
+        password: xxx
+      offerer2:
+        clientGroup: offerer
+        firstname: Sabine
+        lastname: Sauer
+        address1: Sandstraße 2
+        zip: 23456
+        city: Sandershausen
+        email: sabine@sauer.de
+        password: xxx
+      bidder1:
+        clientGroup: bidder
+        firstname: Hans
+        lastname: Hauser
+        address1: Heuweg 3
+        zip: 3456
+        city: Hamburg
+        email: hans@hauser.de
+        password: xxx
+      bidder2:
+        clientGroup: bidder
+        firstname: Marianne
+        lastname: Meiser
+        address1: Messberg 4
+        zip: 45678
+        city: Mühlheim (Ruhr)
+        email: marianne@meiser.de
+        password: xxx

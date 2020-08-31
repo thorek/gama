@@ -24,8 +24,8 @@ export class StringFilterType extends FilterType{
   }}
 
   //
-	//
-	getFilterExpression( condition:any, field:string ):any {
+  //
+  getFilterExpression( condition:any, field:string ):any {
     const caseSensitive = _.get( condition, 'caseSensitive' ) === true;
     delete condition.caseSensitive;
     const operations = _.compact( _.map( condition,
@@ -37,17 +37,17 @@ export class StringFilterType extends FilterType{
   //
   private getOperation( operator:string, operand:any, caseSensitive:boolean ):any {
     const i = caseSensitive ? undefined : 'i';
-		switch( operator ){
+    switch( operator ){
       case 'is': return {'$eq': operand};
-			case 'isNot': return {'$ne': operand } ;
+      case 'isNot': return {'$ne': operand } ;
       case 'in': return { "$in": operand };
       case 'notIn': return { "$nin": operand };
       case 'contains': return {$regex : new RegExp(`.*${operand}.*`, i) };
-			case 'doesNotContain':return {$regex : new RegExp(`.*^[${operand}].*`, i) };
-      case 'beginsWith': return {$regex : new RegExp(`${operand}.*`, i) };
-      case 'endsWith': return {$regex : new RegExp(`.*${operand}`, i) };
-		}
-		console.warn(`StringFilterType unknown operator '${operator}' `);
+      case 'doesNotContain':return {$regex : new RegExp(`.*^[${operand}].*`, i) };
+      case 'beginsWith': return {$regex : new RegExp(`^${operand}`, i) };
+      case 'endsWith': return {$regex : new RegExp(`${operand}$`, i) };
+    }
+    console.warn(`StringFilterType unknown operator '${operator}' `);
 
   }
 }

@@ -1,0 +1,76 @@
+entity:
+
+  Versicherer:
+    attributes:
+      name: string!
+    seeds:
+      pfefferminzia:
+        name: Pfefferminzia
+      vkb:
+        name: VKB
+      zurich:
+        name: Zürich
+
+  PhvOffer:
+    attributes:
+      vuOfferOk:
+        type: boolean!
+        description: Offen für Angebote akt. Versicherer
+      mischbestand:
+        type: boolean!
+      bestandsbeitrag:
+        type: int!
+        description: Bestandsbeitrag	Jährlicher Bestandsbeitrag	Währung
+        validation:
+          notLessThan: 0
+      alterBedingungswerk:
+        type: int!
+        validation:
+          notLessThan: 1900
+        description: Alter Bedingungswerk		Numerisch (bspw. 2017)	Jahreszahl
+      schadenquote:
+        type: int!
+        validation:
+          divisibleBy: 10
+          notLessThan: 0
+        description: Schadenquote	Durchschnitt der letzten 3 Jahre	Prozent	0-100% in 10er Schritten, >100%, Hinweismeldung für Anbieter zu Berechnung
+      courtage:
+        type: int!
+        validation:
+          divisibleBy: 10
+          notLessThan: 0
+          notGreaterThan: 100
+        description: Aktuelle Courtage		Prozent	2stellig
+      vertragslaufzeit:
+        type: int!
+        validation:
+          notLessThan: 0
+        description: Vertragslaufzeit	Ab wann umdeckbar	Zahl	1, 2, 3, 4, 5 Jahresverträge
+    assocToMany: Versicherer
+    seeds:
+      phv1:
+        vuOfferOk: true
+        mischbestand: true
+        bestandsbeitrag: 1000000
+        alterBedingungswerk: 2010
+        schadenquote: 30
+        courtage: 20
+        vertragslaufzeit: 2
+        Versicherer:
+          - pfefferminzia
+          - vkb
+      phv2:
+        vuOfferOk: false
+        mischbestand: false
+        bestandsbeitrag: 2500000
+        alterBedingungswerk: 2001
+        schadenquote: 40
+        courtage: 10
+        vertragslaufzeit: 5
+        Versicherer:
+          - pfefferminzia
+          - zurich
+
+
+
+
