@@ -269,7 +269,9 @@ entity:
         delete: cascade
     permissions:
       admin: true
-      user: r
+      user:
+        read: true
+        delete: false
     assign: Client
     seeds:
       Faker:

@@ -11,6 +11,8 @@ NavigationError,
 NavigationStart,
 Router
 } from '@angular/router';
+import { LoginService } from 'src/app/services/login.service';
+import { timeStamp } from 'console';
 
 @Component({
   selector: 'app-root',
@@ -23,9 +25,12 @@ export class AppComponent implements OnInit{
   isCollapsed = false;
   entities:EntityConfigType[]
 
+  get user() { return this.loginService.user }
+
   constructor(
     private router:Router,
-    private adminService:AdminService
+    private adminService:AdminService,
+    private loginService:LoginService
   ) {}
 
   ngOnInit(){
@@ -33,7 +38,6 @@ export class AppComponent implements OnInit{
     this.router.events.subscribe((event:Event) => {
       switch (true) {
         case event instanceof NavigationStart: {
-          // setTimeout(() => { this.loading = true }, 100);
           this.loading = true;
           break;
         }
@@ -49,6 +53,10 @@ export class AppComponent implements OnInit{
         }
       }
     });
+  }
+
+  login(){
+    this.router.navigate(['/login']);
   }
 
   title( entity:EntityConfigType ):string {

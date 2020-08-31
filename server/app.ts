@@ -1,13 +1,11 @@
-import { AuthenticationError } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
-import { Context } from 'graph-on-rails/core/context';
 import { createServer } from 'http';
 import _ from 'lodash';
 import path from 'path';
 
-import { LoginMutation } from './extras/login.mutation';
+import { SimpleLogin } from './extras/simple-login';
 import { Runtime } from './graph-on-rails/core/runtime';
 import { Entity } from './graph-on-rails/entities/entity';
 
@@ -55,27 +53,16 @@ import { Entity } from './graph-on-rails/entities/entity';
     }
   }
 
-  _.merge( domainConfiguration, LoginMutation.getConfiguration() );
+  const login = new SimpleLogin();
+  _.merge( domainConfiguration, login.getConfiguration() );
+
+  const context = (contextExpress:{req:express.Request }) => {
+    const token:string|undefined = contextExpress.req.headers.authorization;
+    return { user: login.getUser(token), context: runtime.context };
+  }
+
   const configFolder = [`${__dirname}/config-types/d2prom`];
   const runtime = await Runtime.create( 'D2PROM', {configFolder, domainConfiguration});
-
-  const users:{[token:string]:any} = {
-    admin: { id: 100, username: 'Admin', roles: ['admin'], clientId: '5ec3b745d3a47f8284414125' },
-    thorek: { id: 101, username: 'Thorek', roles: ['dsb','user'], clientId: '5ec42368f0d6ec10681dec79'  },
-    guest: { id: 102, username: 'Guest', roles: ['guest'] }
-  };
-
-  const getUser = (token?:string) => {
-    if( ! token ) return undefined;
-    const user = users[token];
-    if( user ) return user;
-    throw new AuthenticationError( `Token '${token}' cannot be resolved to a valid user.`);
-  }
-
-  const context = (contextExpress:{req: express.Request }) => {
-    const token:string|undefined = contextExpress.req.headers.authorization;
-    return { user: getUser(token), context: runtime.context };
-  }
 
   const server = await runtime.server({context});
   server.applyMiddleware({ app, path: '/graphql' });
@@ -83,7 +70,7 @@ import { Entity } from './graph-on-rails/entities/entity';
 
   httpServer.listen(
     { port: 3000 },
-    (): void => { console.log(`\n🚀 GraphQL is now running on http://localhost:3000/graphql\n`) }
+    () => { console.log(`\n🚀 GraphQL is now running on http://localhost:3000/graphql\n`) }
   );
 
 })();

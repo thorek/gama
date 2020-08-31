@@ -6,16 +6,16 @@ import { ResolverContext } from '../core/resolver-context';
 
 export type CrudAction = 'read' | 'create' | 'update' | 'delete';
 
-export type EntityPermissionActionType =
-  boolean|
-  string|
-  {[condition:string]:object} |
-  {[query:string]:object} |
-  {[from:string]:string}
+// export type EntityPermissionActionType =
+//   boolean|
+//   string|
+//   {[condition:string]:object} |
+//   {[query:string]:object} |
+//   {[from:string]:string}
 
 export type EntityPermissionRoleType =
   boolean|
-  {[action in CrudAction|'*']?:EntityPermissionActionType}
+  {[action in CrudAction|'*']?:boolean}
 
 export type EntityPermissionType =
   {[role:string]:EntityPermissionRoleType}
@@ -31,6 +31,39 @@ export type EntityPermissionType =
  *  Another definition should decide about the "select" of entities
  */
 export class EntityPermissions extends EntityModule {
+
+
+  /**
+   *
+   */
+  async isAllowed( action:CrudAction, roles?:string[] ):Promise<boolean> {
+    if( this.skipPermissionCheck( roles ) ) return true;
+    return  _.some( roles, role => this.isAllowedForRole( action, role ) );
+  }
+
+  /**
+   *
+   */
+  private skipPermissionCheck( roles?:string[] ):boolean {
+    if( ! this.isUserAndRolesDefined() ) return true;
+    if( ! this.entity.permissions ) return true;
+    if( ! roles ) return true;
+    return false;
+  }
+
+  /**
+   *
+   */
+  private isAllowedForRole( action:CrudAction, role:string ):boolean {
+    const rolePermissions = _.get( this.entity.permissions, role );
+    if( _.isUndefined(rolePermissions) ) return false;
+    if( _.isBoolean( rolePermissions ) ) return rolePermissions;
+    const actionPermission = _.get( rolePermissions, action );
+    return _.isBoolean( actionPermission ) ? actionPermission : true;
+  }
+
+
+  /** ************************************************************************************************************ */
 
   async addPermissionToFilter( resolverCtx:ResolverContext ) {
     const filter = _.get( resolverCtx.args, 'filter', {} );
@@ -59,31 +92,6 @@ export class EntityPermissions extends EntityModule {
     const user = _.get( resolverCtx.context, this.context.contextUser );
     if( ! user ) throw new Error(`no such contextUser '${this.context.contextUser}'`);
     return _.get( user, this.entity.assign );
-  }
-
-  /**
-   *
-   */
-  async isAllowed( action:CrudAction, roles?:string[] ):Promise<boolean> {
-    if( this.skipPermissionCheck( roles ) ) return true;
-    return  _.some( roles, role => this.isAllowedForRole( action, role ) );
-  }
-
-  /**
-   *
-   */
-  private skipPermissionCheck( roles?:string[] ):boolean {
-    if( ! this.isUserAndRolesDefined() ) return true;
-    if( ! this.entity.permissions ) return true;
-    if( ! roles ) return true;
-    return false;
-  }
-
-  /**
-   *
-   */
-  private isAllowedForRole( action:CrudAction, role:string ):boolean {
-    return false;
   }
 
 

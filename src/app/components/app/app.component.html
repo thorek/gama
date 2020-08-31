@@ -21,14 +21,17 @@
         </mat-menu>
       </div>
       <span class="flex-spacer"></span>
-      <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
-        <mat-icon>favorite</mat-icon>
+      <button *ngIf="user" mat-button>
+        <mat-icon>person</mat-icon>
+        {{ user.username }}
       </button>
-      <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
-        <mat-icon>share</mat-icon>
+      <button *ngIf="!user" mat-button (click)="login()">
+        <mat-icon>login</mat-icon>
+        Login
       </button>
     </mat-toolbar-row>
   </mat-toolbar>
+
   <mat-toolbar-row class="breadcrumb">
     <a [routerLink]="['/']">
       <mat-icon

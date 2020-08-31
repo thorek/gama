@@ -49,6 +49,7 @@ import {MatStepperModule} from '@angular/material/stepper';
 import {MatTableModule} from '@angular/material/table';
 import {MatTabsModule} from '@angular/material/tabs';
 import { GraphQLModule } from './graphql.module';
+import { LoginComponent } from './components/login/login.component';
 
 registerLocaleData(en);
 
@@ -57,7 +58,8 @@ registerLocaleData(en);
     AppComponent,
     WelcomeComponent,
     AboutComponent,
-    HeaderComponent
+    HeaderComponent,
+    LoginComponent
   ],
   imports: [
     GraphQLModule.forRoot({uri: 'http://localhost:3000/graphql'}),
