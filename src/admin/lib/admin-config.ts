@@ -237,7 +237,19 @@ export class AdminConfig {
     if( _.isString( field ) ) field = { name: field };
     if( fieldConfig.mediaType ) fieldConfig.render = this.getMediaFieldDefaultRenderMethod( fieldConfig );
     if( fieldConfig.type === 'file' ) fieldConfig.control = 'file';
+    if( ! fieldConfig.control ) this.setDefaultFieldControl( fieldConfig );
+
     return _.defaults( field, fieldConfig );
+  }
+
+  private setDefaultFieldControl( fieldConfig:FieldConfigType ):void{
+    switch( fieldConfig.type ){
+      case 'boolean':
+        fieldConfig.control = 'select';
+        fieldConfig.values = () => [{value: true, label: 'Yes'}, {value: false, label: 'No'}, {value: null, label: '' }];
+        fieldConfig.render = item => _.isUndefined(item[fieldConfig.name]) ? '' : item[fieldConfig.name] ? 'Yes' : 'No';
+        break;
+    }
   }
 
   private getMediaFieldDefaultRenderMethod( fieldConfig:FieldConfigType ){
@@ -271,6 +283,8 @@ export class AdminConfig {
       control: assoc.type === 'assocTo' ? 'select' : assoc.type === 'assocToMany' ? 'multiple' : undefined,
       label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );
   }
+
+
 
   private getFieldValuesDefaultMethod(assoc:AssocType, assocEntityConfig:EntityConfigType, entityConfig:EntityConfigType ){
     return (data:any) => _.compact( _.map( _.get( data, assoc.typesQuery ), assocItem => {
