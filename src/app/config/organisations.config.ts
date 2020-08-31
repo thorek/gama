@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { EntityConfigType } from '../../admin/lib/admin-config';
+import { EntityConfigType } from 'src/admin/lib/admin-config';
 
 export const organisationsConfig:EntityConfigType = {
   index: {

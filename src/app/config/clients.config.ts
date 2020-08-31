@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
-import { EntityConfigType } from '../lib/admin-config';
+import { EntityConfigType } from 'src/admin/lib/admin-config';
+
 
 export const clientsConfig:EntityConfigType = {
   action: (event:any) => event.action === 'some' ? console.log(`some ${event.id}`) : console.log('none'),

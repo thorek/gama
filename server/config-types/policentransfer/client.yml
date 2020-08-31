@@ -4,6 +4,7 @@ enum:
     - bidder
 
 entity:
+
   client:
     attributes:
       clientGroup: ClientGroup
@@ -15,12 +16,18 @@ entity:
       city: string!
       email: string!
       password: string!
+
+
+
+
+
+    assocFrom: PhvOffer
     seeds:
       offerer1:
         clientGroup: offerer
         firstname: Max
         lastname: Mustermann
-        address1: Blumwenweg 1
+        address1: Blmumwenweg 1
         zip: 12345
         city: Rosenhagen
         email: max@mustermann.de

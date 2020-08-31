@@ -53,11 +53,23 @@ export class AdminService {
   }
 
   save( id:string|undefined, input:any, files:_.Dictionary<File>, config:EntityConfigType ):Promise<SaveResultType> {
-    _(config.fields).filter( field => field.type === 'file' ).forEach( field => _.unset( input, field.name ) );
+    this.sanitizeInput( input, config );
     const variables = _.set( {}, 'input', input );
     _.merge( variables, files );
     return id ? this.update( id, variables, config ) : this.create( variables, config );
   }
+
+  private sanitizeInput( input:any, config:EntityConfigType ):void {
+    _.forEach( config.fields, field => {
+      const value = _.get( input, field.name );
+      if( ! _.isUndefined( value ) ) switch( field.type ) {
+        case 'file': return _.unset( input, field.name );
+        case 'int': return _.set( input, field.name, _.toInteger( value ) );
+      }
+    });
+  }
+
+
 
   private create( variables:any, config:EntityConfigType ):Promise<SaveResultType> {
     const mutation = this.getCreateMutation( config );
@@ -85,11 +97,11 @@ export class AdminService {
     _.set( variables, 'input.id', id );
     const updateMutation = this.getUpdateMutation( config );
     const context = this.getMutationContext( variables );
-    return new Promise( resolve => {
+    return new Promise( (resolve, reject) => {
       this.apollo.mutate({mutation: updateMutation, variables, context }).subscribe(({data}) => resolve({
         violations: _.get( data, [config.updateMutation, 'validationViolations'] ),
         id: _.get( data, [config.updateMutation, config.typeQuery, 'id'] )
-      }));
+      }), error => reject( error ) );
     });
   }
 

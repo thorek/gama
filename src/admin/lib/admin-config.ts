@@ -212,6 +212,8 @@ export class AdminConfig {
     _.forEach( this.config.entities, entityConfig => {
       _.forEach( ['index','show','form'], uiType => {
         const uiConfig:UiConfigType = entityConfig[uiType];
+        // if( uiType === 'show' && _.isUndefined( uiConfig.table ) ) uiConfig.table = _.filter( entityConfig.assocs, assoc => assoc.type === 'assocFrom' );
+        // must add assocs too
         _.forEach( uiConfig.table, table => {
           const tableEntityConfig = this.config.entities[table.path];
           if( ! tableEntityConfig ) return console.warn(`no such tableEntityConfig '${table.path}'`);

@@ -51,6 +51,8 @@ import {MatTabsModule} from '@angular/material/tabs';
 import { GraphQLModule } from './graphql.module';
 import { LoginComponent } from './components/login/login.component';
 
+import { adminConfig } from './config/admin.config';
+
 registerLocaleData(en);
 
 @NgModule({
@@ -63,7 +65,7 @@ registerLocaleData(en);
   ],
   imports: [
     GraphQLModule.forRoot({uri: 'http://localhost:3000/graphql'}),
-    AdminModule,
+    AdminModule.forRoot( adminConfig ),
     BrowserModule,
     AppRoutingModule,
     FormsModule,

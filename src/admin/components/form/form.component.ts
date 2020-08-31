@@ -8,6 +8,7 @@ import { AdminData } from 'src/admin/lib/admin-data';
 import { AdminService } from 'src/admin/services/admin.service';
 
 import { AdminComponent } from 'src/admin/components/admin.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'admin-form',
@@ -28,6 +29,7 @@ export class FormComponent extends AdminComponent implements OnInit {
 
   constructor(
     private fb:FormBuilder,
+    protected snackBar:MatSnackBar,
     private adminService:AdminService )
   { super() }
 
@@ -52,10 +54,17 @@ export class FormComponent extends AdminComponent implements OnInit {
   }
 
   protected async save(){
-    const saveResult = await this.adminService.save( this.data.id, this.form.value, this.files, this.data.entityConfig );
-    _.isUndefined( saveResult.id ) ?
-      this.onSaveViolations( saveResult.violations ) :
-      this.saveSuccess.emit( saveResult.id );
+    try {
+      const saveResult = await this.adminService.save( this.data.id, this.form.value, this.files, this.data.entityConfig );
+      _.isUndefined( saveResult.id ) ?
+        this.onSaveViolations( saveResult.violations ) :
+        this.saveSuccess.emit( saveResult.id );
+    } catch (error) {
+      this.snackBar.open('Error', error, {
+        duration: 3000, horizontalPosition: 'center', verticalPosition: 'top'
+      });
+
+    }
   }
 
   protected onSaveViolations( violations:ViolationType[] ){

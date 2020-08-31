@@ -5,7 +5,12 @@ import { AdminConfigType } from '../../admin/lib/admin-config';
 
 export const adminConfig:AdminConfigType = {
   entities:{
-    clients: clientsConfig,
+    clients: {
+      show: {
+        assoc: [ { path: 'phv_offers', assoc: ['versicherers']} ],
+        table: [{path: 'phv_offers'}]
+      }
+    },
     organisations: organisationsConfig,
     processing_activities: processingActivitiesConfig
   }
