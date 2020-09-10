@@ -3,15 +3,13 @@ import { Context } from 'graph-on-rails/core/context';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import _ from 'lodash';
 
-import { DomainConfigurationType } from '../graph-on-rails/core/context';
+import { DomainConfiguration, DomainConfigurationType } from 'graph-on-rails/core/domain-configuration';
 
 //
 //
 export class SimpleLogin {
 
-  private static instance = new SimpleLogin();
   private users:any = {};
-  static getInstance = () => SimpleLogin.instance;
 
   getConfiguration = ():DomainConfigurationType => ({
     entity: {
@@ -38,7 +36,7 @@ export class SimpleLogin {
             password: this.password('user3')
           }
         },
-        extendFn: ( context:Context ) => {
+        extendEntity: ( context:Context ) => {
           context.graphx.type('mutation').extendFields( () => {
             return _.set({}, 'login', {
               type: GraphQLString,

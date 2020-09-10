@@ -1,8 +1,5 @@
-import fs from 'fs';
 import { GraphQLSchema } from 'graphql';
 import _ from 'lodash';
-import path from 'path';
-import YAML from 'yaml';
 
 import { EntityBuilder } from '../builder/entity-builder';
 import { EnumBuilder } from '../builder/enum-builder';
@@ -10,13 +7,7 @@ import { EnumConfigBuilder } from '../builder/enum-config-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity } from '../entities/config-entity';
 import { Context } from './context';
-import { Entity } from 'graph-on-rails/entities/entity';
 
-
-type DefinitionType = {
-  enum:{[name:string]:{}}
-  entity:{[name:string]:{}}
-}
 
 //
 //
@@ -52,14 +43,11 @@ export class SchemaFactory {
    */
   private builders():SchemaBuilder[] {
     if( this._builders ) return this._builders;
-    const configTypeBuilders = this.getConfigTypeBuilder();
-    const customBuilders = this.getCustomBuilders();
-    const scalarFilterTypeBuilders = this.context.dataStore.getScalarFilterTypes();
     this._builders = _.compact([
       this.config.metaDataBuilder,
-      ...scalarFilterTypeBuilders,
-      ...configTypeBuilders,
-      ...customBuilders
+      ... this.context.dataStore.getScalarFilterTypes(),
+      ... this.getConfigTypeBuilder(),
+      ... this.getCustomBuilders()
     ]);
     return this._builders;
   }
@@ -74,65 +62,20 @@ export class SchemaFactory {
     )));
   }
 
-
   /**
    *
    */
   private getConfigTypeBuilder():SchemaBuilder[] {
-    const configs = this.getConfigDefinitions();
-    const builder:SchemaBuilder[] = _.compact( _.map( configs.entity,
+    const domainConfiguration = this.context.config.domainConfiguration;
+    if( ! domainConfiguration ) return [];
+    const configuration = domainConfiguration.getConfiguration();
+    const builder:SchemaBuilder[] = _.compact( _.map( configuration.entity,
       (config, name) => this.createEntityBuilder( name, config )) );
-    builder.push( ... _.compact( _.map( configs.enum,
+    builder.push( ... _.compact( _.map( configuration.enum,
     (config, name) => this.createEnumBuilder( name, config )) ) )
     return builder;
   }
 
-
-  /**
-   *
-   */
-  private getConfigDefinitions():DefinitionType {
-    const configs:DefinitionType = { enum: {}, entity: {} };
-    _.forEach( this.config.configFolder, folder => {
-      const files = this.getConfigFiles( folder );
-      _.forEach( files, file => this.parseConfigFile( configs, folder, file ) );
-    });
-    return _.merge( configs, this.config.domainConfiguration );
-  }
-
-  /**
-   *
-   */
-  private getConfigFiles( folder:string ):string[] {
-    try {
-      return _.filter( fs.readdirSync( folder ), file => this.isConfigFile(file) );
-    } catch (error) {
-      console.error( `cannot read files from folder '${folder}'`, error );
-      return [];
-    }
-  }
-
-  /**
-   *
-   */
-  private isConfigFile( file:string ):boolean {
-    const extension = _.toLower( path.extname( file ));
-    return _.includes( ['.yaml', '.yml'], extension );
-  }
-
-  /**
-   *
-   */
-  private parseConfigFile( configs:any, folder:string, file:string ):void {
-    try {
-      file = path.join( folder, file );
-      const content = fs.readFileSync( file).toString();
-      const config = YAML.parse(content);
-      _.merge( configs, config );
-    } catch ( error ){
-      console.warn( `Error parsing file [${file}]:`, error );
-    }
-  }
 
   /**
    *
@@ -170,7 +113,7 @@ export class SchemaFactory {
     _.forEach( this.builders(), type => type.extendTypes() );
 
     for( const entity of _.values( context.entities) ) {
-      const extendFn = entity.extendFn();
+      const extendFn = entity.extendEntity();
       if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( context ) );
     }
 

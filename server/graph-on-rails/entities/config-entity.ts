@@ -59,7 +59,7 @@ export type EntityConfig  = {
   union?:string[]
   interface?:boolean
   implements?:string|string[]
-  extendFn?:( context:Context ) => void | Promise<void>
+  extendEntity?:( context:Context ) => void | Promise<void>
 }
 
 /**
@@ -85,7 +85,7 @@ export class ConfigEntity extends Entity {
    super();
   }
 
-  extendFn() { return this.entityConfig.extendFn }
+  extendEntity() { return this.entityConfig.extendEntity }
 
   protected getName() { return this._name }
   protected getTypeName() { return this.entityConfig.typeName || super.getTypeName() }

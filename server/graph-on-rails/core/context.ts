@@ -2,11 +2,9 @@ import { GraphQLType } from 'graphql';
 import _ from 'lodash';
 
 import { MongoDbDataStore } from '../../graph-on-rails-mongodb/mongodb.data-store';
-import { EnumConfig } from '../builder/enum-config-builder';
 import { FilterType } from '../builder/filter-type';
 import { MetaDataBuilder } from '../builder/meta-data-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
-import { EntityConfig } from '../entities/config-entity';
 import { Entity } from '../entities/entity';
 import { EntityFileSave } from '../entities/entity-file-save';
 import { EntityPermissions } from '../entities/entity-permissions';
@@ -15,14 +13,10 @@ import { EntitySeeder } from '../entities/entity-seeder';
 import { ValidateJs } from '../validation/validate-js';
 import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
+import { DomainConfiguration } from './domain-configuration';
 import { GraphX } from './graphx';
 import { ResolverContext } from './resolver-context';
 
-export type DomainConfigurationType = {
-  entity?:{[name:string]:EntityConfig},
-  enum?:{[name:string]:EnumConfig},
-  locale?:string
-}
 
 export type GorConfig = {
   name?:string
@@ -36,11 +30,10 @@ export type GorConfig = {
   contextRoles?:string
   extendSchema?:(context:Context) => void
   virtualResolver?:{[entity:string]:{[attribute:string]:( item:any, rctx?:ResolverContext ) => any|Promise<any> }}
-  configFolder?:string[]
   schemaBuilder?:SchemaBuilder[]
   entities?:Entity[],
   metaDataBuilder?:SchemaBuilder,
-  domainConfiguration?:DomainConfigurationType,
+  domainConfiguration?:DomainConfiguration,
   uploadRootDir?:string[]
 }
 

@@ -4,7 +4,6 @@ import _ from 'lodash';
 
 import { Context, GorConfig } from './context';
 import { SchemaFactory } from './schema-factory';
-import { GraphQLSchema } from 'graphql';
 
 
 /**
@@ -30,15 +29,10 @@ export class Runtime {
   /**
 	 *
 	 */
-  async server( config:ApolloServerExpressConfig = {} ): Promise<ApolloServer> {
+  async server( config:ApolloServerExpressConfig = {} ):Promise<ApolloServer> {
     config.schema = await this.schemaFactory.schema();
     _.defaultsDeep( config, { validationRules: [depthLimit(7)], context: { Context: this.context } } );
     return new ApolloServer( config );
   }
-
-  /**
-   *
-   */
-  async schema():Promise<GraphQLSchema> { return this.schemaFactory.schema() }
 
 }

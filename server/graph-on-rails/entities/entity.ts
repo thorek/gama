@@ -66,7 +66,7 @@ export abstract class Entity {
     this._entityAccessor = new EntityAccessor( this );
   }
 
-  abstract extendFn():undefined|(( context:Context ) => void|Promise<void>);
+  abstract extendEntity():undefined|(( context:Context ) => void|Promise<void>);
 
   get name() { return this.getName() }
   get typeName(){ return this.getTypeName() }

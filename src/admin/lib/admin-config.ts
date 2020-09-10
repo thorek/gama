@@ -237,19 +237,26 @@ export class AdminConfig {
     if( _.isString( field ) ) field = { name: field };
     if( fieldConfig.mediaType ) fieldConfig.render = this.getMediaFieldDefaultRenderMethod( fieldConfig );
     if( fieldConfig.type === 'file' ) fieldConfig.control = 'file';
-    if( ! fieldConfig.control ) this.setDefaultFieldControl( fieldConfig );
+    this.setDefaultFieldForType( fieldConfig );
 
     return _.defaults( field, fieldConfig );
   }
 
-  private setDefaultFieldControl( fieldConfig:FieldConfigType ):void{
+  private setDefaultFieldForType( fieldConfig:FieldConfigType ):void{
     switch( fieldConfig.type ){
-      case 'boolean':
-        fieldConfig.control = 'select';
-        fieldConfig.values = () => [{value: true, label: 'Yes'}, {value: false, label: 'No'}, {value: null, label: '' }];
-        fieldConfig.render = item => _.isUndefined(item[fieldConfig.name]) ? '' : item[fieldConfig.name] ? 'Yes' : 'No';
-        break;
+      case 'boolean': return this.setDefaultFieldBoolean( fieldConfig );
     }
+  }
+
+  private setDefaultFieldBoolean( fieldConfig:FieldConfigType ):void {
+    if( ! fieldConfig.control ) fieldConfig.control = 'select';
+    if( ! fieldConfig.values ) fieldConfig.values = () => _.compact([
+      {value: true, label: 'Yes'},
+      {value: false, label: 'No'},
+      fieldConfig.required ? undefined : {value: null, label: '' }
+    ]);
+    if( ! fieldConfig.render ) fieldConfig.render = item =>
+      _.isUndefined(item[fieldConfig.name]) ? '' : item[fieldConfig.name] ? 'Yes' : 'No';
   }
 
   private getMediaFieldDefaultRenderMethod( fieldConfig:FieldConfigType ){
@@ -284,13 +291,14 @@ export class AdminConfig {
       label: inflection.humanize( assoc.query ), name: assoc.foreignKey, path: assoc.path, required: assoc.required } );
   }
 
-
-
   private getFieldValuesDefaultMethod(assoc:AssocType, assocEntityConfig:EntityConfigType, entityConfig:EntityConfigType ){
-    return (data:any) => _.compact( _.map( _.get( data, assoc.typesQuery ), assocItem => {
+    return (data:any) => _.compact( _.concat(
+      _.map( _.get( data, assoc.typesQuery ), assocItem => {
       if( ! this.isNoneOrMatchingScoped(assoc, entityConfig, data, assocItem ) ) return;
       return { value: _.get( assocItem, 'id'), label: assocEntityConfig.name( assocItem ) };
-    }));
+    }),
+    [assoc.required ? {value: null, label: '' } : undefined ]
+    ));
   }
 
   private isNoneOrMatchingScoped(assoc:AssocType, entityConfig:EntityConfigType, data:any, assocItem:any):boolean {
