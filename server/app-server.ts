@@ -1,39 +1,43 @@
-import _ from 'lodash';
-import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import { Runtime } from './graph-on-rails/core/runtime';
-import { Entity } from './graph-on-rails/entities/entity';
-import { DomainConfiguration } from './graph-on-rails/core/domain-configuration';
+import express from 'express';
+import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
+import { DomainConfiguration } from './graph-on-rails/core/domain-configuration';
+import { Runtime } from './graph-on-rails/core/runtime';
+import { Entity } from './graph-on-rails/entities/entity';
 
 export class AppServer {
 
   static async create():Promise<ApolloServer> {
 
-    const virtualResolver = _.set( {},
-      'RiskAssessment', {
-        priority: (root:any ) => {
-          const probability = _.get( root, 'probability');
-          const damage = _.get( root, 'damage');
-          const result = probability * damage;
-          if( result <= 3 ) return 10;
-          if( result <= 8 ) return 20;
-          return 30;
-        }
-      }
-    );
+    const domainConfiguration = new DomainConfiguration( [`${__dirname}/config-types/d2prom`] );
 
     const login = new SimpleLogin();
+    domainConfiguration.add( login.getConfiguration() );
     const apolloContext = (contextExpress:{req:express.Request }) => {
       const token:string|undefined = contextExpress.req.headers.authorization;
       return { user: login.getUser(token), context: runtime.context };
     }
 
-    const domainConfiguration = new DomainConfiguration( [`${__dirname}/config-types/d2prom`] );
     domainConfiguration.add({
       locale: 'de',
       entity: {
+        RiskAssessment: {
+          attributes: {
+            priority: {
+              type: 'Priority',
+              calculate: ( root:any ) => {
+                const probability = _.get( root, 'probability');
+                const damage = _.get( root, 'damage');
+                const result = probability * damage;
+                if( result <= 3 ) return 10;
+                if( result <= 8 ) return 20;
+                return 30;
+              }
+            }
+          }
+        },
         ProcessingActivity: {
           seeds: {
             Faker: {
@@ -55,9 +59,8 @@ export class AppServer {
         }
       }
     });
-    domainConfiguration.add( login.getConfiguration() );
 
-    const runtime = await Runtime.create( 'GAMA', {domainConfiguration});
+    const runtime = await Runtime.create( 'GAMA', {domainConfiguration });
     return runtime.server({context: apolloContext});
   }
 }

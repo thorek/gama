@@ -29,7 +29,6 @@ export type GorConfig = {
   contextUser?:string
   contextRoles?:string
   extendSchema?:(context:Context) => void
-  virtualResolver?:{[entity:string]:{[attribute:string]:( item:any, rctx?:ResolverContext ) => any|Promise<any> }}
   schemaBuilder?:SchemaBuilder[]
   entities?:Entity[],
   metaDataBuilder?:SchemaBuilder,
@@ -39,7 +38,6 @@ export type GorConfig = {
 
 export class Context {
   get extendSchema() { return this.config.extendSchema }
-  get virtualResolver() { return this.config.virtualResolver }
 
   private constructor( public readonly config:GorConfig ){}
 

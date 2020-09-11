@@ -13,8 +13,6 @@ export class EntityItem {
 
   /**
    *
-   * @param entity
-   * @param item
    */
   constructor( private readonly entity:Entity, public readonly item:any ){}
 
@@ -26,7 +24,6 @@ export class EntityItem {
 
   /**
    *
-   * @param name
    */
   async assocTo( name:string ):Promise<EntityItem|undefined> {
     const assocTo = _.find( this.entity.assocTo, assocTo => assocTo.type === name );
@@ -43,7 +40,7 @@ export class EntityItem {
   }
 
   /**
-   * @param name
+   *
    */
   async assocToMany( name:string ):Promise<EntityItem[]> {
     const assocToMany = _.find( this.entity.assocToMany, assocToMany => assocToMany.type === name );
@@ -55,7 +52,7 @@ export class EntityItem {
   }
 
   /**
-   * @param name
+   *
    */
   async assocFrom( name:string ):Promise<EntityItem[]>{
     const assocFrom = _.find( this.entity.assocFrom, assocFrom => assocFrom.type === name );
@@ -118,19 +115,10 @@ export class EntityItem {
   private async defineVirtualAttributes(){
     for( const name of _.keys( this.entity.attributes ) ){
       const attribute = this.entity.attributes[name];
-      if( attribute.virtual ) await this.resolveVirtualAttribute( name );
+      if( ! _.isFunction(attribute.calculate) ) continue;
+      const value = await Promise.resolve( attribute.calculate(this.item) );
+      Object.defineProperty( this.item, name, { value } )
     }
-  }
-
-  //
-  //
-  private async resolveVirtualAttribute( name:string ):Promise<void> {
-    let resolver = _.get( this.context.virtualResolver, [this.entity.name, name] );
-    if( ! _.isFunction( resolver ) ) resolver = ({}) => {
-      return `[no resolver for '${this.entity.name}:${name}' provided]`
-    }
-    const value = await Promise.resolve( resolver(this.item) );
-    Object.defineProperty( this.item, name, { value } )
   }
 
   //

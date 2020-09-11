@@ -11,9 +11,6 @@ entity:
   RiskAssessment:
     description: "Used to assess a risk priority by the calculation: probability x damage: 1 - 3 normal, 4 - 8 high, 8 ..  very high, Asses the risk at the absence of any of the the special measures. It is assumed that basic 'measures' (e.g. Password protected PC, Simple lock in doors) exist. If the assumptions are not realistic - it will be documented."
     attributes:
-      priority:
-        type: Priority
-        virtual: true
       probability:
         type: int
         required: true

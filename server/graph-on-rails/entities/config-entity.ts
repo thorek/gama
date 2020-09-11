@@ -9,20 +9,21 @@ import { Context } from '../core/context';
  *
  */
 export type AttributeConfig = {
-  type:string;
+  type?:string;
   key?:string;
   filterType?:string|boolean;
   validation?:any;
   required?:boolean|'create'|'update'
   unique?:boolean|string
   description?:string
-  virtual?:boolean
   input?:boolean
   default?:any
 
   label?:string
   sortable?:string
   mediaType?:'image'|'video'|'audio'
+
+  calculate?:( root?:any, args?:any, context?:any ) => any
 }
 
 export type SeedEvalContextType = {
@@ -157,16 +158,16 @@ export class ConfigEntity extends Entity {
     this.warnVirtual( name, attrConfig );
     this.resolveMediaType( attrConfig );
     return {
-      graphqlType: attrConfig.type,
+      graphqlType: attrConfig.type || 'string',
       filterType: attrConfig.filterType as string|false|undefined,
       validation: attrConfig.validation,
       unique: attrConfig.unique,
       required: attrConfig.required,
       description: attrConfig.description,
-      virtual: attrConfig.virtual,
       // input: attrConfig.input,
       defaultValue: attrConfig.default,
-      mediaType: attrConfig.mediaType
+      mediaType: attrConfig.mediaType,
+      calculate: attrConfig.calculate
     }
   }
 
@@ -193,6 +194,7 @@ export class ConfigEntity extends Entity {
   }
 
   private resolveExclamationMark( attrConfig:AttributeConfig ):void {
+    if( ! attrConfig.type ) return;
     if( _.endsWith( attrConfig.type, '!' ) ){
       attrConfig.type = attrConfig.type.slice(0, -1);
       attrConfig.required = true;
@@ -221,8 +223,8 @@ export class ConfigEntity extends Entity {
   }
 
   private warnVirtual( name: string, attrConfig:AttributeConfig ):void {
-    if( attrConfig.virtual ){
-      if( attrConfig.filterType ) console.warn( this.name, `[${name}]`, 'filterType makes no sense for virtual attribute' )
+    if( _.isFunction( attrConfig.calculate ) ){
+      if( attrConfig.filterType ) console.warn( this.name, `[${name}]`, 'filterType makes no sense for attribute that is resolved manually' )
     }
   }
 

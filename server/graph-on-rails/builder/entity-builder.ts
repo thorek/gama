@@ -22,7 +22,6 @@ import { AssocToType, AssocType, Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { SchemaBuilder } from './schema-builder';
-import { UV_FS_O_FILEMAP } from 'constants';
 
 
 const scalarTypes:{[scalar:string]:GraphQLScalarType} = {
@@ -333,7 +332,7 @@ export class EntityBuilder extends SchemaBuilder {
       type: this.getGraphQLType(attribute, addNonNull, purpose ),
       description: attribute.description
     };
-    if( this.skipVirtual( name, attribute, purpose, fieldConfig ) ) return;
+    if( this.skipCalculatedAttribute( name, attribute, purpose, fieldConfig ) ) return;
     return fieldConfig;
   }
 
@@ -349,15 +348,10 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  private skipVirtual(name:string, attribute:TypeAttribute, purpose:AttributePurpose, fieldConfig:AttrFieldConfig ):boolean {
-    if( ! attribute.virtual ) return false;
+  private skipCalculatedAttribute(name:string, attribute:TypeAttribute, purpose:AttributePurpose, fieldConfig:AttrFieldConfig ):boolean {
+    if( ! _.isFunction( attribute.calculate ) ) return false;
     if( purpose !== 'type' ) return true;
-    let resolve = _.get( this.context.virtualResolver, [this.entity.name, name ] );
-    if( ! _.isFunction( resolve ) ) {
-      fieldConfig.type = GraphQLString;
-      fieldConfig.description = 'This attribute should be resolved via attribute resolver, but none was provided.'
-    }
-    fieldConfig.resolve = resolve
+    fieldConfig.resolve = attribute.calculate
     return false;
   }
 
@@ -369,7 +363,7 @@ export class EntityBuilder extends SchemaBuilder {
     this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
       const fields = { id: { type: GraphQLID } };
       _.forEach( this.attributes(), (attribute, name) => {
-        if( attribute.virtual ) return;
+        if( _.isFunction( attribute.calculate ) ) return;
         const filterType = this.getFilterType(attribute);
         if( filterType ) _.set( fields, name, { type: filterType } );
       });
@@ -383,7 +377,7 @@ export class EntityBuilder extends SchemaBuilder {
   protected createSortType():void {
     const name = this.entity.sorterEnumName;
     const values = _(this.attributes()).
-      map( (attribute, name ) => attribute.virtual ? [] : [`${name}_ASC`, `${name}_DESC`] ).
+      map( (attribute, name ) => _.isFunction(attribute.calculate) ? [] : [`${name}_ASC`, `${name}_DESC`] ).
       flatten().compact().
       concat( ['id_ASC', 'id_DESC']).
       reduce( (values, item) => _.set( values, item, {value: item} ), {} );

@@ -9,9 +9,9 @@ export type TypeAttribute = {
   unique?:string|boolean;
   required?:boolean|'create'|'update'
   description?:string
-  virtual?:boolean
   // input?:boolean
   defaultValue?:any
   mediaType?:'image'|'video'|'audio'
+  calculate?:( root?:any, args?:any, context?:any ) => any
 }
 

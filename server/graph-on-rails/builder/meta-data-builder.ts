@@ -17,7 +17,7 @@ export class MetaDataBuilder extends SchemaBuilder {
         type: { type: GraphQLString },
         required: { type: GraphQLBoolean },
         unique: { type: GraphQLString },
-        virtual: { type: GraphQLBoolean },
+        calculated: { type: GraphQLBoolean },
         filter: {type: GraphQLString },
         mediaType: {type: GraphQLString }
       }
@@ -85,7 +85,7 @@ export class MetaDataBuilder extends SchemaBuilder {
   protected resolveFields( root:any ):any[]{
     const entity = root as Entity;
     return _.map( entity.attributes, (attribute, name) => ({
-      name, type: attribute.graphqlType, required: attribute.required, virtual: attribute.virtual,
+      name, type: attribute.graphqlType, required: attribute.required, calculated: _.isFunction(attribute.calculate),
       unique: _.toString(attribute.unique), filter: attribute.filterType, mediaType: attribute.mediaType }));
   }
 

@@ -16,8 +16,10 @@ export class DomainConfiguration {
 
   private configuration:DomainConfigurationType;
 
-  constructor( configFolder?:string|string[] ){
-    this.configuration = new FileConfiguration( configFolder ).getConfiguration();
+  constructor( configOrconfigFolder?:DomainConfigurationType|string|string[] ){
+    this.configuration = _.isUndefined( configOrconfigFolder ) ? {} :
+      _.isString( configOrconfigFolder ) || _.isArray( configOrconfigFolder) ?
+        new FileConfiguration( configOrconfigFolder ).getConfiguration() : configOrconfigFolder;
   }
 
   add( configuration:DomainConfigurationType ):void {

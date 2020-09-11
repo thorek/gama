@@ -4,6 +4,7 @@ import _ from 'lodash';
 
 import { Context, GorConfig } from './context';
 import { SchemaFactory } from './schema-factory';
+import { GraphQLSchema } from 'graphql';
 
 
 /**
@@ -35,4 +36,7 @@ export class Runtime {
     return new ApolloServer( config );
   }
 
+  schema():Promise<GraphQLSchema>{
+    return this.schemaFactory.schema();
+  }
 }
