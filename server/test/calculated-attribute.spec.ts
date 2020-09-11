@@ -38,7 +38,6 @@ describe('Calculated Attributes', () => {
     context = runtime.context;
   })
 
-
   //
   //
   it('should not include virtual attributes in input & filter type', async ()=> {
