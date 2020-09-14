@@ -120,7 +120,7 @@ export abstract class Entity {
   protected getAssocToMany():AssocToManyType[] { return [] }
   protected getAssocFrom():AssocFromType[] { return [] }
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
-  protected getSeeds():{[name:string]:any} { return {} }
+  protected getSeeds():{[name:string]:any}|any[] { return {} }
   protected getPermissions():undefined|EntityPermissionType { return undefined }
   protected getDescription():string|undefined { return }
   protected getEntites():Entity[] { return [] }

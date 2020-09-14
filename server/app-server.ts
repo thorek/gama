@@ -15,9 +15,9 @@ export class AppServer {
 
     const login = new SimpleLogin();
     domainConfiguration.add( login.getConfiguration() );
-    const apolloContext = (contextExpress:{req:express.Request }) => {
+    const context = (contextExpress:{req:express.Request }) => {
       const token:string|undefined = contextExpress.req.headers.authorization;
-      return { user: login.getUser(token), context: runtime.context };
+      return { user: login.getUser(token) };
     }
 
     domainConfiguration.add({
@@ -61,6 +61,6 @@ export class AppServer {
     });
 
     const runtime = await Runtime.create( 'GAMA', {domainConfiguration });
-    return runtime.server({context: apolloContext});
+    return runtime.server({context});
   }
 }

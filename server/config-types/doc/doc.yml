@@ -1,0 +1,67 @@
+entity:
+  Car:
+    attributes:
+      brand: string!
+      licence: string!
+      mileage: int
+    seeds:
+      - brand: Volkswagen
+        licence: AA 1234
+        mileage: 10000
+      - brand: Mercedes
+        licence: BB 2345
+        mileage: 20000
+      - brand: Porsche
+        licence: CC 3456
+        mileage: 30000
+
+
+Xentity:
+  CarPool:
+    attributes:
+      name: string!
+    seeds:
+      main:
+        name: Main car pool
+      vip:
+        name: VIP car pool
+
+  Driver:
+    attributes:
+      name: string!
+    assocFrom: Car
+    seeds:
+      thomas:
+        name: Thomas Thorex
+      max:
+        name: Max Maximus
+      sarah:
+        name: Sarah Sanders
+
+  Car:
+    attributes:
+      brand: string!
+      licence: string!
+      mileage: int
+    assocTo: CarPool
+    assocToMany: Driver
+    seeds:
+      1:
+        brand: Volkswagen
+        licence: AA 1234
+        CarPool: main
+        Driver:
+          - thomas
+          - max
+      2:
+        brand: Mercedes
+        licence: BB 2345
+        CarPool: vip
+        Driver:
+          - thomas
+          - sarah
+      3:
+        brand: Porsche
+        licence: CC 3456
+        CarPool: vip
+        Driver: sarah

@@ -6,7 +6,7 @@
     "clean": "rimraf dist",
     "build": "rimraf dist && tsc",
     "watch:build": "tsc --watch",
-    "run": "./node_modules/.bin/ts-node-dev -P ./tsconfig.json --no-notify --inspect -- ./app.ts --watch ./",
+    "run": "./node_modules/.bin/ts-node-dev -P ./tsconfig.json --watch ./ --no-notify --inspect -- ./app.ts",
     "test": "jest --watch --detectOpenHandles"
   },
   "dependencies": {

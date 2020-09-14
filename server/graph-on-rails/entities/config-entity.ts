@@ -48,18 +48,17 @@ export type EntityConfig  = {
   singular?:string;
 
   collection?:string;
-  instance?:string;
-  label?:string;
   path?:string;
 
-  seeds?:{[seedId:string]:SeedConfigType}
+  seeds?:{[seedId:string]:SeedConfigType}|SeedConfigType[]
   permissions?:null|EntityPermissionType
   assign?:string
-  description?:string
 
   union?:string[]
   interface?:boolean
   implements?:string|string[]
+
+  description?:string
   extendEntity?:( context:Context ) => void | Promise<void>
 }
 
@@ -74,6 +73,8 @@ export class ConfigEntity extends Entity {
    *
    */
   static create( name:string, entityConfig:EntityConfig ):ConfigEntity {
+    if( ! entityConfig ) entityConfig = {};
+    if( ! entityConfig.attributes ) _.set( entityConfig, 'attributes', { attr0: 'string' } );
     return new ConfigEntity( name, entityConfig );
   }
 

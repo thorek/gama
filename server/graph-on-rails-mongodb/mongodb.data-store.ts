@@ -144,7 +144,7 @@ export class MongoDbDataStore extends DataStore {
    *
    */
   async truncate( entity:Entity ):Promise<boolean> {
-    const collectionName = entity.plural;
+    const collectionName = entity.collection;
     if( await this.collectionExist( collectionName ) ) try {
       await this.db.dropCollection( collectionName );
       return true;
@@ -216,7 +216,7 @@ export class MongoDbDataStore extends DataStore {
    *
    */
   protected getCollection( entity:Entity ):Collection {
-    return this.db.collection( entity.plural  );
+    return this.db.collection( entity.collection  );
   }
 
   /**

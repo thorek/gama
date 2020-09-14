@@ -214,7 +214,7 @@ export class EntityBuilder extends SchemaBuilder {
   private addAssocToInputToInput( fields:any, ref:AssocToType ):any {
     if( ref.input ) {
       const refEntity = this.context.entities[ref.type];
-      _.set( fields, refEntity.singular, {type: this.graphx.type( refEntity.createInput )} );
+      _.set( fields, refEntity.typeQuery, {type: this.graphx.type( refEntity.createInput )} );
     }
     return fields;
   }
@@ -231,7 +231,7 @@ export class EntityBuilder extends SchemaBuilder {
   private addAssocToReferenceToType( fields:any, ref:AssocType ):any {
     const refEntity = this.context.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName);
-    return _.set( fields, refEntity.singular, {
+    return _.set( fields, refEntity.typeQuery, {
       type: refObjectType,
       resolve: (root:any, args:any, context:any ) =>
         this.resolver.resolveAssocToType( refEntity, {root, args, context} )
@@ -425,7 +425,7 @@ export class EntityBuilder extends SchemaBuilder {
     const type = new GraphQLObjectType( { name: this.entity.mutationResultName, fields: () => {
       const fields = { validationViolations: {
           type: new GraphQLNonNull( new GraphQLList( this.graphx.type('ValidationViolation')) ) } };
-      return _.set( fields, this.entity.singular, {type: this.graphx.type(this.entity.typeName) } );
+      return _.set( fields, this.entity.typeQuery, {type: this.graphx.type(this.entity.typeName) } );
     }});
     this.addCreateMutation( type );
     this.addUpdateMutation( type );
@@ -436,7 +436,7 @@ export class EntityBuilder extends SchemaBuilder {
    */
   protected addCreateMutation(  type:GraphQLType ):void{
     this.graphx.type( 'mutation' ).extendFields( () => {
-      const args = _.set( {}, this.entity.singular, { type: this.graphx.type(this.entity.createInput)} );
+      const args = _.set( {}, this.entity.typeQuery, { type: this.graphx.type(this.entity.createInput)} );
       this.addFilesToSaveMutation( args );
       return _.set( {}, this.entity.createMutation, {
         type,	args, resolve: (root:any, args:any, context:any ) => this.resolver.saveType( {root, args, context} )
