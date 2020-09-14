@@ -6,6 +6,7 @@ import {
   GraphQLSchema,
   GraphQLString,
   GraphQLUnionType,
+  GraphQLScalarType,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -20,7 +21,7 @@ export class GraphX {
 
   rawTypes:any = {};
 
-  private fnFromArray = (fns:any) => () => fns.reduce((obj:any, fn:any) => Object.assign({}, obj, fn.call()), {});
+  private fnFromArray = (fns:any) => () => fns.reduce((obj:any, fn:any) => Object.assign({}, obj, fn ? fn.call() : undefined), {});
 
   //
   //
@@ -107,6 +108,9 @@ export class GraphX {
       values: obj.values,
       types: obj.types,
       interfaceTypes: obj.interfaceTypes,
+      parseValue: obj.parseValue,
+      parseLiteral: obj.parseLiteral,
+      serialize: obj.serialize,
       extendFields: (fields:any) => this.rawTypes[name].fields.push(fields instanceof Function ? fields : () => fields),
     };
   }
@@ -155,6 +159,14 @@ export class GraphX {
           description: item.description,
           fields: this.fnFromArray(item.fields),
           interfaces: item.interfaceTypes ? item.interfaceTypes() : []
+        });
+      } else if( item.from === GraphQLScalarType ) {
+        this.rawTypes[key] = new GraphQLScalarType({
+          name: item.name,
+          description: item.description,
+          serialize: item.serialize,
+          parseValue: item.parseValue,
+          parseLiteral: item.parseLiteral
         });
       } else {
         this.rawTypes[key] = new item.from({

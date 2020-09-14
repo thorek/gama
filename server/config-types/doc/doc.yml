@@ -4,6 +4,7 @@ entity:
       brand: string!
       licence: string!
       mileage: int
+      registration: Date
     seeds:
       - brand: Volkswagen
         licence: AA 1234

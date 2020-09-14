@@ -1,11 +1,10 @@
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
-import express from 'express';
+import { GraphQLSchema } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import _ from 'lodash';
 
 import { Context, GorConfig } from './context';
 import { SchemaFactory } from './schema-factory';
-import { GraphQLSchema } from 'graphql';
 
 
 /**
@@ -35,11 +34,10 @@ export class Runtime {
     const customContextFn = config.context;
     config.context = (contextExpress:any) => {
       const apolloContext = _.isFunction( customContextFn ) ? customContextFn(contextExpress) : {};
-      _.set( apolloContext, 'context', this.context );
-      return apolloContext;
+      return _.set( apolloContext, 'context', this.context );
     }
     config.schema = await this.schemaFactory.schema();
-    _.defaultsDeep( config, { validationRules: [depthLimit(7)], context: { Context: this.context } } );
+    _.defaultsDeep( config, { validationRules: [depthLimit(7)] } );
     return new ApolloServer( config );
   }
 

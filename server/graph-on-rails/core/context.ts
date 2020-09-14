@@ -15,7 +15,6 @@ import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
 import { DomainConfiguration } from './domain-configuration';
 import { GraphX } from './graphx';
-import { ResolverContext } from './resolver-context';
 
 
 export type GorConfig = {

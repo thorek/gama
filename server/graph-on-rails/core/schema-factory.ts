@@ -1,4 +1,4 @@
-import { GraphQLSchema } from 'graphql';
+import { GraphQLSchema, GraphQLScalarType, Kind } from 'graphql';
 import _ from 'lodash';
 
 import { EntityBuilder } from '../builder/entity-builder';
@@ -117,9 +117,22 @@ export class SchemaFactory {
       if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( context ) );
     }
 
+    this.createScalars( context );
+
     if( _.isFunction( context.extendSchema ) ) context.extendSchema( context );
 
     const schema = context.graphx.generate();
     return schema;
   }
+
+  private createScalars( context:Context ):void {
+    context.graphx.type( 'Date', {
+      name: 'Date',
+      from: GraphQLScalarType,
+      parseValue: (value:any) => new Date(value),
+      parseLiteral: (ast:any) => ast.kind === Kind.STRING ? new Date(ast.value) : null,
+      serialize: (value:any) => value instanceof Date ? value.toJSON() : `[${value}]`
+    });
+  }
+
 }
