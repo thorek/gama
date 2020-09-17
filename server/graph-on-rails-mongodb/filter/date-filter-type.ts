@@ -43,6 +43,6 @@ export class DateFilterType extends FilterType{
       case 'notIn': return { $nin : operand };
       case 'between': return { $gte: _.first( operand ), $lt: _.last( operand )  };
     }
-    console.warn(`IntFilter unknown operator '${operator}' `);
+    console.warn(`DateFilter unknown operator '${operator}' `);
   }
 }
