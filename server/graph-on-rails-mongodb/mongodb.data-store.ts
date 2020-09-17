@@ -8,7 +8,9 @@ import { ResolverContext } from '../graph-on-rails/core/resolver-context';
 import { Entity } from '../graph-on-rails/entities/entity';
 import { EnumFilterType } from './filter/enum-filter-type';
 import { IntFilterType } from './filter/int-filter-type';
+import { BooleanFilterType } from './filter/boolean-filter-type';
 import { StringFilterType } from './filter/string-filter-type';
+import { DateFilterType } from './filter/date-filter-type';
 
 /**
  *
@@ -19,7 +21,7 @@ export class MongoDbDataStore extends DataStore {
   /**
    *
    */
-	constructor( protected db:Db ){ super() }
+  constructor( protected db:Db ){ super() }
 
   /**
    *
@@ -168,7 +170,9 @@ export class MongoDbDataStore extends DataStore {
   getScalarFilterTypes():FilterType[] {
     return [
       new StringFilterType(),
-      new IntFilterType()
+      new IntFilterType(),
+      new BooleanFilterType(),
+      new DateFilterType()
     ]
   }
 
@@ -183,8 +187,6 @@ export class MongoDbDataStore extends DataStore {
       throw new Error( `could not convert '${id}' for '${entity.name}' to an ObjectId` );
     }
   }
-
-
 
   /**
    *

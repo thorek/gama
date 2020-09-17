@@ -6,9 +6,9 @@ import { FilterType } from '../../graph-on-rails/builder/filter-type';
 /**
  *
  */
-export class IntFilterType extends FilterType{
+export class BooleanFilterType extends FilterType{
 
-  graphqlType() { return GraphQLBoolean }
+  graphqlTypeName() { return GraphQLBoolean.name }
 
   attributes() { return {
     is: { graphqlType: GraphQLBoolean, description: 'is' },
@@ -22,6 +22,6 @@ export class IntFilterType extends FilterType{
       case 'is': return { $eq : operand };
       case 'isNot': return { $ne : operand };
     }
-    console.warn(`IntFilter unknown operator '${operator}' `);
+    console.warn(`BooleanFilter unknown operator '${operator}' `);
   }
 }
