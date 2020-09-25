@@ -8,7 +8,7 @@ export class MetaDataBuilder extends SchemaBuilder {
 
   name() { return 'MetaData' }
 
-  protected createObjectType():void {
+  build():void {
 
     const fieldMetaData = new GraphQLObjectType({
       name: 'fieldMetaData',

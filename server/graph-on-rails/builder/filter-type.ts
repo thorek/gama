@@ -2,15 +2,15 @@ import { GraphQLInputObjectType, GraphQLType } from 'graphql';
 import _ from 'lodash';
 
 import { Context } from '../core/context';
-import { SchemaBuilder } from './schema-builder';
+import { SchemaBuilder, TypeBuilder } from './schema-builder';
 
 
 /**
  * Base class for all Filter Types
  */
-export abstract class FilterType extends SchemaBuilder {
+export abstract class FilterType extends TypeBuilder {
 
-  name() { return SchemaBuilder.getFilterName( this.graphqlTypeName() ) }
+  name() { return TypeBuilder.getFilterName( this.graphqlTypeName() ) }
 
   init( context:Context ):void {
     super.init( context );
@@ -21,7 +21,7 @@ export abstract class FilterType extends SchemaBuilder {
 
   abstract getFilterExpression( args:any, field:string ):any;
 
-  protected createObjectType():void {
+  build():void {
     const filterName = this.name();
     this.graphx.type( filterName, {
       name: filterName,
@@ -33,8 +33,6 @@ export abstract class FilterType extends SchemaBuilder {
       }
       });
   }
-
-  extendTypes():void {}
 
   protected setAttributes( fields:any ):void {
     _.forEach( this.attributes(), (attribute,name) => {

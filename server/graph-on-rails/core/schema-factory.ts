@@ -1,11 +1,12 @@
-import { GraphQLSchema, GraphQLScalarType, Kind } from 'graphql';
+import { GraphQLScalarType, GraphQLSchema, Kind } from 'graphql';
 import _ from 'lodash';
 
 import { EntityBuilder } from '../builder/entity-builder';
-import { EnumBuilder } from '../builder/enum-builder';
-import { EnumConfigBuilder } from '../builder/enum-config-builder';
+import { EnumBuilder, EnumConfig, EnumConfigBuilder } from '../builder/enum-builder';
+import { MutationBuilder, MutationConfig, MutationConfigBuilder } from '../builder/mutation-builder';
+import { QueryBuilder, QueryConfig, QueryConfigBuilder } from '../builder/query-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
-import { ConfigEntity } from '../entities/config-entity';
+import { ConfigEntity, EntityConfig } from '../entities/config-entity';
 import { Context } from './context';
 
 
@@ -72,7 +73,12 @@ export class SchemaFactory {
     const builder:SchemaBuilder[] = _.compact( _.map( configuration.entity,
       (config, name) => this.createEntityBuilder( name, config )) );
     builder.push( ... _.compact( _.map( configuration.enum,
-    (config, name) => this.createEnumBuilder( name, config )) ) )
+      (config, name) => this.createEnumBuilder( name, config ) ) ) );
+    builder.push( ... _.compact( _.map( configuration.query,
+      (config, name) => this.createQueryBuilder( name, config ) ) ) );
+    builder.push( ... _.compact( _.map( configuration.mutation,
+      (config, name) => this.createMutationBuilder( name, config ) ) ) );
+
     return builder;
   }
 
@@ -80,7 +86,7 @@ export class SchemaFactory {
   /**
    *
    */
-  private createEntityBuilder( name:string, config:any ):undefined|EntityBuilder {
+  private createEntityBuilder( name:string, config:EntityConfig ):undefined|EntityBuilder {
     try {
       const entity = ConfigEntity.create(name, config );
       return new EntityBuilder( entity );
@@ -92,7 +98,7 @@ export class SchemaFactory {
   /**
    *
    */
-  private createEnumBuilder( name:string, config:any ):undefined|EnumBuilder{
+  private createEnumBuilder( name:string, config:EnumConfig ):undefined|EnumBuilder{
     try {
       return EnumConfigBuilder.create( name, config );
     } catch (error) {
@@ -103,26 +109,51 @@ export class SchemaFactory {
   /**
    *
    */
+  private createQueryBuilder( name:string, config:QueryConfig ):undefined|QueryBuilder{
+    try {
+      return QueryConfigBuilder.create( name, config );
+    } catch (error) {
+      console.log( `Error building query [${name}]`, error );
+    }
+  }
+
+  /**
+   *
+   */
+  private createMutationBuilder( name:string, config:MutationConfig ):undefined|MutationBuilder{
+    try {
+      return MutationConfigBuilder.create( name, config );
+    } catch (error) {
+      console.log( `Error building mutation [${name}]`, error );
+    }
+  }
+
+  /**
+   *
+   */
   async createSchema(context:Context):Promise<GraphQLSchema> {
     context.graphx.init();
-    _.forEach( this.builders(), type => type.init( context ) );
-    _.forEach( this.builders(), type => type.createTypes() );
-    _.forEach(
-      _.filter( this.builders(), builder => (builder instanceof EntityBuilder)) as EntityBuilder[],
-        builder => builder.createUnionType() );
-    _.forEach( this.builders(), type => type.extendTypes() );
+    this.createScalars( context );
+    await this.buildFromBuilders( context );
+    if( _.isFunction( context.extendSchema ) ) context.extendSchema( context );
+    const schema = context.graphx.generate();
+    return schema;
+  }
 
+  private async buildFromBuilders( context:Context ){
+    _.forEach( this.builders(), type => type.init( context ) );
+    _.forEach( this.builders(), type => type.build() );
+    await this.extendEntityBuilders( context );
+  }
+
+  private async extendEntityBuilders( context:Context ){
+    const entityBuilders = _.filter( this.builders(), builder => builder instanceof EntityBuilder ) as EntityBuilder[];
+    _.forEach( entityBuilders, builder => builder.createUnionType() );
+    _.forEach( entityBuilders, builder => builder.extendTypes() );
     for( const entity of _.values( context.entities) ) {
       const extendFn = entity.extendEntity();
       if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( context ) );
     }
-
-    this.createScalars( context );
-
-    if( _.isFunction( context.extendSchema ) ) context.extendSchema( context );
-
-    const schema = context.graphx.generate();
-    return schema;
   }
 
   private createScalars( context:Context ):void {

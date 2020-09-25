@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { MongoDbDataStore } from '../../graph-on-rails-mongodb/mongodb.data-store';
 import { FilterType } from '../builder/filter-type';
 import { MetaDataBuilder } from '../builder/meta-data-builder';
-import { SchemaBuilder } from '../builder/schema-builder';
+import { SchemaBuilder, TypeBuilder } from '../builder/schema-builder';
 import { Entity } from '../entities/entity';
 import { EntityFileSave } from '../entities/entity-file-save';
 import { EntityPermissions } from '../entities/entity-permissions';
@@ -110,7 +110,7 @@ export class Context {
     if( filterType === false ) return undefined;
     if( ! filterType ) {
       if( ! _.isString( fieldType ) ) fieldType = _.get( fieldType, 'name' );
-      return this.filterTypes[ SchemaBuilder.getFilterName(fieldType as string) ];
+      return this.filterTypes[ TypeBuilder.getFilterName(fieldType as string) ];
     } else if( _.isString( filterType ) ) {
       return this.filterTypes[ filterType ];
     } else return filterType;

@@ -1,9 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { Context } from 'graph-on-rails/core/context';
+import { DomainConfigurationType } from 'graph-on-rails/core/domain-configuration';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import _ from 'lodash';
-
-import { DomainConfiguration, DomainConfigurationType } from 'graph-on-rails/core/domain-configuration';
 
 //
 //
@@ -35,20 +34,18 @@ export class SimpleLogin {
             username: 'user3',
             password: this.password('user3')
           }
-        },
-        extendEntity: ( context:Context ) => {
-          context.graphx.type('mutation').extendFields( () => {
-            return _.set({}, 'login', {
-              type: GraphQLString,
-              args: {
-                username: { type: GraphQLNonNull( GraphQLString ) },
-                password: { type: GraphQLNonNull( GraphQLString ) }
-              },
-              resolve: ( root:any, args:any, context:any ) => this.login( context.context, args.username, args.password )
-            });
-          });
         }
       }
+    },
+    mutation: {
+      login: ( context:Context ) => ({
+        type: GraphQLString,
+        args: {
+          username: { type: GraphQLNonNull( GraphQLString ) },
+          password: { type: GraphQLNonNull( GraphQLString ) }
+        },
+        resolve: (root:any, args:any) => this.login( context, args.username, args.password )
+      })
     }
   });
 

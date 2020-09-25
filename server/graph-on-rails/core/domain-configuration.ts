@@ -1,15 +1,19 @@
 import fs from 'fs';
+import _ from 'lodash';
 import path from 'path';
 import YAML from 'yaml';
 
-import _ from 'lodash';
-import { EntityConfig } from 'graph-on-rails/entities/config-entity';
-import { EnumConfig } from 'graph-on-rails/builder/enum-config-builder';
+import { EnumConfig } from '../builder/enum-builder';
+import { MutationConfig } from '../builder/mutation-builder';
+import { QueryConfig } from '../builder/query-builder';
+import { EntityConfig } from '../entities/config-entity';
+
 
 export type DomainConfigurationType = {
   entity?:{[name:string]:EntityConfig},
   enum?:{[name:string]:EnumConfig},
-  locale?:string
+  query?:{[name:string]:QueryConfig},
+  mutation?:{[name:string]:MutationConfig}
 }
 
 export class DomainConfiguration {

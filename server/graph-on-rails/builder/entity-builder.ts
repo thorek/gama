@@ -21,8 +21,7 @@ import { Context } from '../core/context';
 import { AssocToType, AssocType, Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
-import { SchemaBuilder } from './schema-builder';
-
+import { TypeBuilder } from './schema-builder';
 
 const scalarTypes:{[scalar:string]:GraphQLScalarType} = {
   id: GraphQLID,
@@ -40,9 +39,7 @@ type AttrFieldConfig = {
   resolve?:any
 }
 
-//
-//
-export class EntityBuilder extends SchemaBuilder {
+export class EntityBuilder extends TypeBuilder {
 
   name() { return this.entity.name }
   get resolver() { return this.entity.resolver }
@@ -63,7 +60,7 @@ export class EntityBuilder extends SchemaBuilder {
 
   //
   //
-  protected createObjectType():void {
+  public build():void {
     if( this.entity.isUnion ) return;
     const from = this.entity.isInterface ? GraphQLInterfaceType : GraphQLObjectType;
     const name = this.entity.typeName;
@@ -121,9 +118,9 @@ export class EntityBuilder extends SchemaBuilder {
     this.graphx.type( name, { name, values, from: GraphQLEnumType });
   }
 
-	//
-	//
-	protected addInterfaces():void {
+  //
+  //
+  protected addInterfaces():void {
     if( _.isEmpty( this.entity.implements ) ) return;
     _.forEach( this.entity.implements, entity => {
       this.addFieldsFromInterface( entity );
@@ -518,7 +515,7 @@ export class EntityBuilder extends SchemaBuilder {
     if( ! attr.filterType ){
       let typeName = _.isString( attr.graphqlType ) ? attr.graphqlType : _.get(attr.graphqlType, 'name' ) as string;
       typeName = `${_.toUpper(typeName.substring(0,1))}${typeName.substring(1)}`;
-      attr.filterType = SchemaBuilder.getFilterName( typeName );
+      attr.filterType = TypeBuilder.getFilterName( typeName );
     }
     if( ! _.isString( attr.filterType ) ) return attr.filterType;
     try {

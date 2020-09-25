@@ -23,7 +23,7 @@ export class DateFilterType extends FilterType{
       notIn: { graphqlType: new GraphQLList( dateType ), description: 'is not in list of dates' },
       between: {
         graphqlType: new GraphQLList( dateType ),
-        description: 'is before or equal than the first and after the last date of the list'
+        description: 'is before or equal to the first and after the last date of the list'
       }
     };
   }

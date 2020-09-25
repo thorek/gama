@@ -21,7 +21,6 @@ export class AppServer {
     }
 
     domainConfiguration.add({
-      locale: 'de',
       entity: {
         RiskAssessment: {
           attributes: {
