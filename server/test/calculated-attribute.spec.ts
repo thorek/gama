@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Runtime } from '../graph-on-rails/core/runtime';
 import { Seeder } from '../graph-on-rails/core/seeder';
 import { Context } from '../graph-on-rails/core/context';
-import { DomainConfiguration } from '../graph-on-rails/core/domain-configuration';
+import { DomainDefinition } from '../graph-on-rails/core/domain-definition';
 
 describe('Calculated Attributes', () => {
 
@@ -15,7 +15,7 @@ describe('Calculated Attributes', () => {
 
   beforeAll( async () => {
 
-    const domainConfiguration = new DomainConfiguration({
+    const domainConfiguration = new DomainDefinition({
       entity: {
         Alpha: {
           attributes: {
@@ -32,7 +32,7 @@ describe('Calculated Attributes', () => {
       }
     });
 
-    runtime = await Runtime.create( 'test:virtual-attributes', { domainConfiguration });
+    runtime = await Runtime.create( { name: 'test:virtual-attributes', domainDefinition: domainConfiguration });
     await runtime.server();
     await Seeder.create( runtime.context ).seed( true );
     context = runtime.context;

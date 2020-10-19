@@ -15,7 +15,7 @@ import { DocServer } from './doc-server';
   app.use(compression());
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-  const server = await DocServer.create();
+  const server = await AppServer.create();
 
   server.applyMiddleware({ app, path: '/graphql' });
   const httpServer = createServer(app);

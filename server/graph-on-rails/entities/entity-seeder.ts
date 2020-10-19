@@ -190,7 +190,7 @@ export class EntitySeeder extends EntityModule {
    *
    */
   private async evalFake( value:any, seed:any, idsMap?:any ):Promise<any>{
-    const locale = _.get( this.context.config.domainConfiguration, 'locale', 'en' )
+    const locale = _.get( this.context.config.domainDefinition, 'locale', 'en' )
     const faker = _.get(fakers, locale, FakerEN );
     const ld = _;
     try {

@@ -1,36 +1,41 @@
 import fs from 'fs';
+import { Entity } from 'graph-on-rails/entities/entity';
 import _ from 'lodash';
 import path from 'path';
 import YAML from 'yaml';
 
-import { EnumConfig } from '../builder/enum-builder';
+import { EnumBuilder, EnumConfig } from '../builder/enum-builder';
 import { MutationConfig } from '../builder/mutation-builder';
 import { QueryConfig } from '../builder/query-builder';
 import { EntityConfig } from '../entities/config-entity';
+import { Context } from './context';
 
 
-export type DomainConfigurationType = {
+export type DomainConfiguration = {
   entity?:{[name:string]:EntityConfig},
   enum?:{[name:string]:EnumConfig},
   query?:{[name:string]:QueryConfig},
   mutation?:{[name:string]:MutationConfig}
 }
 
-export class DomainConfiguration {
+export class DomainDefinition {
 
-  private configuration:DomainConfigurationType;
+  extendSchema?:(context:Context) => void
+  readonly entities:Entity[] = [];
+  readonly enums:EnumBuilder[] = [];
+  private configuration:DomainConfiguration;
 
-  constructor( configOrconfigFolder?:DomainConfigurationType|string|string[] ){
+  constructor( configOrconfigFolder?:DomainConfiguration|string|string[] ){
     this.configuration = _.isUndefined( configOrconfigFolder ) ? {} :
       _.isString( configOrconfigFolder ) || _.isArray( configOrconfigFolder) ?
         new FileConfiguration( configOrconfigFolder ).getConfiguration() : configOrconfigFolder;
   }
 
-  add( configuration:DomainConfigurationType ):void {
+  add( configuration:DomainConfiguration ):void {
     _.merge( this.configuration, configuration );
   }
 
-  getConfiguration():DomainConfigurationType {
+  getConfiguration():DomainConfiguration {
     return this.configuration;
   }
 }
@@ -42,8 +47,8 @@ class FileConfiguration {
   /**
    *
    */
-  getConfiguration():DomainConfigurationType {
-    const configuration:DomainConfigurationType = {};
+  getConfiguration():DomainConfiguration {
+    const configuration:DomainConfiguration = {};
     _.forEach( this.configFolder, folder => {
       const files = this.getConfigFiles( folder );
       _.forEach( files, file => _.merge( configuration, this.parseConfigFile( configuration, folder, file ) ) );

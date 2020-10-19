@@ -10,12 +10,12 @@ describe('Resolver', () => {
   let context!:Context;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create( "test:resolver", { domainConfiguration: {
+    const runtime = await Runtime.create( { name: 'test:resolver', domainDefinition: {
       entity: {
         Alpha: {
           attributes: {
-            name: "key",
-            number: "int"
+            name: 'key',
+            number: 'int'
           },
           seeds: {
             a1: { name: 'a1', number: 1 },
@@ -43,13 +43,13 @@ describe('Resolver', () => {
   it('should find items by string filter', async () => {
     const resolverCtx = { root:{}, args:{}, context:{} };
     const alpha = context.entities['Alpha'];
-    resolverCtx.args = { filter: { name: { is: "a1" } }};
+    resolverCtx.args = { filter: { name: { is: 'a1' } }};
     const a1 = await alpha.resolver.resolveTypes( resolverCtx );
     expect( a1 ).toHaveLength(1);
-    resolverCtx.args = { filter: { name: { contains: "a" } } };
+    resolverCtx.args = { filter: { name: { contains: 'a' } } };
     const arr = await alpha.resolver.resolveTypes( resolverCtx );
     expect( arr ).toHaveLength(4);
-    resolverCtx.args = { filter: { name: { is: "aX" } } };
+    resolverCtx.args = { filter: { name: { is: 'aX' } } };
     const aX = await alpha.resolver.resolveTypes( resolverCtx );
     expect( aX ).toHaveLength(0);
   })

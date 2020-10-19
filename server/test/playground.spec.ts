@@ -15,9 +15,9 @@ xdescribe('playground', () => {
   it('should not complain',  async () => {
     expect( true ).toBeTruthy()
 
-    const augment = Augmentable.create({ id: 123, key: "hallo", assocToBeta: async () => { return "some"} })
+    const augment = Augmentable.create({ id: 123, key: 'hallo', assocToBeta: async () => 'some' })
     expect( augment.key ).toEqual( 'hallo' );
-    augment.key = "new";
+    augment.key = 'new';
     expect( augment.key ).toEqual( 'new' );
   })
 
@@ -27,6 +27,6 @@ xdescribe('playground', () => {
       filter( id => id % 2 != 0 ).
       map( id => _.toString(id) ).
       value()
-    expect( idStrings ).toEqual(["1","3"])
+    expect( idStrings ).toEqual(['1','3'])
   })
 })

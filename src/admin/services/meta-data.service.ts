@@ -17,7 +17,6 @@ const query = gql`
       fields {
         name
         type
-        virtual
         required
         unique
         mediaType

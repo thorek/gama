@@ -1,13 +1,11 @@
-import _, { Dictionary } from 'lodash';
+import { Sort } from 'graph-on-rails/core/data-store';
+import _ from 'lodash';
 
 import { ResolverContext } from '../core/resolver-context';
 import { Entity } from './entity';
+import { FileInfo } from './entity-file-save';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
-import { Sort } from 'graph-on-rails/core/data-store';
-import { TypeAttribute } from './type-attribute';
-import { FileInfo } from './entity-file-save';
-import { Timestamp } from 'mongodb';
 
 //
 //

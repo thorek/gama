@@ -15,8 +15,8 @@ describe('Default Values', () => {
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await Runtime.create( "test:seeder", {
-      domainConfiguration: {
+    runtime = await Runtime.create( { name: 'text',
+      domainDefinition: {
         enum: {
           AngularFunctions: ['sin', 'cos', 'tan', 'cot']
         },

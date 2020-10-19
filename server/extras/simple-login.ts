@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { Context } from 'graph-on-rails/core/context';
-import { DomainConfigurationType } from 'graph-on-rails/core/domain-configuration';
+import { DomainConfiguration } from 'graph-on-rails/core/domain-definition';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import _ from 'lodash';
 
@@ -10,7 +10,7 @@ export class SimpleLogin {
 
   private users:any = {};
 
-  getConfiguration = ():DomainConfigurationType => ({
+  getConfiguration = ():DomainConfiguration => ({
     entity: {
       User: {
         attributes: {

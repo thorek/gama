@@ -15,7 +15,7 @@ export class Seeder {
    *
    */
   static create( context:Context ):Seeder {
-    const locale = _.get( context.config.domainConfiguration, 'locale', 'en' );
+    const locale = _.get( context.config.domainDefinition, 'locale', 'en' );
     _.set(faker, 'locale', locale );
     return new Seeder( _.values(context.entities) );
   }

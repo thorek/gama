@@ -3,7 +3,7 @@ import { GraphQLSchema } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import _ from 'lodash';
 
-import { Context, GorConfig } from './context';
+import { Context, Config } from './context';
 import { SchemaFactory } from './schema-factory';
 
 
@@ -22,8 +22,8 @@ export class Runtime {
   /**
    *
    */
-  static async create( name:string = 'default', config?:GorConfig ):Promise<Runtime>{
-    const context = await Context.create( name, config );
+  static async create( config?:Config ):Promise<Runtime>{
+    const context = await Context.create( config );
     return new Runtime( context, SchemaFactory.create( context ) );
   }
 

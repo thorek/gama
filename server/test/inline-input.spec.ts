@@ -39,7 +39,7 @@ describe('Inline Input', () => {
   let context!:Context;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create( "test:inline-input", { domainConfiguration } );
+    const runtime = await Runtime.create( { name: 'test:inline-input', domainDefinition: domainConfiguration } );
     await runtime.server({});
     context = runtime.context;
     await Seeder.create( runtime.context ).seed( true );

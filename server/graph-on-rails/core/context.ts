@@ -13,13 +13,13 @@ import { EntitySeeder } from '../entities/entity-seeder';
 import { ValidateJs } from '../validation/validate-js';
 import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
-import { DomainConfiguration } from './domain-configuration';
+import { DomainDefinition, DomainConfiguration } from './domain-definition';
 import { GraphX } from './graphx';
 
 
-export type GorConfig = {
+export type Config = {
   name?:string
-  dataStore?:DataStore
+  dataStore?:(name?:string) => Promise<DataStore>
   validator?:(entity:Entity) => Validator
   entityResolver?:(entity:Entity) => EntityResolver
   entityPermissions?:(entity:Entity) => EntityPermissions
@@ -27,23 +27,17 @@ export type GorConfig = {
   entitySeeder?:(entity:Entity) => EntitySeeder
   contextUser?:string
   contextRoles?:string
-  extendSchema?:(context:Context) => void
   schemaBuilder?:SchemaBuilder[]
-  entities?:Entity[],
-  metaDataBuilder?:SchemaBuilder,
-  domainConfiguration?:DomainConfiguration,
+  metaDataBuilder?:SchemaBuilder
+  domainDefinition?:DomainDefinition|DomainConfiguration
   uploadRootDir?:string[]
 }
 
 export class Context {
-  get extendSchema() { return this.config.extendSchema }
 
-  private constructor( public readonly config:GorConfig ){}
+  dataStore!:DataStore;
 
-  get dataStore() {
-    if( ! this.config.dataStore ) throw new Error('Context - you must provide a dataStore' );
-    return this.config.dataStore;
-  }
+  private constructor( public readonly config:Config ){ }
 
   readonly graphx = new GraphX();
   readonly entities:{[name:string]:Entity} = {};
@@ -55,15 +49,19 @@ export class Context {
   /**
    *
    */
-  static async create( name:string, config?:GorConfig):Promise<Context> {
+  static async create( config?:Config ):Promise<Context> {
     if( ! config ) config = {};
-    if( ! config.dataStore ) config.dataStore = await this.getDefaultResolver( name );
-    _.defaults( config, Context.getDefaultConfig() );
-    return new Context(config);
+    const defaultConfig = this.getDefaultConfig();
+    _.defaults( config, defaultConfig );
+    const context = new Context(config);
+    await context.init();
+    return context;
   }
 
-  private static getDefaultConfig():GorConfig {
+  private static getDefaultConfig():Config {
     return {
+      name: 'GAMA',
+      dataStore: ( name?:string ) => MongoDbDataStore.create({ url: 'mongodb://localhost:27017', dbName: name || 'GAMA' }),
       validator: ( entity:Entity ) => new ValidateJs( entity ),
       entityResolver: ( entity:Entity ) => new EntityResolver( entity ),
       entityPermissions: ( entity:Entity ) => new EntityPermissions( entity ),
@@ -76,9 +74,17 @@ export class Context {
     };
   }
 
-  private static getDefaultResolver( dbName:string ):Promise<DataStore> {
-    return MongoDbDataStore.create( { url: 'mongodb://localhost:27017', dbName } );
+  async init(){
+    if( ! _.isFunction(this.config.dataStore) ) throw new Error('Context - you must provide a dataStore factory method' );
+    this.dataStore = await this.config.dataStore( this.config.name );
   }
+
+  get domainDefinition():DomainDefinition {
+    if( ! (this.config.domainDefinition instanceof DomainDefinition) ) this.config.domainDefinition =
+      new DomainDefinition( this.config.domainDefinition );
+    return this.config.domainDefinition;
+  }
+
 
   validator( entity:Entity ) {
     if( ! this.config.validator ) throw new Error('Context - you must provide a validator factory method' );

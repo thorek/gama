@@ -73,7 +73,6 @@ export type FieldConfigType = {
   control?:string
   values?:(data:any) => {value:any, label:string}[]
   required?:boolean
-  virtual?:boolean
   type?:string
   unique?:boolean
   mediaType?:'image'|'video'|'audio'
@@ -175,7 +174,7 @@ export class AdminConfig {
   };
 
   private buildField( data:any ):FieldConfigType {
-    return _.pick( data, ['name', 'type', 'required', 'virtual', 'unique', 'scope', 'mediaType']);
+    return _.pick( data, ['name', 'type', 'required', 'unique', 'scope', 'mediaType']);
   }
 
   private setUiConfigDefaults():void {

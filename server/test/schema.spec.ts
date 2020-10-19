@@ -1,3 +1,4 @@
+import { DomainDefinition } from 'graph-on-rails/core/domain-definition';
 import { printSchema } from 'graphql';
 
 import { Runtime } from '../graph-on-rails/core/runtime';
@@ -17,16 +18,16 @@ describe('Schema Generation', () => {
 
 
   it( 'should generate schema from config', async () => {
-    const runtime = await Runtime.create( 'test:schema', {configFolder: ['./config-types/d2prom']});
+    const runtime = await Runtime.create( { name: 'test:schema', domainDefinition: new DomainDefinition(['./config-types/d2prom'])});
     const schema = printSchema( await runtime.schema() );
-    // expect( schema ).toContain("type Alpha");
-    // expect( schema ).toContain("type Beta");
     console.log( schema );
   });
 
   it( 'should generate schema with custom entity', async () => {
-    const runtime = await Runtime.create( 'test:schema', {
-      entities: [ new ATestEntity(), new BTestEntity() ]
+    const runtime = await Runtime.create(  { name: 'test:schema', domainDefinition: {
+      entity: [ new ATestEntity(), new BTestEntity() ]
+    }
+
     });
     const schema = printSchema( await runtime.schema() );
     expect( schema ).toContain('type ATest');

@@ -8,6 +8,7 @@ import { QueryBuilder, QueryConfig, QueryConfigBuilder } from '../builder/query-
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity, EntityConfig } from '../entities/config-entity';
 import { Context } from './context';
+import { DomainDefinition } from './domain-definition';
 
 
 //
@@ -57,9 +58,11 @@ export class SchemaFactory {
    *
    */
   private getCustomBuilders():SchemaBuilder[] {
+    const domainDefinition = this.context.domainDefinition;
     return _.compact( _.flatten( _.concat(
       _.get(this.config, 'schemaBuilder', [] ),
-      _.map( this.config.entities, entity => new EntityBuilder( entity ))
+      _.map( domainDefinition.entities, entity => new EntityBuilder( entity )),
+      domainDefinition.enums
     )));
   }
 
@@ -67,9 +70,10 @@ export class SchemaFactory {
    *
    */
   private getConfigTypeBuilder():SchemaBuilder[] {
-    const domainConfiguration = this.context.config.domainConfiguration;
-    if( ! domainConfiguration ) return [];
-    const configuration = domainConfiguration.getConfiguration();
+    const domainDefinition = this.context.config.domainDefinition;
+    if( ! domainDefinition ) return [];
+    const configuration = domainDefinition instanceof DomainDefinition ?
+      domainDefinition.getConfiguration() : domainDefinition;
     const builder:SchemaBuilder[] = _.compact( _.map( configuration.entity,
       (config, name) => this.createEntityBuilder( name, config )) );
     builder.push( ... _.compact( _.map( configuration.enum,
@@ -135,7 +139,7 @@ export class SchemaFactory {
     context.graphx.init();
     this.createScalars( context );
     await this.buildFromBuilders( context );
-    if( _.isFunction( context.extendSchema ) ) context.extendSchema( context );
+    await this.extendSchema( context );
     const schema = context.graphx.generate();
     return schema;
   }
@@ -144,6 +148,11 @@ export class SchemaFactory {
     _.forEach( this.builders(), type => type.init( context ) );
     _.forEach( this.builders(), type => type.build() );
     await this.extendEntityBuilders( context );
+  }
+
+  private async extendSchema( context:Context ){
+    const extendSchemaFn = context.domainDefinition.extendSchema;
+    if( _.isFunction( extendSchemaFn ) ) extendSchemaFn( context );
   }
 
   private async extendEntityBuilders( context:Context ){

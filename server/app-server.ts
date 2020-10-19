@@ -3,7 +3,7 @@ import express from 'express';
 import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
-import { DomainConfiguration } from './graph-on-rails/core/domain-configuration';
+import { DomainDefinition } from './graph-on-rails/core/domain-definition';
 import { Runtime } from './graph-on-rails/core/runtime';
 import { Entity } from './graph-on-rails/entities/entity';
 
@@ -11,7 +11,7 @@ export class AppServer {
 
   static async create():Promise<ApolloServer> {
 
-    const domainConfiguration = new DomainConfiguration( [`${__dirname}/config-types/d2prom`] );
+    const domainConfiguration = new DomainDefinition( [`${__dirname}/config-types/d2prom`] );
 
     const login = new SimpleLogin();
     domainConfiguration.add( login.getConfiguration() );
@@ -59,7 +59,7 @@ export class AppServer {
       }
     });
 
-    const runtime = await Runtime.create( 'GAMA', {domainConfiguration });
+    const runtime = await Runtime.create( { domainDefinition: domainConfiguration } );
     return runtime.server({context});
   }
 }
