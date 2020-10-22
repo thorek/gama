@@ -17,9 +17,6 @@ describe('Default Values', () => {
   beforeAll( async () => {
     runtime = await Runtime.create( { name: 'text',
       domainDefinition: {
-        enum: {
-          AngularFunctions: ['sin', 'cos', 'tan', 'cot']
-        },
         entity: {
           Alpha: {
             attributes: {
@@ -40,18 +37,22 @@ describe('Default Values', () => {
           Beta: {
             attributes: {
               name: 'key',
-              af: {
-                type: 'AngularFunctions',
-                default: 'sin'
-              }
+              angFun: 'AngularFunction'
+              // af: {
+              //   type: 'ZAngularFunction',
+              //   default: 'sin'
+              // }
             },
             assocFrom: 'Alpha',
             seeds: {
               beta1: { name: 'beta1' },
-              beta2: { name: 'beta2', af: 'tan' }
+              // beta2: { name: 'beta2', af: 'tan' }
             }
 
           }
+        },
+        enum: {
+          AngularFunction: ['sin', 'cos', 'tan', 'cot']
         }
       }
     });

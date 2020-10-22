@@ -11,16 +11,16 @@ export class AppServer {
 
   static async create():Promise<ApolloServer> {
 
-    const domainConfiguration = new DomainDefinition( [`${__dirname}/config-types/piba`] );
+    const domainDefinition = new DomainDefinition( `${__dirname}/config-types/d2prom` );
 
     const login = new SimpleLogin();
-    domainConfiguration.add( login.getConfiguration() );
+    domainDefinition.add( login.getConfiguration() );
     const context = (contextExpress:{req:express.Request }) => {
       const token:string|undefined = contextExpress.req.headers.authorization;
       return { user: login.getUser(token) };
     }
 
-    domainConfiguration.add({
+    domainDefinition.add({
       entity: {
         RiskAssessment: {
           attributes: {
@@ -59,7 +59,7 @@ export class AppServer {
       }
     });
 
-    const runtime = await Runtime.create( { domainDefinition: domainConfiguration } );
+    const runtime = await Runtime.create( { domainDefinition } );
     return runtime.server({context});
   }
 }

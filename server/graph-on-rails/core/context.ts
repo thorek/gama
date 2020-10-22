@@ -29,7 +29,7 @@ export type Config = {
   contextRoles?:string
   schemaBuilder?:SchemaBuilder[]
   metaDataBuilder?:SchemaBuilder
-  domainDefinition?:DomainDefinition|DomainConfiguration
+  domainDefinition?:DomainDefinition|DomainConfiguration|string|string[]
   uploadRootDir?:string[]
 }
 

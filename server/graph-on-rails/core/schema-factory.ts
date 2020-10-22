@@ -8,7 +8,7 @@ import { QueryBuilder, QueryConfig, QueryConfigBuilder } from '../builder/query-
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity, EntityConfig } from '../entities/config-entity';
 import { Context } from './context';
-import { DomainDefinition } from './domain-definition';
+import { DomainConfiguration, DomainDefinition } from './domain-definition';
 
 
 //
@@ -70,10 +70,9 @@ export class SchemaFactory {
    *
    */
   private getConfigTypeBuilder():SchemaBuilder[] {
-    const domainDefinition = this.context.config.domainDefinition;
+    const domainDefinition = this.context.domainDefinition;
     if( ! domainDefinition ) return [];
-    const configuration = domainDefinition instanceof DomainDefinition ?
-      domainDefinition.getConfiguration() : domainDefinition;
+    const configuration = domainDefinition.getConfiguration();
     const builder:SchemaBuilder[] = _.compact( _.map( configuration.entity,
       (config, name) => this.createEntityBuilder( name, config )) );
     builder.push( ... _.compact( _.map( configuration.enum,

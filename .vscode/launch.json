@@ -4,13 +4,29 @@
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 	"version": "0.2.0",
 	"configurations": [
-	{
-    "name": "Attach to Chrome",
-    "port": 9222,
-    "request": "attach",
-    "type": "pwa-chrome",
-    "webRoot": "${workspaceFolder}"
-  },
+    {
+      "name": "Attach to Chrome",
+      "port": 9222,
+      "request": "attach",
+      "type": "pwa-chrome",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Current Jest Test",
+      "cwd": "${workspaceFolder}/server",
+      "args": [
+        "${workspaceRoot}/server/node_modules/.bin/jest",
+        "${fileBasenameNoExtension}",
+        "--runInBand",
+        "--config",
+        "${workspaceRoot}/server/jest.config.json",
+        "--detectOpenHandles"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
     {
       "name": "Attach by Process ID",
       "processId": "${command:PickProcess}",

@@ -7,6 +7,7 @@ import {
   GraphQLString,
   GraphQLUnionType,
   GraphQLScalarType,
+  GraphQLEnumType,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -167,6 +168,12 @@ export class GraphX {
           serialize: item.serialize,
           parseValue: item.parseValue,
           parseLiteral: item.parseLiteral
+        });
+      } else if( item.from === GraphQLEnumType ) {
+        this.rawTypes[key] = new GraphQLEnumType({
+          name: item.name,
+          values: item.values,
+          description: item.description
         });
       } else {
         this.rawTypes[key] = new item.from({

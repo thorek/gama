@@ -10,16 +10,16 @@ export abstract class EnumBuilder extends TypeBuilder {
 
   abstract enum():Dictionary<any>
 
-
-  build(): void {
+  build() {
     const name = this.name();
+
     const values = {};
     _.forEach( this.enum(), (value,key) => _.set( values, key, { value }));
     this.graphx.type( name, { name, values, from: GraphQLEnumType	} );
   }
 
   extendTypes():void {
-    this.createEnumFilter();
+    // this.createEnumFilter();
   }
 
   protected createEnumFilter():void {
@@ -38,10 +38,9 @@ export class EnumConfigBuilder extends EnumBuilder {
 
   name() { return this._name }
   enum(){
-    if( ! _.isArray( this.config) ) return this.config;
-    return _.reduce( this.config, (config, item) => {
-      return _.set( config, _.toUpper( item ), _.toLower( item ) );
-    }, {} )
+    return _.isArray( this.config) ?
+      _.reduce( this.config, (config, item) => _.set( config, _.toUpper( item ), _.toLower( item ) ), {} ) :
+      this.config;
   }
 
   constructor( protected readonly _name:string, protected readonly config:EnumConfig ){ super() }

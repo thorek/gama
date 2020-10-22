@@ -28,7 +28,8 @@ export class DomainDefinition {
   constructor( configOrconfigFolder?:DomainConfiguration|string|string[] ){
     this.configuration = _.isUndefined( configOrconfigFolder ) ? {} :
       _.isString( configOrconfigFolder ) || _.isArray( configOrconfigFolder) ?
-        new FileConfiguration( configOrconfigFolder ).getConfiguration() : configOrconfigFolder;
+        new FileConfiguration( configOrconfigFolder ).getConfiguration() :
+        configOrconfigFolder;
   }
 
   add( configuration:DomainConfiguration ):void {
@@ -42,7 +43,9 @@ export class DomainDefinition {
 
 class FileConfiguration {
 
-  constructor( private configFolder?:string|string[] ){}
+  constructor( private configFolder?:string|string[] ){
+    if( _.isString( configFolder) ) this.configFolder = [configFolder];
+  }
 
   /**
    *
