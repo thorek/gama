@@ -288,8 +288,11 @@ export class EntityBuilder extends TypeBuilder {
    */
   protected createCreateInputType():void {
     const name = this.entity.createInput;
-    this.graphx.type( name, { name,
-    from: GraphQLInputObjectType, fields: () => this.getAttributeFields( 'createInput' ) });
+    let fields = this.getAttributeFields( 'createInput' );
+    // the following is to prevent strange effects with a type definition w/o fields, which could happen under
+    // some error cases, but we dont want the schema creation to fails
+    if( _.isEmpty(fields) ) fields = { _generated: { type: new GraphQLNonNull(GraphQLString) } };
+    this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => fields });
   }
 
   /**
