@@ -8,7 +8,6 @@ import { QueryBuilder, QueryConfig, QueryConfigBuilder } from '../builder/query-
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity, EntityConfig } from '../entities/config-entity';
 import { Context } from './context';
-import { DomainConfiguration, DomainDefinition } from './domain-definition';
 
 
 //

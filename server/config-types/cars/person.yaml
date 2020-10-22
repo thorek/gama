@@ -9,8 +9,15 @@ entity:
     assocFrom:
       - type: Address
       - type: Car
-  enum:
-    Gender:
-      MALE: male
-      FEMALE: female
-      DIVERSE: diverse
+
+  Address:
+    attributes:
+      street: string
+      city: string
+      zip: string!
+
+enum:
+  Gender:
+    MALE: male
+    FEMALE: female
+    DIVERSE: diverse
