@@ -22,7 +22,7 @@ export class GraphX {
 
   rawTypes:any = {};
 
-  private fnFromArray = (fns:any) => () => fns.reduce((obj:any, fn:any) => Object.assign({}, obj, fn ? fn.call() : undefined), {});
+  private fnFromArray = (fns:any) => () => fns.reduce((obj:any, fn:any) => Object.assign({}, obj, fn.call()), {});
 
   //
   //

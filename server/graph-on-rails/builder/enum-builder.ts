@@ -12,14 +12,13 @@ export abstract class EnumBuilder extends TypeBuilder {
 
   build() {
     const name = this.name();
-
     const values = {};
     _.forEach( this.enum(), (value,key) => _.set( values, key, { value }));
     this.graphx.type( name, { name, values, from: GraphQLEnumType	} );
   }
 
   extendTypes():void {
-    // this.createEnumFilter();
+    this.createEnumFilter();
   }
 
   protected createEnumFilter():void {

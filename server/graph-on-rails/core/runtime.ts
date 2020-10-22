@@ -4,6 +4,7 @@ import depthLimit from 'graphql-depth-limit';
 import _ from 'lodash';
 
 import { Context, Config } from './context';
+import { DomainConfiguration } from './domain-definition';
 import { SchemaFactory } from './schema-factory';
 
 
@@ -22,8 +23,10 @@ export class Runtime {
   /**
    *
    */
-  static async create( config?:Config ):Promise<Runtime>{
-    const context = await Context.create( config );
+  static async create( config?:Config|DomainConfiguration|string ):Promise<Runtime> {
+    if( _.isString( config ) ) config = { domainDefinition: config };
+    if( ! _.has( config, 'domainDefinition') ) config = { domainDefinition: config as DomainConfiguration };
+    const context = await Context.create( config as Config );
     return new Runtime( context, SchemaFactory.create( context ) );
   }
 

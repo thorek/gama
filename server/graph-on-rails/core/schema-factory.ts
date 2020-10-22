@@ -146,7 +146,7 @@ export class SchemaFactory {
   private async buildFromBuilders( context:Context ){
     _.forEach( this.builders(), type => type.init( context ) );
     _.forEach( this.builders(), type => type.build() );
-    await this.extendEntityBuilders( context );
+    await this.extendTypeBuilders( context );
   }
 
   private async extendSchema( context:Context ){
@@ -154,10 +154,12 @@ export class SchemaFactory {
     if( _.isFunction( extendSchemaFn ) ) extendSchemaFn( context );
   }
 
-  private async extendEntityBuilders( context:Context ){
+  private async extendTypeBuilders( context:Context ){
     const entityBuilders = _.filter( this.builders(), builder => builder instanceof EntityBuilder ) as EntityBuilder[];
+    const enumBuilders = _.filter( this.builders(), builder => builder instanceof EnumBuilder ) as EnumBuilder[];
     _.forEach( entityBuilders, builder => builder.createUnionType() );
     _.forEach( entityBuilders, builder => builder.extendTypes() );
+    _.forEach( enumBuilders, builder => builder.extendTypes() );
     for( const entity of _.values( context.entities) ) {
       const extendFn = entity.extendEntity();
       if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( context ) );

@@ -1,6 +1,6 @@
 import { printSchema } from 'graphql';
 
-import { DomainDefinition } from '../graph-on-rails/core/domain-definition';
+import { DomainConfiguration, DomainDefinition } from '../graph-on-rails/core/domain-definition';
 import { Runtime } from '../graph-on-rails/core/runtime';
 import { Entity } from '../graph-on-rails/entities/entity';
 
@@ -16,16 +16,38 @@ describe('Schema Generation', () => {
     protected getAssocTo() { return [{type: 'ATest'}]}
   }
 
-
-  it( 'should generate schema from config', async () => {
-    const runtime = await Runtime.create({ name: 'test:schema', domainDefinition: './config-types/cars' });
+  it('should generate type and enum', async () => {
+    const domainDefinition:DomainConfiguration = {
+      entity: {
+        Car: {
+          attributes: {
+            licenceNr: 'string',
+            fuel: 'Fuel'
+          }
+        }
+      },
+      enum: {
+        Fuel: ['lead', 'gas', 'diesel']
+      }
+    };
+    const runtime = await Runtime.create( domainDefinition );
     const schema = printSchema( await runtime.schema() );
-    console.log( schema );
+    // console.log( schema );
     expect(schema).toContain('Car');
     expect(schema).toContain('CarFilter');
     expect(schema).toContain('Fuel');
     expect(schema).toContain('FuelFilter');
   });
+
+  // it( 'should generate schema from config', async () => {
+  //   const runtime = await Runtime.create({ name: 'test:schema', domainDefinition: './config-types/cars' });
+  //   const schema = printSchema( await runtime.schema() );
+  //   console.log( schema );
+  //   expect(schema).toContain('Car');
+  //   expect(schema).toContain('CarFilter');
+  //   expect(schema).toContain('Fuel');
+  //   expect(schema).toContain('FuelFilter');
+  // });
 
   // it( 'should generate schema with custom entity', async () => {
   //   const domainDefinition = new DomainDefinition();
