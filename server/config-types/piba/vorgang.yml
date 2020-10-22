@@ -1,0 +1,28 @@
+entity:
+  Tarif:
+    attributes:
+      name: string!
+      ablaufleistung: int
+      description: string
+    assocTo: Versicherer
+    seeds:
+      a:
+        name: Tarif A
+        Versicherer: pfefferminzia
+      b:
+        name: Tarif B
+        Versicherer: pfefferminzia
+      c:
+        name: Tarif C
+        Versicherer: barmenia
+
+  Versicherer:
+    attributes:
+      name: key
+      logo: string
+    seeds:
+      pfefferminzia:
+        name: Pfefferminzia
+      barmenia:
+        name: Barmenia LV
+

@@ -11,7 +11,7 @@ export class AppServer {
 
   static async create():Promise<ApolloServer> {
 
-    const domainConfiguration = new DomainDefinition( [`${__dirname}/config-types/d2prom`] );
+    const domainConfiguration = new DomainDefinition( [`${__dirname}/config-types/piba`] );
 
     const login = new SimpleLogin();
     domainConfiguration.add( login.getConfiguration() );
