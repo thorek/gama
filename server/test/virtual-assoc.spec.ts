@@ -13,8 +13,8 @@ describe('Associations', () => {
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await Runtime.create( "test:virtual-assoc", {
-      domainConfiguration: {
+    runtime = await Runtime.create({ name: 'test:virtual-assoc',
+      domainDefinition: {
         entity: {
           Alpha: {
             attributes: {
@@ -22,10 +22,10 @@ describe('Associations', () => {
             },
             assocTo: 'Beta',
             seeds: {
-              "alpha1": { name: "alpha1", Beta: 'beta1' },
-              "alpha2": { name: "alpha2", Beta: 'beta1' },
-              "alpha3": { name: "alpha3", Beta: 'beta2' },
-              "alpha4": { name: "alpha4" }
+              alpha1: { name: 'alpha1', Beta: 'beta1' },
+              alpha2: { name: 'alpha2', Beta: 'beta1' },
+              alpha3: { name: 'alpha3', Beta: 'beta2' },
+              alpha4: { name: 'alpha4' }
             }
           },
           Beta: {
@@ -34,9 +34,9 @@ describe('Associations', () => {
             },
             assocFrom: 'Alpha',
             seeds: {
-              "beta1": { name: "beta1" },
-              "beta2": { name: "beta2" },
-              "beta3": { name: "beta3" }
+              beta1: { name: 'beta1' },
+              beta2: { name: 'beta2' },
+              beta3: { name: 'beta3' }
             }
           },
           Delta: {
@@ -47,11 +47,11 @@ describe('Associations', () => {
             seeds: {
               delta1: {
                 name: 'delta1',
-                Alpha: ["alpha1", "alpha2", "alpha4" ]
+                Alpha: ['alpha1', 'alpha2', 'alpha4' ]
               },
               delta2: {
                 name: 'delta2',
-                Alpha: ["alpha3", "alpha4" ]
+                Alpha: ['alpha3', 'alpha4' ]
               },
               delta3: {
                 name: 'delta3'

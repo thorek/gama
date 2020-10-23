@@ -14,8 +14,8 @@ describe('Seeder', () => {
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await Runtime.create( "test:seeder", {
-      domainConfiguration: {
+    runtime = await Runtime.create({ name: 'test:seeder',
+      domainDefinition: {
         enum: {
           AngularFunctions: ['sin', 'cos', 'tan', 'cot']
         },
@@ -27,10 +27,10 @@ describe('Seeder', () => {
             },
             assocTo: 'Beta',
             seeds: {
-              "alpha1": { name: "alpha1", Beta: 'beta1' },
-              "alpha2": { name: "alpha2", Beta: 'beta1', number: 2 },
-              "alpha3": { name: "alpha3", Beta: 'beta2' },
-              "alpha4": { name: "alpha4", number: 4 }
+              alpha1: { name: 'alpha1', Beta: 'beta1' },
+              alpha2: { name: 'alpha2', Beta: 'beta1', number: 2 },
+              alpha3: { name: 'alpha3', Beta: 'beta2' },
+              alpha4: { name: 'alpha4', number: 4 }
             }
           },
           Beta: {
@@ -40,9 +40,9 @@ describe('Seeder', () => {
             },
             assocFrom: 'Alpha',
             seeds: {
-              "beta1": { name: "beta1", af: 'sin' },
-              "beta2": { name: "beta2", af: 'cos' },
-              "beta3": { name: "beta3" }
+              beta1: { name: 'beta1', af: 'sin' },
+              beta2: { name: 'beta2', af: 'cos' },
+              beta3: { name: 'beta3' }
             }
           },
           Delta: {
@@ -51,8 +51,8 @@ describe('Seeder', () => {
             },
             assocToMany: 'Alpha',
             seeds: {
-              delta1: { name: 'delta1', Alpha: ["alpha1", "alpha2", "alpha4" ] },
-              delta2: { name: 'delta2', Alpha: ["alpha2"] },
+              delta1: { name: 'delta1', Alpha: ['alpha1', 'alpha2', 'alpha4' ] },
+              delta2: { name: 'delta2', Alpha: ['alpha2'] },
               delta3: { name: 'delta3' }
             }
           }

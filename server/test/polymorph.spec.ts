@@ -4,7 +4,7 @@ import { Context } from '../graph-on-rails/core/context';
 import { Runtime } from '../graph-on-rails/core/runtime';
 import { Seeder } from '../graph-on-rails/core/seeder';
 
-const domainConfiguration = YAML.parse(`
+const domainDefinition = YAML.parse(`
   entity:
     Alpha:
       attributes:
@@ -86,7 +86,7 @@ describe('Ploymorph Types', () => {
   let context!:Context;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create( "test:polymorph", { domainConfiguration } );
+    const runtime = await Runtime.create({ name: 'test:polymorph', domainDefinition } );
     await runtime.server({});
     await Seeder.create( runtime.context ).seed( true );
     context = runtime.context;

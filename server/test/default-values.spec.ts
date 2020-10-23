@@ -37,16 +37,15 @@ describe('Default Values', () => {
           Beta: {
             attributes: {
               name: 'key',
-              angFun: 'AngularFunction'
-              // af: {
-              //   type: 'ZAngularFunction',
-              //   default: 'sin'
-              // }
+              af: {
+                type: 'AngularFunction',
+                default: 'sin'
+              }
             },
             assocFrom: 'Alpha',
             seeds: {
               beta1: { name: 'beta1' },
-              // beta2: { name: 'beta2', af: 'tan' }
+              beta2: { name: 'beta2', af: 'tan' }
             }
 
           }
