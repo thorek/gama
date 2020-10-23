@@ -224,6 +224,13 @@ export abstract class Entity {
   /**
    *
    */
+  async findAll():Promise<EntityItem[]> {
+    return this.accessor.findByFilter( {} );
+  }
+
+  /**
+   *
+   */
   async findByAttribute( attrValue:{[name:string]:any} ):Promise<EntityItem[]> {
     return this.accessor.findByAttribute( attrValue );
   }
@@ -235,4 +242,11 @@ export abstract class Entity {
     return _.first( await this.accessor.findByAttribute( attrValue ) );
   }
 
+  /**
+   *
+   */
+  getThisOrAllNestedEntities():Entity[] {
+    if( _.isEmpty(this.entities) ) return [this];
+    return _.flatten( _.map( this.entities, entity => entity.getThisOrAllNestedEntities() ) );
+  }
 }

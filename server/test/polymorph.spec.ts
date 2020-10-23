@@ -93,7 +93,7 @@ describe('Ploymorph Types', () => {
     // console.log( printSchema( await runtime.schema() ));
   })
 
-  it('should find polymorph assocTo',  async () => {
+  xit('should find polymorph assocTo',  async () => {
     const delta = context.entities['Delta'];
     const delta1 = await delta.findOneByAttribute( {name: 'delta1' } );
     if( ! delta1 ) return expect( delta1 ).toBeDefined();
@@ -108,12 +108,18 @@ describe('Ploymorph Types', () => {
     expect( ab3.item ).toMatchObject({name: 'beta1'})
   })
 
-  it( 'should resolve polymorph assocFrom', async () => {
+  xit( 'should resolve polymorph assocFrom', async () => {
     const delta = context.entities['Delta'];
     const delta1 = await delta.findOneByAttribute( {name: 'delta1' } );
     if( ! delta1 ) return expect( delta1 ).toBeDefined();
     const supers = await delta1.assocFrom('Super')
     expect( supers ).toHaveLength( 2 );
+  })
+
+  it( 'should find union types', async () => {
+    const ab = context.entities['AlphaBeta'];
+    const abs = await ab.findAll();
+    expect( abs.length ).toBe( 5 );
   })
 
 

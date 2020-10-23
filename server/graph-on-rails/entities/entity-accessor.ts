@@ -53,11 +53,11 @@ export class EntityAccessor extends EntityModule {
 
   /**
    *
-   * @param filter as it comes from the graqpql request
+   * @param filter as it comes from the graphql request
    */
   async findByFilter( filter:any, sort?:Sort ):Promise<EntityItem[]> {
     const items = this.entity.isPolymorph ?
-      await this.dataStore.aggregateFind( this.entity.entities, filter, sort ) :
+      await this.dataStore.aggregateFind( this.entity.getThisOrAllNestedEntities(), filter, sort ) :
       await this.dataStore.findByFilter( this.entity, filter, sort );
     return Promise.all( _.map( items, item => EntityItem.create( this.entity, item ) ) );
   }

@@ -68,7 +68,6 @@ export class ConfigEntity extends Entity {
 
   static create( name:string, entityConfig:EntityConfig ):ConfigEntity {
     if( ! entityConfig ) entityConfig = {};
-    if( ! entityConfig.attributes ) _.set( entityConfig, 'attributes', { attr0: 'string' } );
     return new ConfigEntity( name, entityConfig );
   }
 

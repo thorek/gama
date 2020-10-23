@@ -81,21 +81,19 @@ export class MongoDbDataStore extends DataStore {
 
   async aggregateFind( entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>{
     if( entities.length === 0 ) return [];
-    const expression = this.buildExpression( _.first(entities) as Entity, filter );
-    const lookups:any[] = _.map( entities, entity => {
-      return {
-        $lookup: { 
-          from: entity.typesQuery,
-          pipeline: [
-            { $addFields: { __typename: entity.typeName } },
-            { $match: expression }
-          ],
-          as: entity.typesQuery
-        }
-      };
-    });
-    const concatArrays = _.map( entities, entity => `$${entity.typesQuery}` );
 
+    const expression = this.buildExpression( _.first(entities) as Entity, filter );
+    const lookups:any[] = _.map( entities, entity => ({
+      $lookup: { 
+        from: entity.typesQuery,
+        pipeline: [
+          { $addFields: { __typename: entity.typeName } },
+          { $match: expression }
+        ],
+        as: entity.typesQuery
+      }
+    }));
+    const concatArrays = _.map( entities, entity => `$${entity.typesQuery}` );
     const aggregate = _.compact( _.concat(
       { $limit: 1 },
       { $project: { _id: '$$REMOVE' } },
@@ -106,9 +104,8 @@ export class MongoDbDataStore extends DataStore {
       { $sort: this.getSort( sort ) }
     ));
 
-    const randomEntity = _.first( entities );
-    if( ! randomEntity ) throw `no entitites given`;
-    const items = await this.getCollection( randomEntity ).aggregate( aggregate).toArray();
+    const randomEntity = _.first( entities ) as Entity;
+    const items = await this.getCollection( randomEntity ).aggregate( aggregate ).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
   }
 

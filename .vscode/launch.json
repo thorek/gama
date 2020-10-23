@@ -19,7 +19,6 @@
       "args": [
         "${workspaceRoot}/server/node_modules/.bin/jest",
         "${fileBasenameNoExtension}",
-        "--runInBand",
         "--config",
         "${workspaceRoot}/server/jest.config.json",
         "--detectOpenHandles"
