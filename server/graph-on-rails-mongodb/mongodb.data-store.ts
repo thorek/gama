@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Collection, Db, FilterQuery, MongoClient, ObjectId } from 'mongodb';
 
 import { FilterType } from '../graph-on-rails/builder/filter-type';
-import { DataStore, Sort } from '../graph-on-rails/core/data-store';
+import { DataStore, Paging, Sort } from '../graph-on-rails/core/data-store';
 import { ResolverContext } from '../graph-on-rails/core/resolver-context';
 import { Entity } from '../graph-on-rails/entities/entity';
 import { EnumFilterType } from './filter/enum-filter-type';
@@ -67,19 +67,18 @@ export class MongoDbDataStore extends DataStore {
    *
    */
   async findByAttribute( entity:Entity, attrValue:{[name:string]:any}, sort?:Sort ):Promise<any[]> {
-    // const expression = { $and: _.map( attrValue, (value, attribute) => _.set({}, attribute, { $eq: value } ) ) };
     return this.findByExpression( entity, attrValue, sort );
   }
 
   /**
    *
    */
-  async findByFilter( entity:Entity, filter:any, sort?:Sort ):Promise<any[]> {
+  async findByFilter( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]> {
     const expression = this.buildExpression( entity, filter );
-    return this.findByExpression( entity, expression, sort );
+    return this.findByExpression( entity, expression, sort, paging );
   }
 
-  async aggregateFind( entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>{
+  async aggregateFind( entities:Entity[], filter:any, sort?:Sort, paging?:Paging ):Promise<any[]>{
     if( entities.length === 0 ) return [];
 
     const expression = this.buildExpression( _.first(entities) as Entity, filter );
@@ -188,10 +187,11 @@ export class MongoDbDataStore extends DataStore {
   /**
    *
    */
-  protected async findByExpression( entity:Entity, filter:any, sort?:Sort ):Promise<any[]> {
+  protected async findByExpression( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]> {
     const collection = this.getCollection( entity );
     const sortStage = this.getSort( sort );
-    const items = await collection.find( filter ).toArray();
+    const sl = this.getSkipLimit( paging );
+    const items = await collection.find( filter ).sort( sortStage ).skip( sl.skip ).limit( sl.limit ).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
   }
 
@@ -308,4 +308,8 @@ export class MongoDbDataStore extends DataStore {
     return _.isUndefined( sort ) ? { _id: -1 } : _.set( {}, sort.field, sort.direction === 'ASC' ? 1 : -1 ) ;
   }
 
+  private getSkipLimit( paging?:Paging ):{ skip:number, limit:number }{
+    if( ! paging) return { skip: 0, limit: 0 };
+    return { skip: paging.page * paging.size, limit: paging.size };
+  }
 }

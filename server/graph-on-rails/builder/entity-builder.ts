@@ -413,6 +413,7 @@ export class EntityBuilder extends TypeBuilder {
         args: {
           filter: { type: this.graphx.type(this.entity.filterName) },
           sort: { type: this.graphx.type(this.entity.sorterEnumName) },
+          paging: { type: this.graphx.type( 'EntityPaging' ) }
         },
         resolve: (root:any, args:any, context:any) => this.resolver.resolveTypes( {root, args, context} )
       });

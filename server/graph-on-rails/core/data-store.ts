@@ -7,6 +7,12 @@ export type Sort = {
   direction:'ASC'|'DESC'
 }
 
+export type Paging = {
+  page:number
+  size:number
+}
+
+
 /**
  *
  */
@@ -18,7 +24,7 @@ export abstract class DataStore {
 
   abstract findByAttribute( entity:Entity, attrValue:{[name:string]:any} ):Promise<any[]>;
 
-  abstract aggregateFind( entities:Entity[], filter:any, sort?:Sort ):Promise<any[]>;
+  abstract aggregateFind( entities:Entity[], filter:any, sort?:Sort, paging?:Paging ):Promise<any[]>;
 
   /**
    *
@@ -26,7 +32,7 @@ export abstract class DataStore {
    * @param filter the filter as it would be build from the filter types of this datasource
    * @returns all items matching the filter
    */
-  abstract findByFilter( entity:Entity, filter:any, sort?:Sort ):Promise<any[]>;
+  abstract findByFilter( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]>;
 
   abstract create( entity:Entity, attrs: any ):Promise<any>;
 

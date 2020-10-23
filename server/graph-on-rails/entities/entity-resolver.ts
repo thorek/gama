@@ -29,7 +29,8 @@ export class EntityResolver extends EntityModule {
     await this.entity.entityPermissions.addPermissionToFilter( resolverCtx );
     const filter = _.get( resolverCtx.args, 'filter');
     const sort = this.getSort( _.get( resolverCtx.args, 'sort') );
-    const enits = await this.accessor.findByFilter( filter, sort );
+    const paging = _.get( resolverCtx.args, 'paging');
+    const enits = await this.accessor.findByFilter( filter, sort, paging );
     return _.map( enits, enit => enit.item );
   }
 

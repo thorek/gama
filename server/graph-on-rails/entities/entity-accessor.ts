@@ -5,7 +5,7 @@ import { EntityItem } from './entity-item';
 import { EntityDeleter } from './entity-deleter';
 import { EntityModule } from './entity-module';
 import { ValidationViolation } from './entity-validator';
-import { Sort } from 'graph-on-rails/core/data-store';
+import { Paging, Sort } from 'graph-on-rails/core/data-store';
 
 //
 //
@@ -55,10 +55,10 @@ export class EntityAccessor extends EntityModule {
    *
    * @param filter as it comes from the graphql request
    */
-  async findByFilter( filter:any, sort?:Sort ):Promise<EntityItem[]> {
+  async findByFilter( filter:any, sort?:Sort, paging?:Paging ):Promise<EntityItem[]> {
     const items = this.entity.isPolymorph ?
-      await this.dataStore.aggregateFind( this.entity.getThisOrAllNestedEntities(), filter, sort ) :
-      await this.dataStore.findByFilter( this.entity, filter, sort );
+      await this.dataStore.aggregateFind( this.entity.getThisOrAllNestedEntities(), filter, sort, paging ) :
+      await this.dataStore.findByFilter( this.entity, filter, sort, paging );
     return Promise.all( _.map( items, item => EntityItem.create( this.entity, item ) ) );
   }
 

@@ -8,6 +8,8 @@ import {
   GraphQLUnionType,
   GraphQLScalarType,
   GraphQLEnumType,
+  GraphQLInt,
+  GraphQLInputObjectType,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -30,6 +32,7 @@ export class GraphX {
     this.createQueryType();
     this.createMutationType();
     this.createValidationViolationType();
+    this.createEntityPagingType();
     this.createFileType();
   }
 
@@ -76,6 +79,22 @@ export class GraphX {
       fields: () => ({
         attribute: { type: GraphQLString },
         message: { type: new GraphQLNonNull( GraphQLString ) }
+      })
+    });
+  }
+
+
+  /**
+   *
+   */
+  private createEntityPagingType():void {
+    this.type('EntityPaging', {
+      name: 'EntityPaging',
+      description: 'use this to get a certain fraction of a (large) result set',
+      from: GraphQLInputObjectType,
+      fields: () => ({
+        page: { type: GraphQLNonNull( GraphQLInt ), description: 'page of set, starts with 0' },
+        size: { type: new GraphQLNonNull( GraphQLInt ), description: 'number of items in page, 0 means no limit' }
       })
     });
   }
