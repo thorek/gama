@@ -83,7 +83,6 @@ export class GraphX {
     });
   }
 
-
   /**
    *
    */
@@ -103,7 +102,7 @@ export class GraphX {
    *
    */
   private createFileType( ):void {
-    this.type('file', {
+    this.type('File', {
       name: 'File',
       fields: () => ({
         filename: { type: GraphQLNonNull(GraphQLString) },
@@ -112,8 +111,6 @@ export class GraphX {
       })
     });
   }
-
-
 
   //
   //

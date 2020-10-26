@@ -87,13 +87,12 @@ export class MongoDbDataStore extends DataStore {
         from: entity.typesQuery,
         pipeline: [
           { $addFields: { __typename: entity.typeName } },
-          { $match: expression }
         ],
         as: entity.typesQuery
       }
     }));
     const concatArrays = _.map( entities, entity => `$${entity.typesQuery}` );
-    const aggregate = _.compact( _.concat(
+    const aggregateDefinition = _.compact( _.concat(
       { $limit: 1 },
       { $project: { _id: '$$REMOVE' } },
       lookups,
@@ -104,7 +103,10 @@ export class MongoDbDataStore extends DataStore {
     ));
 
     const randomEntity = _.first( entities ) as Entity;
-    const items = await this.getCollection( randomEntity ).aggregate( aggregate ).toArray();
+    const sortStage = this.getSort( sort );
+    const sl = this.getSkipLimit( paging );
+    const aggregate = this.getCollection( randomEntity ).aggregate( aggregateDefinition ).match(expression);
+    const items = await aggregate.sort( sortStage ).skip(sl.skip).limit(sl.limit).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
   }
 
@@ -187,11 +189,11 @@ export class MongoDbDataStore extends DataStore {
   /**
    *
    */
-  protected async findByExpression( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]> {
+  protected async findByExpression( entity:Entity, expression:any, sort?:Sort, paging?:Paging ):Promise<any[]> {
     const collection = this.getCollection( entity );
     const sortStage = this.getSort( sort );
     const sl = this.getSkipLimit( paging );
-    const items = await collection.find( filter ).sort( sortStage ).skip( sl.skip ).limit( sl.limit ).toArray();
+    const items = await collection.find( expression ).sort( sortStage ).skip( sl.skip ).limit( sl.limit ).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
   }
 
