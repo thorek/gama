@@ -40,7 +40,7 @@ describe('Schema Generation', () => {
   });
 
   it( 'should generate schema from config', async () => {
-    const runtime = await Runtime.create('./config-types/cars');
+    const runtime = await Runtime.create('./test/config-types');
     const schema = printSchema( await runtime.schema() );
     // console.log( schema );
     expect(schema).toContain('Car');

@@ -15,7 +15,7 @@ describe('Calculated Attributes', () => {
 
   beforeAll( async () => {
 
-    const domainConfiguration = new DomainDefinition({
+    const domainDefinition = new DomainDefinition({
       entity: {
         Alpha: {
           attributes: {
@@ -32,7 +32,7 @@ describe('Calculated Attributes', () => {
       }
     });
 
-    runtime = await Runtime.create( { name: 'test:virtual-attributes', domainDefinition: domainConfiguration });
+    runtime = await Runtime.create( { name: 'test:virtual-attributes', domainDefinition });
     await runtime.server();
     await Seeder.create( runtime.context ).seed( true );
     context = runtime.context;

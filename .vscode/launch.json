@@ -15,12 +15,12 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Current Jest Test",
-      "cwd": "${workspaceFolder}/server",
+      "cwd": "${workspaceFolder}/gama-libs/graph-on-rails",
       "args": [
-        "${workspaceRoot}/server/node_modules/.bin/jest",
+        "${workspaceRoot}/gama-libs/graph-on-rails/node_modules/.bin/jest",
         "${fileBasenameNoExtension}",
         "--config",
-        "${workspaceRoot}/server/jest.config.json",
+        "${workspaceRoot}/gama-libs/graph-on-rails/jest.config.json",
         "--detectOpenHandles"
       ],
       "console": "integratedTerminal",

@@ -24,6 +24,7 @@
     "@angular/platform-browser": "~9.1.11",
     "@angular/platform-browser-dynamic": "~9.1.11",
     "@angular/router": "~9.1.11",
+    "@types/jest": "^26.0.15",
     "apollo-angular": "^1.9.1",
     "apollo-angular-link-http": "^1.10.0",
     "apollo-cache-inmemory": "^1.6.0",

@@ -1,7 +1,6 @@
 import { GraphQLType } from 'graphql';
 import _ from 'lodash';
 
-import { MongoDbDataStore } from '../../graph-on-rails-mongodb/mongodb.data-store';
 import { FilterType } from '../builder/filter-type';
 import { MetaDataBuilder } from '../builder/meta-data-builder';
 import { SchemaBuilder, TypeBuilder } from '../builder/schema-builder';
@@ -10,12 +9,12 @@ import { EntityFileSave } from '../entities/entity-file-save';
 import { EntityPermissions } from '../entities/entity-permissions';
 import { EntityResolver } from '../entities/entity-resolver';
 import { EntitySeeder } from '../entities/entity-seeder';
+import { MongoDbDataStore } from '../mongodb-datastore/mongodb.data-store';
 import { ValidateJs } from '../validation/validate-js';
 import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
-import { DomainDefinition, DomainConfiguration } from './domain-definition';
+import { DomainConfiguration, DomainDefinition } from './domain-definition';
 import { GraphX } from './graphx';
-
 
 export type Config = {
   name?:string

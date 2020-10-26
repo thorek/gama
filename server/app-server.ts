@@ -1,11 +1,9 @@
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
+import { DomainDefinition, Entity, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
-import { DomainDefinition } from './graph-on-rails/core/domain-definition';
-import { Runtime } from './graph-on-rails/core/runtime';
-import { Entity } from './graph-on-rails/entities/entity';
 
 export async function create():Promise<ApolloServer> {
 
