@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-xdescribe('playground', () => {
+describe('playground', () => {
 
   class Augmentable {
     constructor(augment: any = {}) {

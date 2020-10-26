@@ -1,6 +1,6 @@
-import { Sort } from 'graph-on-rails/core/data-store';
 import _ from 'lodash';
 
+import { Sort } from '../core/data-store';
 import { ResolverContext } from '../core/resolver-context';
 import { Entity } from './entity';
 import { FileInfo } from './entity-file-save';
