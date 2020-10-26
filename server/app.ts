@@ -1,11 +1,10 @@
+import { create } from 'app-server';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
 import _ from 'lodash';
 import path from 'path';
-import { AppServer } from './app-server';
-import { DocServer } from './doc-server';
 
 
 (async () => {
@@ -15,7 +14,7 @@ import { DocServer } from './doc-server';
   app.use(compression());
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-  const server = await AppServer.create();
+  const server = await create();
 
   server.applyMiddleware({ app, path: '/graphql' });
   const httpServer = createServer(app);

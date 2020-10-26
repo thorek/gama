@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { Context } from 'graph-on-rails/core/context';
-import { DomainConfiguration } from 'graph-on-rails/core/domain-definition';
+import { Context, DomainConfiguration } from 'graph-on-rails';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import _ from 'lodash';
 

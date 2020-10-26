@@ -15,7 +15,12 @@
       "es2018",
       "dom",
       "esnext.asynciterable"
-    ]
+    ],
+    "paths": {
+      "graph-on-rails": ["./gama-libs/graph-on-rails"],
+      "graph-on-rails-mongodb": ["./gama-libs/graph-on-rails-mongodb"],
+  },
+  "allowSyntheticDefaultImports": true
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
