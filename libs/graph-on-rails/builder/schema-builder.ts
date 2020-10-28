@@ -9,12 +9,12 @@ import { TypeAttribute } from '../entities/type-attribute';
  */
 export abstract class SchemaBuilder {
 
-  private _context!:Runtime;
+  private _runtime!:Runtime;
 
-  get context() { return this._context }
-  get graphx() {return this.context.graphx };
+  get runtime() { return this._runtime }
+  get graphx() {return this.runtime.graphx };
 
-  init( context:Runtime ):void { this._context = context }
+  init( runtime:Runtime ):void { this._runtime = runtime }
 
   abstract name():string;
   abstract build():void;

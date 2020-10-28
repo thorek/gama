@@ -1,5 +1,7 @@
+import { ApolloServerExpressConfig } from 'apollo-server-express';
 import bcrypt from 'bcryptjs';
-import { Runtime, DomainConfiguration } from 'graph-on-rails';
+import express from 'express';
+import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import _ from 'lodash';
 
@@ -8,6 +10,15 @@ import _ from 'lodash';
 export class SimpleLogin {
 
   private users:any = {};
+
+  static addToDefinition( domainDefinition:DomainDefinition, config:ApolloServerExpressConfig ):void {
+    const login = new SimpleLogin();
+    domainDefinition.add( login.getConfiguration() );
+    config.context = (contextExpress:{req:express.Request }) => {
+      const token:string|undefined = contextExpress.req.headers.authorization;
+      return { user: login.getUser(token) };
+    }
+  }
 
   getConfiguration = ():DomainConfiguration => ({
     entity: {
@@ -37,22 +48,22 @@ export class SimpleLogin {
       }
     },
     mutation: {
-      login: ( context:Runtime ) => ({
+      login: ( runtime:Runtime ) => ({
         type: GraphQLString,
         args: {
           username: { type: GraphQLNonNull( GraphQLString ) },
           password: { type: GraphQLNonNull( GraphQLString ) }
         },
-        resolve: (root:any, args:any) => this.login( context, args.username, args.password )
+        resolve: (root:any, args:any) => this.login( runtime, args.username, args.password )
       })
     }
   });
 
   getUser = (token?:string) => token ? this.users[token] : undefined;
 
-  private login = async (context:Runtime, username:string, password:string):Promise<string|undefined> => {
-    const entity = context.entities['User'];
-    if( ! entity ) return context.warn( `no 'User' type found`, undefined );
+  private login = async (runtime:Runtime, username:string, password:string):Promise<string|undefined> => {
+    const entity = runtime.entities['User'];
+    if( ! entity ) return runtime.warn( `no 'User' type found`, undefined );
     const user = await entity.findOneByAttribute( { username } );
     if( ! user ) return undefined;
     if( ! await bcrypt.compare( password, user.item.password ) ) return undefined;

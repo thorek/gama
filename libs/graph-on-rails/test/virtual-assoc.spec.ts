@@ -8,7 +8,7 @@ import { Runtime } from '../core/runtime';
 describe('Associations', () => {
 
   let runtime!:RuntimeOld;
-  let context:Runtime;
+  let runtime:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 

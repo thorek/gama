@@ -55,7 +55,7 @@ export abstract class Entity {
   /**
    *
    */
-  init( context:Runtime ){
+  init( runtime:Runtime ){
     this._context = context;
     this.context.entities[this.typeName] = this;
     this._entityResolver = this.context.entityResolver( this );
@@ -66,7 +66,7 @@ export abstract class Entity {
     this._entityAccessor = new EntityAccessor( this );
   }
 
-  extendEntity():void|((context:Runtime ) => void|Promise<void>) {}
+  extendEntity():void|((runtime:Runtime ) => void|Promise<void>) {}
 
   get name() { return this.getName() }
   get typeName(){ return this.getTypeName() }

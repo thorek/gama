@@ -17,17 +17,17 @@ export class SchemaFactory {
   private _builders?:SchemaBuilder[];
   private _schema?:GraphQLSchema;
 
-  get config() { return this.context.config }
+  get config() { return this.runtime.config }
 
   //
   //
-  private constructor( private context:Runtime ){}
+  private constructor( private runtime:Runtime ){}
 
   /**
    *
    */
-  static create( context:Runtime ):SchemaFactory {
-    return new SchemaFactory( context );
+  static create( runtime:Runtime ):SchemaFactory {
+    return new SchemaFactory( runtime );
   }
 
   /**
@@ -35,7 +35,7 @@ export class SchemaFactory {
    */
   async schema():Promise<GraphQLSchema> {
     if( this._schema ) return this._schema;
-    this._schema = await this.createSchema( this.context );
+    this._schema = await this.createSchema( this.runtime );
     return this._schema;
   }
 
@@ -46,7 +46,7 @@ export class SchemaFactory {
     if( this._builders ) return this._builders;
     this._builders = _.compact([
       this.config.metaDataBuilder,
-      ... this.context.dataStore.getScalarFilterTypes(),
+      ... this.runtime.dataStore.getScalarFilterTypes(),
       ... this.getConfigTypeBuilder(),
       ... this.getCustomBuilders()
     ]);
@@ -57,7 +57,7 @@ export class SchemaFactory {
    *
    */
   private getCustomBuilders():SchemaBuilder[] {
-    const domainDefinition = this.context.domainDefinition;
+    const domainDefinition = this.runtime.domainDefinition;
     return _.compact( _.flatten( _.concat(
       _.get(this.config, 'schemaBuilder', [] ),
       _.map( domainDefinition.entities, entity => new EntityBuilder( entity )),
@@ -69,7 +69,7 @@ export class SchemaFactory {
    *
    */
   private getConfigTypeBuilder():SchemaBuilder[] {
-    const domainDefinition = this.context.domainDefinition;
+    const domainDefinition = this.runtime.domainDefinition;
     if( ! domainDefinition ) return [];
     const configuration = domainDefinition.getConfiguration();
     const builder:SchemaBuilder[] = _.compact( _.map( configuration.entity,
@@ -133,40 +133,40 @@ export class SchemaFactory {
   /**
    *
    */
-  async createSchema(context:Runtime):Promise<GraphQLSchema> {
-    context.graphx.init();
-    this.createScalars( context );
-    await this.buildFromBuilders( context );
-    await this.extendSchema( context );
-    const schema = context.graphx.generate();
+  async createSchema(runtime:Runtime):Promise<GraphQLSchema> {
+    runtime.graphx.init();
+    this.createScalars( runtime );
+    await this.buildFromBuilders( runtime );
+    await this.extendSchema( runtime );
+    const schema = runtime.graphx.generate();
     return schema;
   }
 
-  private async buildFromBuilders( context:Runtime ){
-    _.forEach( this.builders(), type => type.init( context ) );
+  private async buildFromBuilders( runtime:Runtime ){
+    _.forEach( this.builders(), type => type.init( runtime ) );
     _.forEach( this.builders(), type => type.build() );
-    await this.extendTypeBuilders( context );
+    await this.extendTypeBuilders( runtime );
   }
 
-  private async extendSchema( context:Runtime ){
-    const extendSchemaFn = context.domainDefinition.extendSchema;
-    if( _.isFunction( extendSchemaFn ) ) extendSchemaFn( context );
+  private async extendSchema( runtime:Runtime ){
+    const extendSchemaFn = runtime.domainDefinition.extendSchema;
+    if( _.isFunction( extendSchemaFn ) ) extendSchemaFn( runtime );
   }
 
-  private async extendTypeBuilders( context:Runtime ){
+  private async extendTypeBuilders( runtime:Runtime ){
     const entityBuilders = _.filter( this.builders(), builder => builder instanceof EntityBuilder ) as EntityBuilder[];
     const enumBuilders = _.filter( this.builders(), builder => builder instanceof EnumBuilder ) as EnumBuilder[];
     _.forEach( entityBuilders, builder => builder.createUnionType() );
     _.forEach( entityBuilders, builder => builder.extendTypes() );
     _.forEach( enumBuilders, builder => builder.extendTypes() );
-    for( const entity of _.values( context.entities) ) {
+    for( const entity of _.values( runtime.entities) ) {
       const extendFn = entity.extendEntity();
-      if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( context ) );
+      if( _.isFunction(extendFn) ) await Promise.resolve( extendFn( runtime ) );
     }
   }
 
-  private createScalars( context:Runtime ):void {
-    context.graphx.type( 'Date', {
+  private createScalars( runtime:Runtime ):void {
+    runtime.graphx.type( 'Date', {
       name: 'Date',
       from: GraphQLScalarType,
       parseValue: (value:any) => new Date(value),

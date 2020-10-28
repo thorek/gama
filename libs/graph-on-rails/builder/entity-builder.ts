@@ -53,7 +53,7 @@ export class EntityBuilder extends TypeBuilder {
   /**
    *
    */
-  init( context:Runtime ){
+  init( runtime:Runtime ){
     super.init( context );
     this.entity.init( context );
   }

@@ -20,7 +20,7 @@ export type DomainConfiguration = {
 
 export class DomainDefinition {
 
-  extendSchema?:(context:Runtime) => void
+  extendSchema?:(runtime:Runtime) => void
   readonly entities:Entity[] = [];
   readonly enums:EnumBuilder[] = [];
   private configuration:DomainConfiguration;

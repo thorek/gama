@@ -10,7 +10,7 @@ import { EntityItem } from '../entities/entity-item';
 describe('Default Values', () => {
 
   let runtime!:RuntimeOld;
-  let context:Runtime;
+  let runtime:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 

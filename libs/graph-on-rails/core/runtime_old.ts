@@ -14,7 +14,7 @@ export class RuntimeOld {
   //
   //
   private constructor(
-    public readonly context:Runtime,
+    public readonly runtime:Runtime,
     private schemaFactory:SchemaFactory
   ){}
 

@@ -12,7 +12,7 @@ export abstract class FilterType extends TypeBuilder {
 
   name() { return TypeBuilder.getFilterName( this.graphqlTypeName() ) }
 
-  init( context:Runtime ):void {
+  init( runtime:Runtime ):void {
     super.init( context );
     _.set( context.filterTypes, this.name(), this );
   }

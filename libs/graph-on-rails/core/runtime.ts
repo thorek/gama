@@ -1,4 +1,4 @@
-import { GraphQLType } from 'graphql';
+import { GraphQLSchema, GraphQLType } from 'graphql';
 import _ from 'lodash';
 
 import { FilterType } from '../builder/filter-type';
@@ -15,6 +15,7 @@ import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
 import { DomainConfiguration, DomainDefinition } from './domain-definition';
 import { GraphX } from './graphx';
+import { SchemaFactory } from './schema-factory';
 
 export type Config = {
   name?:string
@@ -35,8 +36,7 @@ export type Config = {
 export class Runtime {
 
   dataStore!:DataStore;
-
-  private constructor( public readonly config:Config ){ }
+  schema!:GraphQLSchema;
 
   readonly graphx = new GraphX();
   readonly entities:{[name:string]:Entity} = {};
@@ -45,16 +45,16 @@ export class Runtime {
   readonly contextUser = this.config.contextUser;
   readonly contextRoles = this.config.contextRoles;
 
+  private constructor( public readonly config:Config ){ }
+
   /**
    *
    */
-  static async create( config?:Config ):Promise<Runtime> {
-    if( ! config ) config = {};
-    const defaultConfig = this.getDefaultConfig();
-    _.defaults( config, defaultConfig );
-    const context = new Runtime(config);
-    await context.init();
-    return context;
+  static async create( config:Config|DomainConfiguration|string ):Promise<Runtime> {
+    const runtime = new Runtime( this.resolveConfig( config ) );
+    await runtime.init();
+    await runtime.createSchema();
+    return runtime;
   }
 
   private static getDefaultConfig():Config {
@@ -71,6 +71,17 @@ export class Runtime {
       contextRoles: 'roles',
       uploadRootDir: ['server', 'uploads']
     };
+  }
+
+  private static resolveConfig(config:Config|DomainConfiguration|string):Config {
+    if( _.isString( config ) ) config = { domainDefinition: config };
+    if( ! _.has( config, 'domainDefinition') ) config = { domainDefinition: config as DomainConfiguration };
+    return _.defaults( config, this.getDefaultConfig() );
+  }
+
+  private async createSchema(){
+    const schemaFactory = SchemaFactory.create( this );
+    this.schema = await schemaFactory.schema();
   }
 
   async init(){

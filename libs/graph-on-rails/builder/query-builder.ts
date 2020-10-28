@@ -4,7 +4,7 @@ import { Runtime } from '../core/runtime';
 import { SchemaBuilder } from './schema-builder';
 
 export type QueryConfig = {
-  query:(context:Runtime) => any;
+  query:(runtime:Runtime) => any;
 }
 
 export abstract class QueryBuilder extends SchemaBuilder {

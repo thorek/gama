@@ -29,7 +29,7 @@ export type AttributeConfig = {
 export type SeedEvalContextType = {
   idsMap?:any
   seed:any
-  context:Runtime
+  runtime:Runtime
 }
 
 export type SeedConfigType = {
@@ -59,7 +59,7 @@ export type EntityConfig  = {
   implements?:string|string[]
 
   description?:string
-  extendEntity?:( context:Runtime ) => void | Promise<void>
+  extendEntity?:( runtime:Runtime ) => void | Promise<void>
 }
 
 export class ConfigEntity extends Entity {

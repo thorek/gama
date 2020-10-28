@@ -9,7 +9,7 @@ import { Runtime } from '../core/runtime';
 describe('Seeder', () => {
 
   let runtime!:RuntimeOld;
-  let context:Runtime;
+  let runtime:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
