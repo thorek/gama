@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 import { TypeAttribute } from '../entities/type-attribute';
 
 
@@ -9,12 +9,12 @@ import { TypeAttribute } from '../entities/type-attribute';
  */
 export abstract class SchemaBuilder {
 
-  private _context!:Context;
+  private _context!:Runtime;
 
   get context() { return this._context }
   get graphx() {return this.context.graphx };
 
-  init( context:Context ):void { this._context = context }
+  init( context:Runtime ):void { this._context = context }
 
   abstract name():string;
   abstract build():void;

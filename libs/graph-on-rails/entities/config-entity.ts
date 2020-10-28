@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Entity, AssocFromType, AssocToType, AssocToManyType } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { EntityPermissionType } from './entity-permissions';
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 
 /**
  *
@@ -29,7 +29,7 @@ export type AttributeConfig = {
 export type SeedEvalContextType = {
   idsMap?:any
   seed:any
-  context:Context
+  context:Runtime
 }
 
 export type SeedConfigType = {
@@ -59,7 +59,7 @@ export type EntityConfig  = {
   implements?:string|string[]
 
   description?:string
-  extendEntity?:( context:Context ) => void | Promise<void>
+  extendEntity?:( context:Runtime ) => void | Promise<void>
 }
 
 export class ConfigEntity extends Entity {

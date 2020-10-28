@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
-import { Context } from '../core/context';
 import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 const domainDefinition = YAML.parse(`
@@ -83,10 +83,10 @@ const domainDefinition = YAML.parse(`
 
 describe('Ploymorph Types', () => {
 
-  let context!:Context;
+  let context!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create({ name: 'test:polymorph', domainDefinition } );
+    const runtime = await RuntimeOld.create({ name: 'test:polymorph', domainDefinition } );
     await runtime.server({});
     await Seeder.create( runtime.context ).seed( true );
     context = runtime.context;

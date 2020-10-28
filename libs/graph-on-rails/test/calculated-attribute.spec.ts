@@ -1,15 +1,15 @@
 import { printSchema } from 'graphql';
 import _ from 'lodash';
 
-import { Context } from '../core/context';
-import { DomainDefinition } from '../core/domain-definition';
 import { Runtime } from '../core/runtime';
+import { DomainDefinition } from '../core/domain-definition';
+import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 describe('Calculated Attributes', () => {
 
-  let runtime!:Runtime;
-  let context:Context;
+  let runtime!:RuntimeOld;
+  let context:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
@@ -32,7 +32,7 @@ describe('Calculated Attributes', () => {
       }
     });
 
-    runtime = await Runtime.create( { name: 'test:virtual-attributes', domainDefinition });
+    runtime = await RuntimeOld.create( { name: 'test:virtual-attributes', domainDefinition });
     await runtime.server();
     await Seeder.create( runtime.context ).seed( true );
     context = runtime.context;

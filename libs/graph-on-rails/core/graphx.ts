@@ -13,7 +13,7 @@ import {
 } from 'graphql';
 import _ from 'lodash';
 
-import { Context } from './context';
+import { Runtime } from './runtime';
 import { Seeder } from './seeder';
 
 
@@ -52,7 +52,7 @@ export class GraphX {
           type: GraphQLString,
           args: { truncate: { type: GraphQLBoolean } },
           resolve: ( root:any, args:any, context:any ) => Seeder.create(
-            context.context as Context ).seed( args.truncate )
+            context.context as Runtime ).seed( args.truncate )
         }
       } )
     } );

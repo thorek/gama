@@ -1,16 +1,16 @@
 import _ from 'lodash';
 
-import { Context } from '../core/context';
 import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 
 describe('Resolver', () => {
 
-  let context!:Context;
+  let context!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create( { name: 'test:resolver', domainDefinition: {
+    const runtime = await RuntimeOld.create( { name: 'test:resolver', domainDefinition: {
       entity: {
         Alpha: {
           attributes: {

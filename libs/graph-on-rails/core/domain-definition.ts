@@ -8,7 +8,7 @@ import { EnumBuilder, EnumConfig } from '../builder/enum-builder';
 import { MutationConfig } from '../builder/mutation-builder';
 import { QueryConfig } from '../builder/query-builder';
 import { EntityConfig } from '../entities/config-entity';
-import { Context } from './context';
+import { Runtime } from './runtime';
 
 
 export type DomainConfiguration = {
@@ -20,7 +20,7 @@ export type DomainConfiguration = {
 
 export class DomainDefinition {
 
-  extendSchema?:(context:Context) => void
+  extendSchema?:(context:Runtime) => void
   readonly entities:Entity[] = [];
   readonly enums:EnumBuilder[] = [];
   private configuration:DomainConfiguration;

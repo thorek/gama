@@ -1,7 +1,7 @@
 import { printSchema } from 'graphql';
 
 import { DomainConfiguration, DomainDefinition } from '../core/domain-definition';
-import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { Entity } from '../entities/entity';
 
 
@@ -30,7 +30,7 @@ describe('Schema Generation', () => {
         Fuel: ['lead', 'gas', 'diesel']
       }
     };
-    const runtime = await Runtime.create( domainDefinition );
+    const runtime = await RuntimeOld.create( domainDefinition );
     const schema = printSchema( await runtime.schema() );
     // console.log( schema );
     expect(schema).toContain('Car');
@@ -40,7 +40,7 @@ describe('Schema Generation', () => {
   });
 
   it( 'should generate schema from config', async () => {
-    const runtime = await Runtime.create('./test/config-types');
+    const runtime = await RuntimeOld.create('./test/config-types');
     const schema = printSchema( await runtime.schema() );
     // console.log( schema );
     expect(schema).toContain('Car');
@@ -53,7 +53,7 @@ describe('Schema Generation', () => {
     const domainDefinition = new DomainDefinition();
     domainDefinition.entities.push( new ATestEntity() );
     domainDefinition.entities.push( new BTestEntity() );
-    const runtime = await Runtime.create(  { name: 'test:schema', domainDefinition });
+    const runtime = await RuntimeOld.create(  { name: 'test:schema', domainDefinition });
     const schema = printSchema( await runtime.schema() );
     expect( schema ).toContain('type ATest');
     expect( schema ).toContain('type BTest');
@@ -62,7 +62,7 @@ describe('Schema Generation', () => {
   });
 
   it('should distinguish required variants', async () => {
-    const runtime = await Runtime.create({ name: 'test:schema',
+    const runtime = await RuntimeOld.create({ name: 'test:schema',
     domainDefinition: {
         entity: {
           Alpha: {

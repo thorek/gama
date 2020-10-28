@@ -2,7 +2,7 @@ import _ from 'lodash';
 import * as faker from 'faker';
 
 import { Entity } from '../entities/entity';
-import { Context } from './context';
+import { Runtime } from './runtime';
 
 export class Seeder {
 
@@ -14,7 +14,7 @@ export class Seeder {
   /**
    *
    */
-  static create( context:Context ):Seeder {
+  static create( context:Runtime ):Seeder {
     const locale = _.get( context.config.domainDefinition, 'locale', 'en' );
     _.set(faker, 'locale', locale );
     return new Seeder( _.values(context.entities) );

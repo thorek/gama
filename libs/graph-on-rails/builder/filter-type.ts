@@ -1,7 +1,7 @@
 import { GraphQLInputObjectType, GraphQLType } from 'graphql';
 import _ from 'lodash';
 
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 import { SchemaBuilder, TypeBuilder } from './schema-builder';
 
 
@@ -12,7 +12,7 @@ export abstract class FilterType extends TypeBuilder {
 
   name() { return TypeBuilder.getFilterName( this.graphqlTypeName() ) }
 
-  init( context:Context ):void {
+  init( context:Runtime ):void {
     super.init( context );
     _.set( context.filterTypes, this.name(), this );
   }

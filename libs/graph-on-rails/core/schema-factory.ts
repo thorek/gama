@@ -7,7 +7,7 @@ import { MutationBuilder, MutationConfig, MutationConfigBuilder } from '../build
 import { QueryBuilder, QueryConfig, QueryConfigBuilder } from '../builder/query-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity, EntityConfig } from '../entities/config-entity';
-import { Context } from './context';
+import { Runtime } from './runtime';
 
 
 //
@@ -21,12 +21,12 @@ export class SchemaFactory {
 
   //
   //
-  private constructor( private context:Context ){}
+  private constructor( private context:Runtime ){}
 
   /**
    *
    */
-  static create( context:Context ):SchemaFactory {
+  static create( context:Runtime ):SchemaFactory {
     return new SchemaFactory( context );
   }
 
@@ -133,7 +133,7 @@ export class SchemaFactory {
   /**
    *
    */
-  async createSchema(context:Context):Promise<GraphQLSchema> {
+  async createSchema(context:Runtime):Promise<GraphQLSchema> {
     context.graphx.init();
     this.createScalars( context );
     await this.buildFromBuilders( context );
@@ -142,18 +142,18 @@ export class SchemaFactory {
     return schema;
   }
 
-  private async buildFromBuilders( context:Context ){
+  private async buildFromBuilders( context:Runtime ){
     _.forEach( this.builders(), type => type.init( context ) );
     _.forEach( this.builders(), type => type.build() );
     await this.extendTypeBuilders( context );
   }
 
-  private async extendSchema( context:Context ){
+  private async extendSchema( context:Runtime ){
     const extendSchemaFn = context.domainDefinition.extendSchema;
     if( _.isFunction( extendSchemaFn ) ) extendSchemaFn( context );
   }
 
-  private async extendTypeBuilders( context:Context ){
+  private async extendTypeBuilders( context:Runtime ){
     const entityBuilders = _.filter( this.builders(), builder => builder instanceof EntityBuilder ) as EntityBuilder[];
     const enumBuilders = _.filter( this.builders(), builder => builder instanceof EnumBuilder ) as EnumBuilder[];
     _.forEach( entityBuilders, builder => builder.createUnionType() );
@@ -165,7 +165,7 @@ export class SchemaFactory {
     }
   }
 
-  private createScalars( context:Context ):void {
+  private createScalars( context:Runtime ):void {
     context.graphx.type( 'Date', {
       name: 'Date',
       from: GraphQLScalarType,

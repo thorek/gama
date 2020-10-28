@@ -1,7 +1,7 @@
 import inflection from 'inflection';
 import _ from 'lodash';
 
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 import { ResolverContext } from '../core/resolver-context';
 import { EntityAccessor } from './entity-accessor';
 import { EntityItem } from './entity-item';
@@ -34,7 +34,7 @@ export type AssocToManyType = AssocToType & {
 //
 export abstract class Entity {
 
-  private _context!:Context;
+  private _context!:Runtime;
   get context() { return this._context }
   get graphx() { return this.context.graphx }
   get entityPermissions() { return this._entityPermissions }
@@ -55,7 +55,7 @@ export abstract class Entity {
   /**
    *
    */
-  init( context:Context ){
+  init( context:Runtime ){
     this._context = context;
     this.context.entities[this.typeName] = this;
     this._entityResolver = this.context.entityResolver( this );
@@ -66,7 +66,7 @@ export abstract class Entity {
     this._entityAccessor = new EntityAccessor( this );
   }
 
-  extendEntity():void|((context:Context ) => void|Promise<void>) {}
+  extendEntity():void|((context:Runtime ) => void|Promise<void>) {}
 
   get name() { return this.getName() }
   get typeName(){ return this.getTypeName() }

@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import { AuthenticationError } from 'apollo-server-express';
-import { Entity, AssocType, AssocToType } from './entity';
-import { EntityModule } from './entity-module';
+
 import { ResolverContext } from '../core/resolver-context';
+import { AssocToType, Entity } from './entity';
+import { EntityModule } from './entity-module';
 
 export type CrudAction = 'read' | 'create' | 'update' | 'delete';
 
@@ -311,7 +311,7 @@ export class EntityPermissions extends EntityModule {
   protected getUserRoles( user:string ):string[] {
     if( ! user ) throw 'should not happen, no user in context';
     let roles:any = _.get( user, this.context.contextRoles as string );
-    if( ! roles ) throw new AuthenticationError( `User has no role - ${JSON.stringify( user ) }` );
+    if( ! roles ) throw new Error( `User has no role - ${JSON.stringify( user ) }` );
     return _.isArray( roles ) ? roles : [roles];
   }
 

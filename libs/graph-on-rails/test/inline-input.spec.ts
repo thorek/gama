@@ -2,8 +2,8 @@ import { printSchema } from 'graphql';
 import _ from 'lodash';
 import YAML from 'yaml';
 
-import { Context } from '../core/context';
 import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { ResolverContext } from '../core/resolver-context';
 import { Seeder } from '../core/seeder';
 
@@ -36,10 +36,10 @@ const domainConfiguration = YAML.parse(`
 
 describe('Inline Input', () => {
 
-  let context!:Context;
+  let context!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create( { name: 'test:inline-input', domainDefinition: domainConfiguration } );
+    const runtime = await RuntimeOld.create( { name: 'test:inline-input', domainDefinition: domainConfiguration } );
     await runtime.server({});
     context = runtime.context;
     await Seeder.create( runtime.context ).seed( true );

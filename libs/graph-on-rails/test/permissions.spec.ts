@@ -1,5 +1,5 @@
-import { Context } from '../core/context';
 import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 const domainConfiguration = {};
@@ -7,13 +7,13 @@ const domainConfiguration = {};
 
 describe('Permissions', () => {
 
-  let runtime!:Runtime;
-  let context:Context;
+  let runtime!:RuntimeOld;
+  let context:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await Runtime.create({ name: 'test:seeder', domainDefinition: domainConfiguration });
+    runtime = await RuntimeOld.create({ name: 'test:seeder', domainDefinition: domainConfiguration });
     await runtime.server();
     await Seeder.create( runtime.context ).seed( true );
     context = runtime.context;

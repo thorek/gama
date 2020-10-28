@@ -1,10 +1,10 @@
 import _ from 'lodash';
 
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 import { SchemaBuilder } from './schema-builder';
 
 export type QueryConfig = {
-  query:(context:Context) => any;
+  query:(context:Runtime) => any;
 }
 
 export abstract class QueryBuilder extends SchemaBuilder {

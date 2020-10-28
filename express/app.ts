@@ -1,4 +1,4 @@
-import { create } from 'app-server';
+import { create } from './app-server';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';

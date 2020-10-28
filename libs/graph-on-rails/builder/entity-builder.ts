@@ -17,7 +17,7 @@ import {
 } from 'graphql';
 import _, { Dictionary } from 'lodash';
 
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 import { AssocToType, AssocType, Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
@@ -53,7 +53,7 @@ export class EntityBuilder extends TypeBuilder {
   /**
    *
    */
-  init( context:Context ){
+  init( context:Runtime ){
     super.init( context );
     this.entity.init( context );
   }

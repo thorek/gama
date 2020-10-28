@@ -1,9 +1,48 @@
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
 import express from 'express';
-import { DomainDefinition, Entity, Runtime } from 'graph-on-rails';
+import { DomainDefinition, Entity, RuntimeOld } from 'graph-on-rails';
 import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
+
+
+
+  /**
+	 *
+	 */
+  async function server( config:ApolloServerExpressConfig = {} ):Promise<ApolloServer> {
+
+
+    const customContextFn = config.context;
+    config.context = (contextExpress:any) => {
+      const apolloContext = _.isFunction( customContextFn ) ? customContextFn(contextExpress) : {};
+      return _.set( apolloContext, 'context', this.context );
+    }
+    config.schema = await this.schemaFactory.schema();
+    _.defaultsDeep( config, { validationRules: [depthLimit(7)] } );
+    return new ApolloServer( config );
+  }
+
+
+
+
+
+
+
+export async function docServer():Promise<ApolloServer> {
+  const domainDefinition = new DomainDefinition( [`${__dirname}/config-types/doc`] );
+  const runtime = await RuntimeOld.create({ domainDefinition });
+  return server();
+}
+
+
+
+
+
+
+
+
+
 
 export async function create():Promise<ApolloServer> {
 
@@ -55,13 +94,6 @@ export async function create():Promise<ApolloServer> {
     }
   });
 
-  const runtime = await Runtime.create( { domainDefinition } );
+  const runtime = await RuntimeOld.create( { domainDefinition } );
   return runtime.server({context});
-}
-
-
-export async function docServer():Promise<ApolloServer> {
-  const domainDefinition = new DomainDefinition( [`${__dirname}/config-types/doc`] );
-  const runtime = await Runtime.create({ domainDefinition });
-  return runtime.server();
 }

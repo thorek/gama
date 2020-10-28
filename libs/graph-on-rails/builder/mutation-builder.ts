@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { SchemaBuilder } from './schema-builder';
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 
-export type MutationConfig = (context:Context) => any;
+export type MutationConfig = (context:Runtime) => any;
 
 export abstract class MutationBuilder extends SchemaBuilder {
 

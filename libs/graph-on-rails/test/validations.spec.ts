@@ -1,15 +1,15 @@
 import _ from 'lodash';
 
-import { Context } from '../core/context';
 import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 describe('Validations', () => {
 
-  let context!:Context;
+  let context!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await Runtime.create( { name: 'test:validations', domainDefinition: {
+    const runtime = await RuntimeOld.create( { name: 'test:validations', domainDefinition: {
       entity: {
         Alpha: {
           attributes: {

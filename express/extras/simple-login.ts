@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { Context, DomainConfiguration } from 'graph-on-rails';
+import { Runtime, DomainConfiguration } from 'graph-on-rails';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import _ from 'lodash';
 
@@ -37,7 +37,7 @@ export class SimpleLogin {
       }
     },
     mutation: {
-      login: ( context:Context ) => ({
+      login: ( context:Runtime ) => ({
         type: GraphQLString,
         args: {
           username: { type: GraphQLNonNull( GraphQLString ) },
@@ -50,7 +50,7 @@ export class SimpleLogin {
 
   getUser = (token?:string) => token ? this.users[token] : undefined;
 
-  private login = async (context:Context, username:string, password:string):Promise<string|undefined> => {
+  private login = async (context:Runtime, username:string, password:string):Promise<string|undefined> => {
     const entity = context.entities['User'];
     if( ! entity ) return context.warn( `no 'User' type found`, undefined );
     const user = await entity.findOneByAttribute( { username } );

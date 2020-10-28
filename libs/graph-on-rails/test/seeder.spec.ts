@@ -1,20 +1,20 @@
 import { printSchema } from 'graphql';
 import _ from 'lodash';
 
-import { Runtime } from '../core/runtime';
+import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
-import { Context } from '../core/context';
+import { Runtime } from '../core/runtime';
 
 
 describe('Seeder', () => {
 
-  let runtime!:Runtime;
-  let context:Context;
+  let runtime!:RuntimeOld;
+  let context:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await Runtime.create({ name: 'test:seeder',
+    runtime = await RuntimeOld.create({ name: 'test:seeder',
       domainDefinition: {
         enum: {
           AngularFunctions: ['sin', 'cos', 'tan', 'cot']
