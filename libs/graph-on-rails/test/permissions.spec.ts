@@ -1,5 +1,4 @@
 import { Runtime } from '../core/runtime';
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 const domainConfiguration = {};
@@ -7,23 +6,21 @@ const domainConfiguration = {};
 
 describe('Permissions', () => {
 
-  let runtime!:RuntimeOld;
-  let runtime:Runtime;
+  let runtime!:Runtime;
+
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await RuntimeOld.create({ name: 'test:seeder', domainDefinition: domainConfiguration });
-    await runtime.server();
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
+    runtime = await Runtime.create({ name: 'test:seeder', domainDefinition: domainConfiguration });
+    await Seeder.create( runtime ).seed( true );
   })
 
   //
   //
   it('should', async ()=> {
-    // const alpha = context.entities['Alpha'];
-    // const beta = context.entities['Beta'];
+    // const alpha = runtime.entities['Alpha'];
+    // const beta = runtime.entities['Beta'];
 
     // const alpha1 = await alpha.findOneByAttribute( {name: 'alpha1'} );
     // const alpha2 = await alpha.findOneByAttribute( {name: 'alpha2'} );

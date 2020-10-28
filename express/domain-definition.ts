@@ -1,15 +1,24 @@
-import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
+import { ApolloServerExpressConfig } from 'apollo-server-express';
 import express from 'express';
-import { DomainDefinition, Entity, Runtime } from 'graph-on-rails';
-import depthLimit from 'graphql-depth-limit';
+import { DomainDefinition, Entity } from 'graph-on-rails';
 import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
 
 
 
+export const doc = () => {
+  return `${__dirname}/config-types/doc`;
+}
 
-export function create():DomainDefinition {
+
+export const login = ( config:ApolloServerExpressConfig ):DomainDefinition => {
+  const domainDefinition = new DomainDefinition( `${__dirname}/config-types/d2prom` );
+  SimpleLogin.addToDefinition( domainDefinition, config );
+  return domainDefinition;
+}
+
+export const d2prom = ():DomainDefinition => {
 
   const domainDefinition = new DomainDefinition( `${__dirname}/config-types/d2prom` );
 

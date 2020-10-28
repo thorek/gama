@@ -1,7 +1,6 @@
 import YAML from 'yaml';
 
 import { Runtime } from '../core/runtime';
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 const domainDefinition = YAML.parse(`
@@ -83,18 +82,16 @@ const domainDefinition = YAML.parse(`
 
 describe('Ploymorph Types', () => {
 
-  let context!:Runtime;
+  let runtime!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await RuntimeOld.create({ name: 'test:polymorph', domainDefinition } );
-    await runtime.server({});
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
+    runtime = await Runtime.create({ name: 'test:polymorph', domainDefinition } );
+    await Seeder.create( runtime ).seed( true );
     // console.log( printSchema( await runtime.schema() ));
   })
 
   xit('should find polymorph assocTo',  async () => {
-    const delta = context.entities['Delta'];
+    const delta = runtime.entities['Delta'];
     const delta1 = await delta.findOneByAttribute( {name: 'delta1' } );
     if( ! delta1 ) return expect( delta1 ).toBeDefined();
     const ab1 = await delta1.assocTo('AlphaBeta');
@@ -109,7 +106,7 @@ describe('Ploymorph Types', () => {
   })
 
   xit( 'should resolve polymorph assocFrom', async () => {
-    const delta = context.entities['Delta'];
+    const delta = runtime.entities['Delta'];
     const delta1 = await delta.findOneByAttribute( {name: 'delta1' } );
     if( ! delta1 ) return expect( delta1 ).toBeDefined();
     const supers = await delta1.assocFrom('Super')
@@ -117,7 +114,7 @@ describe('Ploymorph Types', () => {
   })
 
   it( 'should find union types', async () => {
-    const ab = context.entities['AlphaBeta'];
+    const ab = runtime.entities['AlphaBeta'];
     const abs = await ab.findAll();
     expect( abs.length ).toBe( 5 );
   })

@@ -17,11 +17,11 @@ export type ValidationViolation = {
 export class EntityValidator  {
 
   private validator!:Validator;
-  get context() { return this.entity.context }
+  get runtime() { return this.entity.runtime }
 
 
   constructor( public readonly entity:Entity ){
-    this.validator = entity.context.validator( entity );
+    this.validator = entity.runtime.validator( entity );
   }
 
   /**
@@ -67,7 +67,7 @@ export class EntityValidator  {
    *
    */
   private async validateRequiredAssocTo( assocTo:AssocType, attributes:any ):Promise<ValidationViolation|undefined> {
-    const refEntity = this.context.entities[assocTo.type];
+    const refEntity = this.runtime.entities[assocTo.type];
     const foreignKey = _.get( attributes, refEntity.foreignKey );
     if( ! foreignKey ) return {attribute: refEntity.foreignKey, message: 'must be provided'};
     try {
@@ -101,7 +101,7 @@ export class EntityValidator  {
     const attrValues = _.set({}, name, value );
     let scopeMsg = '';
     if( _.isString( attribute.unique ) ){
-      const scopeEntity = this.context.entities[attribute.unique];
+      const scopeEntity = this.runtime.entities[attribute.unique];
       const scope = scopeEntity ? scopeEntity.foreignKey : attribute.unique;
       const scopeValue = _.get( attributes, scope );
       _.set(attrValues, scope, scopeValue );

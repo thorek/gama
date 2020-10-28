@@ -18,6 +18,7 @@
     "mongodb": "^3.3.2",
     "validate.js": "^0.13.1",
     "validator.js": "^2.0.4",
+    "apollo-server-express": "^2.9.3",
     "yaml": "^1.7.2"
   },
   "devDependencies": {

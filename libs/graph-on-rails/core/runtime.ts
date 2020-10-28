@@ -29,7 +29,7 @@ export type Config = {
   contextRoles?:string
   schemaBuilder?:SchemaBuilder[]
   metaDataBuilder?:SchemaBuilder
-  domainDefinition?:DomainDefinition|DomainConfiguration|string|string[]
+  domainDefinition:DomainDefinition|DomainConfiguration|string|string[]
   uploadRootDir?:string[]
 }
 
@@ -50,7 +50,7 @@ export class Runtime {
   /**
    *
    */
-  static async create( config:Config|DomainConfiguration|string ):Promise<Runtime> {
+  static async create( config:Config|DomainDefinition|DomainConfiguration|string ):Promise<Runtime> {
     const runtime = new Runtime( this.resolveConfig( config ) );
     await runtime.init();
     await runtime.createSchema();
@@ -69,12 +69,14 @@ export class Runtime {
       metaDataBuilder: new MetaDataBuilder(),
       contextUser: 'user',
       contextRoles: 'roles',
-      uploadRootDir: ['server', 'uploads']
+      uploadRootDir: ['server', 'uploads'],
+      domainDefinition: 'none'
     };
   }
 
-  private static resolveConfig(config:Config|DomainConfiguration|string):Config {
+  private static resolveConfig(config:Config|DomainDefinition|DomainConfiguration|string):Config {
     if( _.isString( config ) ) config = { domainDefinition: config };
+    if( config instanceof DomainDefinition ) config = { domainDefinition: config as DomainDefinition };
     if( ! _.has( config, 'domainDefinition') ) config = { domainDefinition: config as DomainConfiguration };
     return _.defaults( config, this.getDefaultConfig() );
   }
@@ -85,7 +87,7 @@ export class Runtime {
   }
 
   async init(){
-    if( ! _.isFunction(this.config.dataStore) ) throw new Error('Context - you must provide a dataStore factory method' );
+    if( ! _.isFunction(this.config.dataStore) ) throw new Error('Runtime - you must provide a dataStore factory method' );
     this.dataStore = await this.config.dataStore( this.config.name );
   }
 
@@ -97,28 +99,28 @@ export class Runtime {
 
 
   validator( entity:Entity ) {
-    if( ! this.config.validator ) throw new Error('Context - you must provide a validator factory method' );
+    if( ! this.config.validator ) throw new Error('Runtime - you must provide a validator factory method' );
     return this.config.validator(entity);
   }
 
   entityResolver( entity:Entity ) {
-    if( ! this.config.entityResolver ) throw new Error('Context - you must provide an entityResolver factory method' );
+    if( ! this.config.entityResolver ) throw new Error('Runtime - you must provide an entityResolver factory method' );
     return this.config.entityResolver(entity);
   }
 
   entityPermissions( entity:Entity ) {
-    if( ! this.config.entityPermissions ) throw new Error('Context - you must provide an entityPermissions factory method' );
+    if( ! this.config.entityPermissions ) throw new Error('Runtime - you must provide an entityPermissions factory method' );
     return this.config.entityPermissions(entity);
   }
 
   entityFileSave( entity:Entity ) {
-    if( ! this.config.entityFileSave ) throw new Error('Context - you must provide an entityFileSave factory method' );
+    if( ! this.config.entityFileSave ) throw new Error('Runtime - you must provide an entityFileSave factory method' );
     return this.config.entityFileSave(entity);
   }
 
 
   entitySeeder( entity:Entity ) {
-    if( ! this.config.entitySeeder ) throw new Error('Context - you must provide an entitySeeder factory method' );
+    if( ! this.config.entitySeeder ) throw new Error('Runtime - you must provide an entitySeeder factory method' );
     return this.config.entitySeeder(entity);
   }
 

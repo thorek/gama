@@ -134,14 +134,14 @@ export class ConfigEntity extends Entity {
   protected getDescription():string|undefined { return this.entityConfig.description || super.getDescription() }
 
   protected getEntites():Entity[] {
-    if( this.isInterface ) return _.filter( this.context.entities, entity => entity.implementsEntityInterface( this ) );
-    return _.compact( _.map( this.entityConfig.union, entity => this.context.entities[entity] ) );
+    if( this.isInterface ) return _.filter( this.runtime.entities, entity => entity.implementsEntityInterface( this ) );
+    return _.compact( _.map( this.entityConfig.union, entity => this.runtime.entities[entity] ) );
   }
 
   protected getImplements():Entity[] {
     if( ! this.entityConfig.implements ) return super.getImplements();
     if( ! _.isArray( this.entityConfig.implements ) ) this.entityConfig.implements = [this.entityConfig.implements];
-    return _.compact( _.map( this.entityConfig.implements, entity => this.context.entities[entity] ) );
+    return _.compact( _.map( this.entityConfig.implements, entity => this.runtime.entities[entity] ) );
   }
 
   protected getIsInterface():boolean { return this.entityConfig.interface === true }

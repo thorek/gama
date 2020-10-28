@@ -133,8 +133,8 @@ export class SchemaFactory {
   /**
    *
    */
-  async createSchema(runtime:Runtime):Promise<GraphQLSchema> {
-    runtime.graphx.init();
+  async createSchema(runtime:Runtime ):Promise<GraphQLSchema> {
+    runtime.graphx.init( runtime );
     this.createScalars( runtime );
     await this.buildFromBuilders( runtime );
     await this.extendSchema( runtime );

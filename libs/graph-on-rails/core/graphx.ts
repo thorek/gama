@@ -28,9 +28,9 @@ export class GraphX {
 
   //
   //
-  init(){
+  init( runtime:Runtime ){
     this.createQueryType();
-    this.createMutationType();
+    this.createMutationType( runtime );
     this.createValidationViolationType();
     this.createEntityPagingType();
     this.createFileType();
@@ -39,7 +39,7 @@ export class GraphX {
   /**
    *
    */
-  private createMutationType():void {
+  private createMutationType( runtime:Runtime ):void {
     this.createType( 'mutation', {
       name: 'Mutation',
       fields: () => ( {
@@ -51,8 +51,7 @@ export class GraphX {
         seed: {
           type: GraphQLString,
           args: { truncate: { type: GraphQLBoolean } },
-          resolve: ( root:any, args:any, context:any ) => Seeder.create(
-            context.context as Runtime ).seed( args.truncate )
+          resolve: ( root:any, args:any, context:any ) => Seeder.create( runtime ).seed( args.truncate )
         }
       } )
     } );

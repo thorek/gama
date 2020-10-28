@@ -122,7 +122,7 @@ export class EntitySeeder extends EntityModule {
    */
   private async seedAssocTo( assocTo: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
     try {
-      const refEntity = this.context.entities[assocTo.type];
+      const refEntity = this.runtime.entities[assocTo.type];
       if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
 
       const value = _.get( seed, refEntity.typeName );
@@ -144,7 +144,7 @@ export class EntitySeeder extends EntityModule {
    */
   private async seedAssocToMany( assocToMany: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
     try {
-      const refEntity = this.context.entities[assocToMany.type];
+      const refEntity = this.runtime.entities[assocToMany.type];
       if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
 
       let value:string|string[] = _.get( seed, refEntity.typeName );
@@ -190,12 +190,12 @@ export class EntitySeeder extends EntityModule {
    *
    */
   private async evalFake( value:any, seed:any, idsMap?:any ):Promise<any>{
-    const locale = _.get( this.context.config.domainDefinition, 'locale', 'en' )
+    const locale = _.get( this.runtime.config.domainDefinition, 'locale', 'en' )
     const faker = _.get(fakers, locale, FakerEN );
     const ld = _;
     try {
       return _.isFunction( value ) ?
-        Promise.resolve( value( { idsMap, seed, context: this.context } ) ) :
+        Promise.resolve( value( { idsMap, seed, runtime: this.runtime } ) ) :
         ((expression:string) => eval( expression )).call( {}, value );
     } catch (error) {
       console.error( `could not evaluate '${value}'\n`, error);

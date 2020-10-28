@@ -34,9 +34,9 @@ export type AssocToManyType = AssocToType & {
 //
 export abstract class Entity {
 
-  private _context!:Runtime;
-  get context() { return this._context }
-  get graphx() { return this.context.graphx }
+  private _runtime!:Runtime;
+  get runtime() { return this._runtime }
+  get graphx() { return this.runtime.graphx }
   get entityPermissions() { return this._entityPermissions }
   get seeder() { return this._entitySeeder }
   get resolver() { return this._entityResolver }
@@ -56,12 +56,12 @@ export abstract class Entity {
    *
    */
   init( runtime:Runtime ){
-    this._context = context;
-    this.context.entities[this.typeName] = this;
-    this._entityResolver = this.context.entityResolver( this );
-    this._entitySeeder = this.context.entitySeeder( this );
-    this._entityPermissions = this.context.entityPermissions( this );
-    this._entityFileSave = this.context.entityFileSave( this );
+    this._runtime = runtime;
+    this.runtime.entities[this.typeName] = this;
+    this._entityResolver = this.runtime.entityResolver( this );
+    this._entitySeeder = this.runtime.entitySeeder( this );
+    this._entityPermissions = this.runtime.entityPermissions( this );
+    this._entityFileSave = this.runtime.entityFileSave( this );
     this._entityValidator = new EntityValidator( this );
     this._entityAccessor = new EntityAccessor( this );
   }
@@ -162,7 +162,7 @@ export abstract class Entity {
    */
   isAssocToAttribute( attribute:string ):boolean {
     return _.find( this.assocTo, assocTo => {
-      const ref = this.context.entities[assocTo.type];
+      const ref = this.runtime.entities[assocTo.type];
       return ref && ref.foreignKey === attribute;
     }) != null;
   }

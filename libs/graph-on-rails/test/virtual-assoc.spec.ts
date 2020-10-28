@@ -1,19 +1,17 @@
 import { printSchema } from 'graphql';
 import _ from 'lodash';
 
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 import { Runtime } from '../core/runtime';
 
 describe('Associations', () => {
 
-  let runtime!:RuntimeOld;
-  let runtime:Runtime;
+  let runtime!:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await RuntimeOld.create({ name: 'test:virtual-assoc',
+    runtime = await Runtime.create({ name: 'test:virtual-assoc',
       domainDefinition: {
         entity: {
           Alpha: {
@@ -61,16 +59,15 @@ describe('Associations', () => {
         }
       }
     });
-    await runtime.server();
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
+
+    await Seeder.create( runtime ).seed( true );
   })
 
   //
   //
   it('should follow assocTo', async ()=> {
-    const alpha = context.entities['Alpha'];
-    const beta = context.entities['Beta'];
+    const alpha = runtime.entities['Alpha'];
+    const beta = runtime.entities['Beta'];
 
     const alpha1 = await alpha.findOneByAttribute( {name: 'alpha1'} );
     const beta1 = await beta.findOneByAttribute( {name: 'beta1'} );
@@ -86,7 +83,7 @@ describe('Associations', () => {
   //
   //
   it('should follow assocFrom', async ()=> {
-    const beta = context.entities['Beta'];
+    const beta = runtime.entities['Beta'];
     const beta1 = await beta.findOneByAttribute( {name: 'beta1'} );
     const alphas1 = await beta1?.assocFrom('Alpha');
     expect( alphas1 ).toHaveLength( 2 );
@@ -102,7 +99,7 @@ describe('Associations', () => {
   //
   //
   it('should follow assocToMany', async ()=> {
-    // const delta = context.entities['Delta'];
+    // const delta = runtime.entities['Delta'];
 
     // const delta1 = await delta.findOneByAttribute( {name: 'delta1' } );
     // const alphas1 = await delta1.alphas;

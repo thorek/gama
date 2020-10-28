@@ -1,15 +1,14 @@
 import _ from 'lodash';
 
 import { Runtime } from '../core/runtime';
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 describe('Validations', () => {
 
-  let context!:Runtime;
+  let runtime!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await RuntimeOld.create( { name: 'test:validations', domainDefinition: {
+    runtime = await Runtime.create( { name: 'test:validations', domainDefinition: {
       entity: {
         Alpha: {
           attributes: {
@@ -47,9 +46,7 @@ describe('Validations', () => {
       }}
     });
 
-    await runtime.server({});
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
+    await Seeder.create( runtime ).seed( true );
   })
 
   it('no', () => {
@@ -59,7 +56,7 @@ describe('Validations', () => {
   //
   //
   it('should validate attributes', async () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
     let result = await alpha.validate( { some: 'some' } );
     expect( result ).toHaveLength( 1 );
     expect( result ).toEqual( expect.arrayContaining([
@@ -89,7 +86,7 @@ describe('Validations', () => {
   //
   //
   it( 'should validate required assocTo', async () => {
-    const beta = context.entities['Beta'];
+    const beta = runtime.entities['Beta'];
     const result = await beta.validate( { name: 'aName' } );
     expect( result ).toHaveLength( 1 );
     expect( result ).toEqual( expect.arrayContaining([
@@ -103,7 +100,7 @@ describe('Validations', () => {
   //
   //
   it( 'should validate existing foreignKey', async () => {
-    const beta = context.entities['Beta'];
+    const beta = runtime.entities['Beta'];
     let result = await beta.validate( { name: 'someName', deltaId: '1234' } );
     expect( result ).toHaveLength( 1 );
     expect( result ).toEqual( expect.arrayContaining([
@@ -113,7 +110,7 @@ describe('Validations', () => {
       })
     ]));
 
-    const alpha = context.entities['Alpha']; // to get a valid but not matching id
+    const alpha = runtime.entities['Alpha']; // to get a valid but not matching id
     const alpha1 = _.first( await alpha.findByAttribute( {name: 'alpha1'}) );
     result = await beta.validate( { name: 'someName', deltaId: alpha1?.id } );
     expect( result ).toHaveLength( 1 );
@@ -124,7 +121,7 @@ describe('Validations', () => {
       })
     ]));
 
-    const delta = context.entities['Delta'];
+    const delta = runtime.entities['Delta'];
     const delta1 = await delta.findOneByAttribute({name: 'delta1'});
     expect( delta1 ).toBeDefined()
     result = await beta.validate( { name: 'someName', deltaId: delta1?.id } );
@@ -134,7 +131,7 @@ describe('Validations', () => {
   //
   //
   it('should have validation message for unique attribute', async () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
 
     const result = await alpha.validate( { name: 'alpha1', some: 'some' } );
     expect( result ).toHaveLength( 1 );
@@ -149,8 +146,8 @@ describe('Validations', () => {
   //
   //
   it('should have validation message for unique attribute with scope', async () => {
-    const alpha = context.entities['Alpha'];
-    const delta = context.entities['Delta'];
+    const alpha = runtime.entities['Alpha'];
+    const delta = runtime.entities['Delta'];
     const delta1 = _.first( await delta.findByAttribute({name: 'delta1'}) );
     const delta2 = _.first( await delta.findByAttribute({name: 'delta2'}) );
 
@@ -172,7 +169,7 @@ describe('Validations', () => {
   //
   //
   it('should validate the updated item (not just the input)', async () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
     const alpha1 = _.first( await alpha.findByAttribute({name: 'alpha1'}));
     expect( alpha1 ).toBeDefined();
     const result = await alpha.validate( { id: alpha1?.id } );
@@ -182,7 +179,7 @@ describe('Validations', () => {
   //
   //
   it( 'should not complain for update with the same unique value', async () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
     const alpha1 = _.first( await alpha.findByAttribute({name: 'alpha1'}));
     const result = await alpha.validate( { id: alpha1?.id, name: 'alpha1' } );
     expect( result ).toHaveLength( 0 );

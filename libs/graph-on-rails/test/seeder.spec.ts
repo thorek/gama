@@ -1,20 +1,18 @@
 import { printSchema } from 'graphql';
 import _ from 'lodash';
 
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 import { Runtime } from '../core/runtime';
 
 
 describe('Seeder', () => {
 
-  let runtime!:RuntimeOld;
-  let runtime:Runtime;
+  let runtime!:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await RuntimeOld.create({ name: 'test:seeder',
+    runtime = await Runtime.create({ name: 'test:seeder',
       domainDefinition: {
         enum: {
           AngularFunctions: ['sin', 'cos', 'tan', 'cot']
@@ -59,16 +57,15 @@ describe('Seeder', () => {
         }
       }
     });
-    await runtime.server();
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
+
+    await Seeder.create( runtime ).seed( true );
   })
 
   //
   //
   it('should seed attributes', async ()=> {
-    const alpha = context.entities['Alpha'];
-    const beta = context.entities['Beta'];
+    const alpha = runtime.entities['Alpha'];
+    const beta = runtime.entities['Beta'];
 
     const alpha1 = await alpha.findOneByAttribute( {name: 'alpha1'} );
     const alpha2 = await alpha.findOneByAttribute( {name: 'alpha2'} );
@@ -85,8 +82,8 @@ describe('Seeder', () => {
   });
 
   it( 'should seed assocTo References', async ()=> {
-    const alpha = context.entities['Alpha'];
-    const beta = context.entities['Beta'];
+    const alpha = runtime.entities['Alpha'];
+    const beta = runtime.entities['Beta'];
 
     const alpha1 = await alpha.findOneByAttribute( {name: 'alpha1'} );
     const beta1 = await beta.findOneByAttribute( {name: 'beta1'} );
@@ -105,7 +102,7 @@ describe('Seeder', () => {
   })
 
   it( 'should seed assocToMany References', async ()=> {
-    const delta = context.entities['Delta'];
+    const delta = runtime.entities['Delta'];
 
     const delta1 = await delta.findOneByAttribute( {name: 'delta1'} );
     const delta2 = await delta.findOneByAttribute( {name: 'delta2'} );

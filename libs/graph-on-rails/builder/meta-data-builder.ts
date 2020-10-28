@@ -78,8 +78,8 @@ export class MetaDataBuilder extends SchemaBuilder {
   protected resolve( root:any, args:any, context:any ):Entity[] {
     const path = _.get( args, 'path' );
     return path ?
-      _.filter( this.context.entities, entity => entity.path === path ) :
-      _.values( this.context.entities );
+      _.filter( this.runtime.entities, entity => entity.path === path ) :
+      _.values( this.runtime.entities );
   }
 
   protected resolveFields( root:any ):any[]{
@@ -92,7 +92,7 @@ export class MetaDataBuilder extends SchemaBuilder {
   resolveAssocTo( root:any ) {
     const entity = root as Entity;
     return _.map( entity.assocTo, assocTo => {
-      const refEntity = this.context.entities[assocTo.type];
+      const refEntity = this.runtime.entities[assocTo.type];
       return {
         path: refEntity.path,
         query: refEntity.singular,
@@ -106,8 +106,8 @@ export class MetaDataBuilder extends SchemaBuilder {
   resolveAssocToMany( root:any ) {
     const entity = root as Entity;
     return _.map( entity.assocToMany, assocToMany => {
-      const refEntity = this.context.entities[assocToMany.type];
-      const scopeEntity = assocToMany.scope ? this.context.entities[assocToMany.scope] : undefined;
+      const refEntity = this.runtime.entities[assocToMany.type];
+      const scopeEntity = assocToMany.scope ? this.runtime.entities[assocToMany.scope] : undefined;
       return {
         path: refEntity.path,
         query: refEntity.plural,
@@ -122,7 +122,7 @@ export class MetaDataBuilder extends SchemaBuilder {
   resolveAssocFrom( root:any ) {
     const entity = root as Entity;
     return _.map( entity.assocFrom, assocFrom => {
-      const refEntity = this.context.entities[assocFrom.type];
+      const refEntity = this.runtime.entities[assocFrom.type];
       return {
         path: refEntity.path,
         query: refEntity.plural,

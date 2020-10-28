@@ -21,7 +21,7 @@ export class MutationConfigBuilder extends MutationBuilder {
   }
 
   name() { return this._name }
-  mutation(){ return this.config( this.context ) }
+  mutation(){ return this.config( this.runtime ) }
 
   constructor( protected readonly _name:string, protected readonly config:MutationConfig ){ super() }
 }

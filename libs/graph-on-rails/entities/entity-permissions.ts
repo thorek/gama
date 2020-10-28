@@ -79,7 +79,7 @@ export class EntityPermissions extends EntityModule {
   }
 
   private async getAssignedIdsFromAssoc( assoc:AssocToType, resolverCtx:ResolverContext ):Promise<string[]>{
-    const entity = this.context.entities[assoc.type];
+    const entity = this.runtime.entities[assoc.type];
     if( ! entity ) throw new Error(`unknown type '${assoc.type}'`);
     const ids = await entity.entityPermissions.getAssignedIds( resolverCtx );
     const items = await this.entity.accessor.findByAttribute( _.set( {}, entity.foreignKey, ids ) );
@@ -88,9 +88,9 @@ export class EntityPermissions extends EntityModule {
 
   private async getAssignedIdsFromUser( resolverCtx:ResolverContext ):Promise<string[]>{
     if( ! this.entity.assign ) throw new Error(`no assign provided`);
-    if( ! this.context.contextUser ) throw new Error(`no contextUser provided`);
-    const user = _.get( resolverCtx.context, this.context.contextUser );
-    if( ! user ) throw new Error(`no such contextUser '${this.context.contextUser}'`);
+    if( ! this.runtime.contextUser ) throw new Error(`no contextUser provided`);
+    const user = _.get( resolverCtx.context, this.runtime.contextUser );
+    if( ! user ) throw new Error(`no such contextUser '${this.runtime.contextUser}'`);
     return _.get( user, this.entity.assign );
   }
 
@@ -105,7 +105,7 @@ export class EntityPermissions extends EntityModule {
   async getPermittedIds( action:CrudAction, resolverCtx:ResolverContext ):Promise<boolean|number[]> {
     if( ! this.isUserAndRolesDefined() ) return true;
     if( ! this.entity.permissions ) return true;
-    const user = _.get( resolverCtx.context, this.context.contextUser as string );
+    const user = _.get( resolverCtx.context, this.runtime.contextUser as string );
     const roles = this.getUserRoles( user );
     let ids:number[] = [];
     for( const role of roles ){
@@ -185,7 +185,7 @@ export class EntityPermissions extends EntityModule {
    */
   protected getAssocToEntity( entity:undefined|string ):null|Entity {
     const entityIsAssocTo = _.find( this.entity.assocTo, refEntity => refEntity.type === entity );
-    if( entityIsAssocTo ) return this.context.entities[ entity as string ];
+    if( entityIsAssocTo ) return this.runtime.entities[ entity as string ];
     console.warn(`'${entity}' is not a assocTo of '${this.entity.name}'`);
     return null;
   }
@@ -302,7 +302,7 @@ export class EntityPermissions extends EntityModule {
    *
    */
   protected isUserAndRolesDefined():boolean {
-    return this.context.contextUser != null && this.context.contextRoles != null;
+    return this.runtime.contextUser != null && this.runtime.contextRoles != null;
   }
 
   /**
@@ -310,7 +310,7 @@ export class EntityPermissions extends EntityModule {
    */
   protected getUserRoles( user:string ):string[] {
     if( ! user ) throw 'should not happen, no user in context';
-    let roles:any = _.get( user, this.context.contextRoles as string );
+    let roles:any = _.get( user, this.runtime.contextRoles as string );
     if( ! roles ) throw new Error( `User has no role - ${JSON.stringify( user ) }` );
     return _.isArray( roles ) ? roles : [roles];
   }

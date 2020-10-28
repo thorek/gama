@@ -1,16 +1,15 @@
 import _ from 'lodash';
 
 import { Runtime } from '../core/runtime';
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
 
 describe('Resolver', () => {
 
-  let context!:Runtime;
+  let runtime!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await RuntimeOld.create( { name: 'test:resolver', domainDefinition: {
+    runtime = await Runtime.create( { name: 'test:resolver', domainDefinition: {
       entity: {
         Alpha: {
           attributes: {
@@ -26,23 +25,20 @@ describe('Resolver', () => {
         }
       }
     }});
-    await runtime.server({});
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
-
+    await Seeder.create( runtime ).seed( true );
     // logSchema( gor );
   })
 
   it('should find entities', () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
     expect( alpha ).toBeDefined();
-    const foo = context.entities['Foo'];
+    const foo = runtime.entities['Foo'];
     expect( foo ).toBeUndefined();
   })
 
   it('should find items by string filter', async () => {
     const resolverCtx = { root:{}, args:{}, context:{} };
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
     resolverCtx.args = { filter: { name: { is: 'a1' } }};
     const a1 = await alpha.resolver.resolveTypes( resolverCtx );
     expect( a1 ).toHaveLength(1);
@@ -56,7 +52,7 @@ describe('Resolver', () => {
 
   it('should find items by int filter', async () => {
     const resolverCtx = { root:{}, args:{}, context:{} };
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
 
     resolverCtx.args = { filter: { number: { lt: 2 } } };
     const aLt2 = await alpha.resolver.resolveTypes( resolverCtx );

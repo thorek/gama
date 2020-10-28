@@ -14,8 +14,8 @@ export class SimpleLogin {
   static addToDefinition( domainDefinition:DomainDefinition, config:ApolloServerExpressConfig ):void {
     const login = new SimpleLogin();
     domainDefinition.add( login.getConfiguration() );
-    config.context = (contextExpress:{req:express.Request }) => {
-      const token:string|undefined = contextExpress.req.headers.authorization;
+    config.context = (context:{req:express.Request }) => {
+      const token:string|undefined = context.req.headers.authorization;
       return { user: login.getUser(token) };
     }
   }

@@ -106,7 +106,7 @@ export class EntityResolver extends EntityModule {
    *
    */
   private async resolvePolymorphAssocTo( refEntity:Entity, resolverCtx:ResolverContext, id:any ):Promise<any> {
-    const polymorphType = this.context.entities[_.get( resolverCtx.root, refEntity.typeField )];
+    const polymorphType = this.runtime.entities[_.get( resolverCtx.root, refEntity.typeField )];
     const enit = await polymorphType.findById( id );
     _.set( enit.item, '__typename', polymorphType.typeName );
     return enit.item;

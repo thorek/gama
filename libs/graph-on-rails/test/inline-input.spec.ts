@@ -3,7 +3,6 @@ import _ from 'lodash';
 import YAML from 'yaml';
 
 import { Runtime } from '../core/runtime';
-import { RuntimeOld } from '../core/runtime';
 import { ResolverContext } from '../core/resolver-context';
 import { Seeder } from '../core/seeder';
 
@@ -36,20 +35,18 @@ const domainConfiguration = YAML.parse(`
 
 describe('Inline Input', () => {
 
-  let context!:Runtime;
+  let runtime!:Runtime;
 
   beforeAll( async () => {
-    const runtime = await RuntimeOld.create( { name: 'test:inline-input', domainDefinition: domainConfiguration } );
-    await runtime.server({});
-    context = runtime.context;
-    await Seeder.create( runtime.context ).seed( true );
+    runtime = await Runtime.create( { name: 'test:inline-input', domainDefinition: domainConfiguration } );
+    await Seeder.create( runtime ).seed( true );
     // console.log( printSchema( await runtime.schema() ));
   })
 
   it('should find create entities',  async () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
     expect( alpha ).toBeDefined();
-    const beta = context.entities['Beta'];
+    const beta = runtime.entities['Beta'];
     expect( beta ).toBeDefined();
     await beta.resolver.saveType( {root:{}, args:{ beta: { name: 'beta1', color: 'RED'} }, context:{} } );
     const beta1 = await beta.findOneByAttribute( {name: 'beta1' } );
@@ -61,7 +58,7 @@ describe('Inline Input', () => {
 
 
   it('should find create entities with inline input',  async () => {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
 
     const resolverCtx:ResolverContext = { root:{}, args:{}, context:{} }
     resolverCtx.args = {

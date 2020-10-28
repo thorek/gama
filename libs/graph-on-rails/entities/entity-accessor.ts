@@ -23,7 +23,7 @@ export class NotFoundError extends Error {
 export class EntityAccessor extends EntityModule {
 
   protected deleter = new EntityDeleter(this.entity);
-  get dataStore() { return this.entity.context.dataStore }
+  get dataStore() { return this.entity.runtime.dataStore }
 
   /**
    *
@@ -104,7 +104,7 @@ export class EntityAccessor extends EntityModule {
    *
    */
   private async createInlineInput( assocTo: AssocType, attrs: any ) {
-    const refEntity = this.context.entities[assocTo.type];
+    const refEntity = this.runtime.entities[assocTo.type];
     const input = _.get( attrs, refEntity.singular );
     if( ! input ) return;
     if ( _.has( attrs, refEntity.foreignKey ) ) throw new Error(

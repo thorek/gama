@@ -54,8 +54,8 @@ export class EntityBuilder extends TypeBuilder {
    *
    */
   init( runtime:Runtime ){
-    super.init( context );
-    this.entity.init( context );
+    super.init( runtime );
+    this.entity.init( runtime );
   }
 
   //
@@ -198,7 +198,7 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private addAssocToForeignKeyToInput( fields:any, ref:AssocType ):any {
-    const refEntity = this.context.entities[ref.type];
+    const refEntity = this.runtime.entities[ref.type];
     _.set( fields, refEntity.foreignKey, { type: GraphQLID });
     if( refEntity.isPolymorph ) _.set( fields, refEntity.typeField,
       { type: this.graphx.type( refEntity.typesEnumName ) } );
@@ -210,7 +210,7 @@ export class EntityBuilder extends TypeBuilder {
   //
   private addAssocToInputToInput( fields:any, ref:AssocToType ):any {
     if( ref.input ) {
-      const refEntity = this.context.entities[ref.type];
+      const refEntity = this.runtime.entities[ref.type];
       _.set( fields, refEntity.typeQuery, {type: this.graphx.type( refEntity.createInput )} );
     }
     return fields;
@@ -219,14 +219,14 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private addAssocToManyForeignKeysToInput( fields:any, ref:AssocType ):any {
-    const refEntity = this.context.entities[ref.type];
+    const refEntity = this.runtime.entities[ref.type];
     return _.set( fields, refEntity.foreignKeys, { type: GraphQLList( GraphQLID ) });
   }
 
   //
   //
   private addAssocToReferenceToType( fields:any, ref:AssocType ):any {
-    const refEntity = this.context.entities[ref.type];
+    const refEntity = this.runtime.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName);
     return _.set( fields, refEntity.typeQuery, {
       type: refObjectType,
@@ -238,7 +238,7 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private addAssocToManyReferenceToType( fields:any, ref:AssocType ):any {
-    const refEntity = this.context.entities[ref.type];
+    const refEntity = this.runtime.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName);
     return _.set( fields, refEntity.plural, {
       type: new GraphQLList( refObjectType),
@@ -259,7 +259,7 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private addAssocFromReferenceToType(fields:any, ref:AssocType):any {
-    const refEntity = this.context.entities[ref.type];
+    const refEntity = this.runtime.entities[ref.type];
     const refObjectType = this.graphx.type(refEntity.typeName)
     return _.set( fields, refEntity.plural, {
       type: new GraphQLList( refObjectType ),
@@ -271,7 +271,7 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private checkReference( direction:'assocTo'|'assocFrom', ref:AssocType ):boolean {
-    const refEntity = this.context.entities[ref.type];
+    const refEntity = this.runtime.entities[ref.type];
     if( ! (refEntity instanceof Entity ) ) {
       console.warn( `'${this.entity.typeName}:${direction}': no such entity type '${ref.type}'` );
       return false;
@@ -525,7 +525,7 @@ export class EntityBuilder extends TypeBuilder {
     }
     if( ! _.isString( attr.filterType ) ) return attr.filterType;
     try {
-      return this.context.graphx.type(attr.filterType);
+      return this.runtime.graphx.type(attr.filterType);
     } catch (error) {
       console.error(`no such filterType:`, attr.filterType, ` - skipping filter`,  );
     }

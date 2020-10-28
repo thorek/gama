@@ -22,8 +22,8 @@ export abstract class EnumBuilder extends TypeBuilder {
   }
 
   protected createEnumFilter():void {
-    const filterType = this.context.dataStore.getEnumFilterType( this.name() );
-    filterType.init( this.context );
+    const filterType = this.runtime.dataStore.getEnumFilterType( this.name() );
+    filterType.init( this.runtime );
     filterType.build();
   }
 

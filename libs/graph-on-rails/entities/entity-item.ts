@@ -7,7 +7,7 @@ import { ValidationViolation } from './entity-validator';
 //
 export class EntityItem {
 
-  get context() { return this.entity.context }
+  get runtime() { return this.entity.runtime }
   get id() { return _.toString( this.item.id ) }
   get name() { return this.entity.name }
 
@@ -28,12 +28,12 @@ export class EntityItem {
   async assocTo( name:string ):Promise<EntityItem|undefined> {
     const assocTo = _.find( this.entity.assocTo, assocTo => assocTo.type === name );
     if( ! assocTo ) return this.warn( `no such assocTo '${name}'`, undefined );
-    let foreignEntity = this.context.entities[assocTo.type];
+    let foreignEntity = this.runtime.entities[assocTo.type];
     if( ! foreignEntity ) return this.warn( `assocTo '${name}' is no entity`, undefined );
     const foreignKey = _.get( this.item, foreignEntity.foreignKey);
     if( foreignEntity.isPolymorph ){
       const specificType = _.get( this.item, foreignEntity.typeField );
-      foreignEntity = this.context.entities[specificType];
+      foreignEntity = this.runtime.entities[specificType];
       if( ! foreignEntity ) return undefined;
     }
     return foreignKey ? foreignEntity.findById( foreignKey ) : undefined;
@@ -45,7 +45,7 @@ export class EntityItem {
   async assocToMany( name:string ):Promise<EntityItem[]> {
     const assocToMany = _.find( this.entity.assocToMany, assocToMany => assocToMany.type === name );
     if( ! assocToMany ) return this.warn(`no such assocToMany '${name}'`, []);
-    const foreignEntity = this.context.entities[assocToMany.type];
+    const foreignEntity = this.runtime.entities[assocToMany.type];
     if( ! foreignEntity ) return this.warn( `assocToMany '${name}' is no entity`, [] );
     const foreignKeys = _.get( this.item, foreignEntity.foreignKeys);
     return foreignEntity.findByIds( foreignKeys );
@@ -57,7 +57,7 @@ export class EntityItem {
   async assocFrom( name:string ):Promise<EntityItem[]>{
     const assocFrom = _.find( this.entity.assocFrom, assocFrom => assocFrom.type === name );
     if( ! assocFrom ) return this.warn(`no such assocFrom '${name}'`, []);
-    const foreignEntity = this.context.entities[assocFrom.type];
+    const foreignEntity = this.runtime.entities[assocFrom.type];
     if( ! foreignEntity ) return this.warn( `assocFrom '${name}' is no entity`, [] );
     const entites = foreignEntity.isPolymorph ? foreignEntity.entities : [foreignEntity];
     const enits:EntityItem[] = [];
@@ -96,12 +96,12 @@ export class EntityItem {
       return _.flatten( _.compact( _.concat(
         _.keys(entity.attributes),
         _(entity.assocTo).map( assocTo => {
-            const entity = this.context.entities[assocTo.type];
+            const entity = this.runtime.entities[assocTo.type];
             if( ! entity ) return;
             return entity.isPolymorph ? [entity.foreignKey, entity.typeField ] : entity.foreignKey;
           }).compact().flatten().value(),
         _(this.entity.assocToMany).map( assocTo => {
-            const entity = this.context.entities[assocTo.type];
+            const entity = this.runtime.entities[assocTo.type];
             if( ! entity ) return;
             return entity.isPolymorph ? [entity.foreignKeys, entity.typeField ] : entity.foreignKeys;
         }).compact().flatten().value()

@@ -83,7 +83,7 @@ export class MongoDbDataStore extends DataStore {
 
     const expression = this.buildExpression( _.first(entities) as Entity, filter );
     const lookups:any[] = _.map( entities, entity => ({
-      $lookup: { 
+      $lookup: {
         from: entity.typesQuery,
         pipeline: [
           { $addFields: { __typename: entity.typeName } },
@@ -206,7 +206,7 @@ export class MongoDbDataStore extends DataStore {
     _.forEach( filter, (condition, field) => {
       const attribute = entity.getAttribute(field);
       if( ! attribute ) return _.set( filterQuery, field, condition );
-      const filterType = entity.context.filterType( attribute.filterType, attribute.graphqlType );
+      const filterType = entity.runtime.filterType( attribute.filterType, attribute.graphqlType );
       if( ! filterType ) return;
       const expression = filterType.getFilterExpression( condition, field );
       if( expression ) _.set( filterQuery, field, expression );

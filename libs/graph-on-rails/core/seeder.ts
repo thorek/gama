@@ -15,9 +15,9 @@ export class Seeder {
    *
    */
   static create( runtime:Runtime ):Seeder {
-    const locale = _.get( context.config.domainDefinition, 'locale', 'en' );
+    const locale = _.get( runtime.config.domainDefinition, 'locale', 'en' );
     _.set(faker, 'locale', locale );
-    return new Seeder( _.values(context.entities) );
+    return new Seeder( _.values(runtime.entities) );
   }
 
   /**

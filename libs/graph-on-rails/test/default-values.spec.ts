@@ -1,7 +1,6 @@
 import { printSchema } from 'graphql';
 import _ from 'lodash';
 
-import { RuntimeOld } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 import { Runtime } from '../core/runtime';
 import { EntityItem } from '../entities/entity-item';
@@ -9,13 +8,12 @@ import { EntityItem } from '../entities/entity-item';
 
 describe('Default Values', () => {
 
-  let runtime!:RuntimeOld;
-  let runtime:Runtime;
+  let runtime!:Runtime;
 
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await RuntimeOld.create( { name: 'text',
+    runtime = await Runtime.create( { name: 'text',
       domainDefinition: {
         entity: {
           Alpha: {
@@ -55,16 +53,16 @@ describe('Default Values', () => {
         }
       }
     });
-    await runtime.server();
-    await Seeder.create( runtime.context ).seed( true );
-    context = runtime.context;
+
+    await Seeder.create( runtime ).seed( true );
+
   })
 
   //
   //
   it('should set default in seed data', async ()=> {
-    const alpha = context.entities['Alpha'];
-    const beta = context.entities['Beta'];
+    const alpha = runtime.entities['Alpha'];
+    const beta = runtime.entities['Beta'];
 
     const alpha1 = await alpha.findOneByAttribute( {name: 'alpha1'} );
     const alpha2 = await alpha.findOneByAttribute( {name: 'alpha2'} );
@@ -85,7 +83,7 @@ describe('Default Values', () => {
   //
   //
   it('should set default when creating / update', async ()=> {
-    const alpha = context.entities['Alpha'];
+    const alpha = runtime.entities['Alpha'];
 
     let alpha5 = await alpha.accessor.save( {name: 'alpha5' } );
     if( ! (alpha5 instanceof EntityItem) ) return expect( false ).toBeTruthy();
