@@ -1,8 +1,7 @@
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
+import { Config, DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
-import { DomainConfiguration, DomainDefinition } from './domain-definition';
-import { Config, Runtime } from './runtime';
 
 export class Apollo {
 

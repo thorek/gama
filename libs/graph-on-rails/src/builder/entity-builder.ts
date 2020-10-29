@@ -1,4 +1,4 @@
-import { GraphQLUpload } from 'apollo-server-express';
+// import { GraphQLUpload } from 'apollo-server-express';
 import {
   GraphQLBoolean,
   GraphQLEnumType,
@@ -465,7 +465,7 @@ export class EntityBuilder extends TypeBuilder {
    */
   private addFilesToSaveMutation( args:any ){
     _.forEach( this.entity.attributes, (attribute, name ) => {
-      if( this.entity.isFileAttribute( attribute) ) _.set( args, name, { type: GraphQLUpload } );
+      // if( this.entity.isFileAttribute( attribute) ) _.set( args, name, { type: GraphQLUpload } );
     });
   }
 
@@ -508,7 +508,7 @@ export class EntityBuilder extends TypeBuilder {
    *
    */
   private getScalarType( name:string, purpose:AttributePurpose ):GraphQLScalarType | undefined {
-    if( name === 'file' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
+    // if( name === 'file' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
     const type = scalarTypes[_.toLower(name)];
     if( type ) return type;
   }

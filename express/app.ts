@@ -1,12 +1,13 @@
 import { ApolloServerExpressConfig } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
-import { login } from 'domain-definition';
 import express from 'express';
-import { Apollo } from 'graph-on-rails';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import path from 'path';
+
+import { Apollo } from './apollo';
+import { login } from './domain-definition';
 
 
 

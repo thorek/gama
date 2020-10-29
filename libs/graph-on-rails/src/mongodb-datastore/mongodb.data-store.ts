@@ -1,4 +1,4 @@
-import ts from 'es6-template-strings';
+// import ts from 'es6-template-strings';
 import _ from 'lodash';
 import { Collection, Db, FilterQuery, MongoClient, ObjectId } from 'mongodb';
 
@@ -257,7 +257,7 @@ export class MongoDbDataStore extends DataStore {
   async getPermittedIds( entity:Entity, permission:object, resolverCtx:ResolverContext ):Promise<number[]> {
     let expression:string|object = _.get( permission, 'filter' );
     if( _.isString( expression ) ) {
-      expression = ts( expression, resolverCtx.context );
+      // expression = ts( expression, resolverCtx.context );
       expression = JSON.parse( expression as string );
     } else {
       expression = this.buildPermittedIdsFilter( entity, permission, resolverCtx.context );

@@ -3,26 +3,24 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "rimraf dist && tsc",
+    "clean": "rimraf build/dist",
+    "build": "rimraf build/dist && tsc",
     "watch:build": "tsc --watch",
     "test": "jest --watch --detectOpenHandles"
   },
   "dependencies": {
     "es6-template-strings": "^2.0.1",
     "faker": "^4.1.0",
-    "graphql": "^15.4.0",
+    "graphql": "^14.2.1 || ^15.0.0",
     "inflection": "^1.12.0",
     "lodash": "^4.17.15",
     "mkdirp": "^1.0.4",
     "mongodb": "^3.3.2",
     "validate.js": "^0.13.1",
     "validator.js": "^2.0.4",
-    "apollo-server-express": "^2.9.3",
     "yaml": "^1.7.2"
   },
   "devDependencies": {
-    "@types/compression": "^1.7.0",
     "@types/faker": "^4.1.12",
     "@types/inflection": "^1.5.28",
     "@types/jest": "^25.2.3",

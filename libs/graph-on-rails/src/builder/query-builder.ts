@@ -24,7 +24,7 @@ export class QueryConfigBuilder extends QueryBuilder {
   }
 
   name() { return this._name }
-  query(){ return this.config.query( this.context ) }
+  query(){ return this.config.query( this.runtime ) }
 
   constructor( protected readonly _name:string, protected readonly config:QueryConfig ){ super() }
 }
