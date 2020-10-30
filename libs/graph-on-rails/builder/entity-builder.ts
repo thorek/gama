@@ -161,6 +161,7 @@ export class EntityBuilder extends TypeBuilder {
   addQueries():void  {
     if( ! this.entity.isPolymorph ) this.addTypeQuery();
     this.addTypesQuery();
+    this.addStatsQuery();
   }
 
   //
@@ -321,8 +322,8 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private addTimestampFields( fields:Dictionary<AttrFieldConfig|undefined>, purpose:AttributePurpose ) {
-    _.set( fields, 'createdAt', this.getFieldConfig( 'createdAt', { graphqlType: 'string' }, purpose ) );
-    _.set( fields, 'updatedAt', this.getFieldConfig( 'updatedAt', { graphqlType: 'string' }, purpose ) );
+    _.set( fields, 'createdAt', this.getFieldConfig( 'createdAt', { graphqlType: 'Date' }, purpose ) );
+    _.set( fields, 'updatedAt', this.getFieldConfig( 'updatedAt', { graphqlType: 'Date' }, purpose ) );
   }
 
   //
@@ -416,6 +417,23 @@ export class EntityBuilder extends TypeBuilder {
           paging: { type: this.graphx.type( 'EntityPaging' ) }
         },
         resolve: (root:any, args:any, context:any) => this.resolver.resolveTypes( {root, args, context} )
+      });
+    });
+  }
+
+  /**
+   *
+   */
+  protected addStatsQuery(){
+    const name = this.entity.statsQuery;
+    if( ! name ) return;
+    this.graphx.type( 'query' ).extendFields( () => {
+      return _.set( {}, name, {
+        type: this.graphx.type( 'EntityStats' ),
+        args: {
+          filter: { type: this.graphx.type(this.entity.filterName) }
+        },
+        resolve: (root:any, args:any, context:any) => this.resolver.resolveStats( {root, args, context} )
       });
     });
   }

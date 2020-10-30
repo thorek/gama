@@ -43,10 +43,10 @@ export class StringFilterType extends FilterType{
       case 'isNot': return {$ne: operand } ;
       case 'in': return { $in: operand };
       case 'notIn': return { $nin: operand };
-      case 'contains': return {$regex : new RegExp(`.*${operand}.*`, i) };
-      case 'doesNotContain':return {$regex : new RegExp(`.*^[${operand}].*`, i) };
-      case 'beginsWith': return {$regex : new RegExp(`^${operand}`, i) };
-      case 'endsWith': return {$regex : new RegExp(`${operand}$`, i) };
+      case 'contains': return { $regex : new RegExp(`.*(${operand}).*`, i) };
+      case 'doesNotContain':return { $not: { $regex : new RegExp(`.*(${operand}).*`, i) } };
+      case 'beginsWith': return { $regex : new RegExp(`^(${operand})`, i) };
+      case 'endsWith': return { $regex : new RegExp(`(${operand})$`, i) };
     }
     console.warn(`StringFilterType unknown operator '${operator}' `);
 

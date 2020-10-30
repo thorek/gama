@@ -67,6 +67,7 @@ export class EntityAccessor extends EntityModule {
    */
   async save( attributes:any, skipValidation = false ):Promise<EntityItem|ValidationViolation[]> {
     this.setDefaultValues( attributes );
+    this.setTimestamps( attributes );
     if( ! skipValidation ){
       const validationViolations = await this.entity.validate( attributes );
       if( _.size( validationViolations ) ) return validationViolations;
@@ -124,4 +125,12 @@ export class EntityAccessor extends EntityModule {
     });
   }
 
+  /**
+   *
+   */
+  private setTimestamps( attributes:any ):void {
+    const now = new Date();
+    if( ! attributes.id ) _.set( attributes, 'createdAt', now );
+    _.set( attributes, 'updatedAt', now );
+  }
 }

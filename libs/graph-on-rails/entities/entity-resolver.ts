@@ -35,6 +35,20 @@ export class EntityResolver extends EntityModule {
   }
 
   /**
+   * TODO - way to trivial implementation - should be refactored into datastore so more
+   * efficiant implementation could become possible
+   */
+  async resolveStats( resolverCtx:ResolverContext ):Promise<any> {
+    await this.entity.entityPermissions.addPermissionToFilter( resolverCtx );
+    const filter = _.get( resolverCtx.args, 'filter');
+    const enits = await this.accessor.findByFilter( filter );
+    const createdFirst = _.get( _.minBy( enits, enit => enit.item['createdAt'] ), 'item.createdAt' );
+    const createdLast = _.get( _.maxBy( enits, enit => enit.item['createdAt'] ), 'item.createdAt' );
+    const updatedLast = _.get( _.maxBy( enits, enit => enit.item['updatedAt'] ), 'item.updatedAt' );
+    return { count: _.size( enits ), createdFirst, createdLast, updatedLast };
+}
+
+  /**
    *
    */
   private getSort( sortString: string ):Sort|undefined {
@@ -66,7 +80,6 @@ export class EntityResolver extends EntityModule {
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
     const attributes = _.get( resolverCtx.args, this.entity.singular );
     const fileInfos = await this.setFileValuesAndGetFileInfos( resolverCtx.args, attributes );
-    this.setTimestamps( attributes );
     const result = await this.accessor.save( attributes );
     if( result instanceof EntityItem ) {
       this.saveFiles( result.item.id, fileInfos );
@@ -192,12 +205,4 @@ export class EntityResolver extends EntityModule {
     for( const fileInfo of fileInfos ) await this.entity.fileSave.saveFile( id, fileInfo );
   }
 
-  /**
-   *
-   */
-  private setTimestamps( attributes:any ):void {
-    const now = _.toString( Date.now() );
-    if( ! attributes.id ) _.set( attributes, 'createdAt', now );
-    _.set( attributes, 'updatedAt', now );
-  }
 }

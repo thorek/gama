@@ -101,6 +101,7 @@ export abstract class Entity {
   get mutationResultName():string { return this.getMutationResultName() }
   get typesQuery():string { return this.getTypesQuery() }
   get typeQuery():string { return this.getTypeQuery() }
+  get statsQuery():string { return this.getStatsQuery() }
   get path() { return this.getPath() }
   get assign() { return this.getAssign() }
 
@@ -133,6 +134,7 @@ export abstract class Entity {
   protected getMutationResultName():string { return `Save${this.typeName}MutationResult` }
   protected getTypesQuery():string { return this.plural }
   protected getTypeQuery():string { return this.singular }
+  protected getStatsQuery():string { return `${this.typesQuery}Stats` }
   protected getDeleteMutation():string { return `delete${this.typeName}` }
   protected getPath() { return inflection.underscore( this.plural ) }
   protected getAssign():string|undefined { return undefined }
