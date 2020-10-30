@@ -1,11 +1,8 @@
-// import { GraphQLUpload } from 'apollo-server-express';
+import { GraphQLUpload } from 'apollo-server-express';
 import {
-  GraphQLBoolean,
   GraphQLEnumType,
-  GraphQLFloat,
   GraphQLID,
   GraphQLInputObjectType,
-  GraphQLInt,
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
@@ -23,13 +20,6 @@ import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { TypeBuilder } from './schema-builder';
 
-const scalarTypes:{[scalar:string]:GraphQLScalarType} = {
-  id: GraphQLID,
-  string: GraphQLString,
-  int: GraphQLInt,
-  float: GraphQLFloat,
-  boolean: GraphQLBoolean
-}
 
 type AttributePurpose = 'createInput'|'updateInput'|'filter'|'type';
 
@@ -526,8 +516,9 @@ export class EntityBuilder extends TypeBuilder {
    *
    */
   private getScalarType( name:string, purpose:AttributePurpose ):GraphQLScalarType | undefined {
-    // if( name === 'file' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
-    const type = scalarTypes[_.toLower(name)];
+    name = _.toLower(name)
+    if( name === 'file' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
+    const type = this.graphx.scalarTypes[name];
     if( type ) return type;
   }
 

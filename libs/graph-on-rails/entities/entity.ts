@@ -182,7 +182,7 @@ export abstract class Entity {
   isFileAttribute( attribute:TypeAttribute ):boolean {
     const name = _.isString( attribute.graphqlType ) ?
       attribute.graphqlType : _.get( attribute.graphqlType, 'name' );
-    return name === 'file';
+    return _.toLower(name) === 'file';
   }
 
 

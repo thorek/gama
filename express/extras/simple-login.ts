@@ -49,10 +49,10 @@ export class SimpleLogin {
     },
     mutation: {
       login: ( runtime:Runtime ) => ({
-        type: 'string',
+        type: runtime.graphx.type('string'),
         args: {
-          username: { type: 'string!' },
-          password: { type: 'string!' }
+          username: { type: runtime.graphx.type('string!') },
+          password: { type: runtime.graphx.type('string') }
         },
         resolve: (root:any, args:any) => this.login( runtime, args.username, args.password )
       })
@@ -61,7 +61,7 @@ export class SimpleLogin {
 
   getUser = (token?:string) => token ? this.users[token] : undefined;
 
-  private login = async (runtime:Runtime, username:string, password:string):Promise<string|undefined> => {
+  private login = async (runtime:Runtime, username:string, password = "" ):Promise<string|undefined> => {
     const entity = runtime.entities['User'];
     if( ! entity ) return runtime.warn( `no 'User' type found`, undefined );
     const user = await entity.findOneByAttribute( { username } );

@@ -7,7 +7,7 @@ import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import path from 'path';
 
-import { doc } from './domain-definition';
+import { login } from './domain-definition';
 
 console.log('Start Express');
 
@@ -18,7 +18,7 @@ console.log('Start Express');
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
   const config:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
-  const domainDefinition = doc();
+  const domainDefinition = login( config );
   const server = await Apollo.server( config, domainDefinition );
   server.applyMiddleware({ app, path: '/graphql' });
 
