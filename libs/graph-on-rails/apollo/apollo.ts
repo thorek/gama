@@ -1,8 +1,13 @@
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
-import { Config, DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
+import { DomainConfiguration, DomainDefinition } from '../core/domain-definition';
+import { Config, Runtime } from '../core/runtime';
 
+/**
+ * I'd love to have this outside of this (library) package - alas Apollo checks somehow that the same constructor
+ * is used - and when I use Apollo in the server/express package he is confused
+ */
 export class Apollo {
 
 

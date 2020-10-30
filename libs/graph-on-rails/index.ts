@@ -6,3 +6,4 @@ export * from './core/runtime';
 export * from './core/domain-definition';
 export * from './core/runtime';
 export * from './core/seeder';
+export * from './apollo/apollo';

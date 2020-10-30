@@ -3,13 +3,14 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "clean": "rimraf build/dist",
-    "build": "rimraf build/dist && tsc",
+    "clean": "rimraf dist",
+    "build": "rimraf dist && tsc",
     "watch:build": "tsc --watch",
     "test": "jest --watch --detectOpenHandles"
   },
   "dependencies": {
     "es6-template-strings": "^2.0.1",
+    "apollo-server-express": "^2.9.3",
     "faker": "^4.1.0",
     "graphql": "^14.2.1 || ^15.0.0",
     "inflection": "^1.12.0",

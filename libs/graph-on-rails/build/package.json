@@ -1,8 +1,0 @@
-{
-  "name": "graph-on-rails",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "author": "betterobjects",
-  "license": "MIT"
-}

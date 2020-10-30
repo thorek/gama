@@ -2,14 +2,14 @@ import { ApolloServerExpressConfig } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+import { Apollo } from 'graph-on-rails';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import path from 'path';
 
-import { Apollo } from './apollo';
-import { login } from './domain-definition';
+import { doc } from './domain-definition';
 
-
+console.log('Start Express');
 
 (async () => {
   const app = express();
@@ -18,7 +18,7 @@ import { login } from './domain-definition';
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
   const config:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
-  const domainDefinition = login( config );
+  const domainDefinition = doc();
   const server = await Apollo.server( config, domainDefinition );
   server.applyMiddleware({ app, path: '/graphql' });
 

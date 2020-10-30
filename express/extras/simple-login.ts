@@ -2,7 +2,7 @@ import { ApolloServerExpressConfig } from 'apollo-server-express';
 import bcrypt from 'bcryptjs';
 import express from 'express';
 import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
-import { GraphQLNonNull, GraphQLString } from 'graphql';
+
 import _ from 'lodash';
 
 //
@@ -49,10 +49,10 @@ export class SimpleLogin {
     },
     mutation: {
       login: ( runtime:Runtime ) => ({
-        type: GraphQLString,
+        type: 'string',
         args: {
-          username: { type: GraphQLNonNull( GraphQLString ) },
-          password: { type: GraphQLNonNull( GraphQLString ) }
+          username: { type: 'string!' },
+          password: { type: 'string!' }
         },
         resolve: (root:any, args:any) => this.login( runtime, args.username, args.password )
       })

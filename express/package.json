@@ -14,8 +14,7 @@
     "apollo-server-express": "^2.9.3",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
-    "graph-on-rails": "file:../libs/graph-on-rails/build",
-    "graphql": "^14.2.1 || ^15.0.0",
+    "graph-on-rails": "file:../libs/graph-on-rails",
     "lodash": "^4.17.15",
     "yaml": "^1.7.2"
   },
@@ -32,9 +31,5 @@
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.0.0-pre.43",
     "typescript": "^3.9.3"
-  },
-  "resolutions": {
-    "graphql": "^14.2.1 || ^15.0.0",
-    "graph-on-rails/**/graphql": "^14.2.1 || ^15.0.0"
   }
 }
