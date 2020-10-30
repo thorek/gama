@@ -1,22 +1,12 @@
 import fs from 'fs';
-import { Entity } from '../entities/entity';
 import _ from 'lodash';
 import path from 'path';
 import YAML from 'yaml';
 
-import { EnumBuilder, EnumConfig } from '../builder/enum-builder';
-import { MutationConfig } from '../builder/mutation-builder';
-import { QueryConfig } from '../builder/query-builder';
-import { EntityConfig } from '../entities/config-entity';
+import { EnumBuilder } from '../builder/enum-builder';
+import { Entity } from '../entities/entity';
+import { DomainConfiguration } from './domain-configuration';
 import { Runtime } from './runtime';
-
-
-export type DomainConfiguration = {
-  entity?:{[name:string]:EntityConfig},
-  enum?:{[name:string]:EnumConfig},
-  query?:{[name:string]:QueryConfig},
-  mutation?:{[name:string]:MutationConfig}
-}
 
 export class DomainDefinition {
 

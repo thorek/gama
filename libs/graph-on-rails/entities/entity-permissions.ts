@@ -1,24 +1,9 @@
+import { AssocToType, CrudAction } from '../core/domain-configuration';
 import _ from 'lodash';
 
 import { ResolverContext } from '../core/resolver-context';
-import { AssocToType, Entity } from './entity';
+import { Entity } from './entity';
 import { EntityModule } from './entity-module';
-
-export type CrudAction = 'read' | 'create' | 'update' | 'delete';
-
-// export type EntityPermissionActionType =
-//   boolean|
-//   string|
-//   {[condition:string]:object} |
-//   {[query:string]:object} |
-//   {[from:string]:string}
-
-export type EntityPermissionRoleType =
-  boolean|
-  {[action in CrudAction|'*']?:boolean}
-
-export type EntityPermissionType =
-  {[role:string]:EntityPermissionRoleType}
 
 
 /**

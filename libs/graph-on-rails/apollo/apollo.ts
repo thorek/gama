@@ -1,7 +1,8 @@
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
 import _ from 'lodash';
 
-import { DomainConfiguration, DomainDefinition } from '../core/domain-definition';
+import { DomainDefinition } from '../core/domain-definition';
+import { DomainConfiguration } from '../core/domain-configuration';
 import { Config, Runtime } from '../core/runtime';
 
 /**

@@ -94,13 +94,13 @@ export class GraphX {
       parseValue: obj.parseValue,
       parseLiteral: obj.parseLiteral,
       serialize: obj.serialize,
-      extendFields: (fields:any) => this.rawTypes[name].fields.push(fields instanceof Function ? fields : () => fields),
+      extendFields: (fields:any) => this.rawTypes[name].fields.push(fields instanceof Function ? fields : () => fields)
     };
   }
 
   //
   //
-  type( name:string, obj?:any ){
+  type( name:string, obj?:any ) {
     if (obj === undefined) {
       const scalar = this.getScalarType( name );
       if( scalar ) return scalar;

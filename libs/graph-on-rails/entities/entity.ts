@@ -1,34 +1,18 @@
 import inflection from 'inflection';
 import _ from 'lodash';
 
-import { Runtime } from '../core/runtime';
+import { AssocFromType, AssocToManyType, AssocToType, CrudAction, EntityPermissionType } from '../core/domain-configuration';
 import { ResolverContext } from '../core/resolver-context';
+import { Runtime } from '../core/runtime';
 import { EntityAccessor } from './entity-accessor';
+import { EntityFileSave } from './entity-file-save';
 import { EntityItem } from './entity-item';
-import { CrudAction, EntityPermissions, EntityPermissionType } from './entity-permissions';
+import { EntityPermissions } from './entity-permissions';
 import { EntityResolver } from './entity-resolver';
 import { EntitySeeder } from './entity-seeder';
 import { EntityValidator, ValidationViolation } from './entity-validator';
 import { TypeAttribute } from './type-attribute';
-import { EntityFileSave } from './entity-file-save';
 
-export type AssocType = {
-  type:string
-}
-
-export type AssocFromType = AssocType & {
-  delete?:'prevent'|'nullify'|'cascade'
-}
-
-export type AssocToType = AssocType & {
-  required?:boolean
-  delete?:'silent'|'cascade'
-  input?:boolean
-}
-
-export type AssocToManyType = AssocToType & {
-  scope?:string
-}
 
 //
 //

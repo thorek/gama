@@ -1,9 +1,10 @@
 import _ from 'lodash';
 
+import { AssocType } from '../core/domain-configuration';
 import { Validator } from '../validation/validator';
-import { Entity, AssocType } from './entity';
-import { TypeAttribute } from './type-attribute';
+import { Entity } from './entity';
 import { NotFoundError } from './entity-accessor';
+import { TypeAttribute } from './type-attribute';
 
 //
 //

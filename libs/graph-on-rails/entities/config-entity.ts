@@ -1,66 +1,8 @@
 import _ from 'lodash';
 
-import { Entity, AssocFromType, AssocToType, AssocToManyType } from './entity';
+import { AssocFromType, AttributeConfig, EntityConfig } from '../core/domain-configuration';
+import { Entity } from './entity';
 import { TypeAttribute } from './type-attribute';
-import { EntityPermissionType } from './entity-permissions';
-import { Runtime } from '../core/runtime';
-
-/**
- *
- */
-export type AttributeConfig = {
-  type?:string;
-  key?:string;
-  filterType?:string|boolean;
-  validation?:any;
-  required?:boolean|'create'|'update'
-  unique?:boolean|string
-  description?:string
-  input?:boolean
-  default?:any
-
-  label?:string
-  sortable?:string
-  mediaType?:'image'|'video'|'audio'
-
-  calculate?:( root?:any, args?:any, context?:any ) => any
-}
-
-export type SeedEvalContextType = {
-  idsMap?:any
-  seed:any
-  runtime:Runtime
-}
-
-export type SeedConfigType = {
-  [attribute:string]:any|(( evalContext:SeedEvalContextType) => any)
-}
-
-export type EntityConfig  = {
-  typeName?:string;
-
-  attributes?:{[name:string]:string|AttributeConfig};
-  assocTo?:string|(string|AssocToType)[];
-  assocToMany?:string|(string|AssocToManyType)[];
-  assocFrom?:string|string[]|AssocFromType[];
-
-  plural?:string
-  singular?:string;
-
-  collection?:string;
-  path?:string;
-
-  seeds?:{[seedId:string]:SeedConfigType}|SeedConfigType[]
-  permissions?:null|EntityPermissionType
-  assign?:string
-
-  union?:string[]
-  interface?:boolean
-  implements?:string|string[]
-
-  description?:string
-  extendEntity?:( runtime:Runtime ) => void | Promise<void>
-}
 
 export class ConfigEntity extends Entity {
 

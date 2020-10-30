@@ -1,10 +1,8 @@
 import { GraphQLEnumType } from 'graphql';
 import _, { Dictionary } from 'lodash';
 
+import { EnumConfig } from '../core/domain-configuration';
 import { TypeBuilder } from './schema-builder';
-
-export type EnumConfig = Dictionary<any>|(string[])
-
 
 export abstract class EnumBuilder extends TypeBuilder {
 

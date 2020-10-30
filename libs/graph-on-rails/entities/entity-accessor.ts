@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 import { Paging, Sort } from '../core/data-store';
-import { AssocType } from './entity';
+import { AssocType } from '../core/domain-configuration';
 import { EntityDeleter } from './entity-deleter';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';

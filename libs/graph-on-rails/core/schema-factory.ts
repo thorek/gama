@@ -1,12 +1,21 @@
-import { GraphQLInputObjectType, GraphQLInt, GraphQLNonNull, GraphQLScalarType, GraphQLSchema, GraphQLString, Kind } from 'graphql';
+import {
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLScalarType,
+  GraphQLSchema,
+  GraphQLString,
+  Kind,
+} from 'graphql';
 import _ from 'lodash';
 
 import { EntityBuilder } from '../builder/entity-builder';
-import { EnumBuilder, EnumConfig, EnumConfigBuilder } from '../builder/enum-builder';
-import { MutationBuilder, MutationConfig, MutationConfigBuilder } from '../builder/mutation-builder';
-import { QueryBuilder, QueryConfig, QueryConfigBuilder } from '../builder/query-builder';
+import { EnumBuilder, EnumConfigBuilder } from '../builder/enum-builder';
+import { MutationBuilder, MutationConfigBuilder } from '../builder/mutation-builder';
+import { QueryBuilder, QueryConfigBuilder } from '../builder/query-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
-import { ConfigEntity, EntityConfig } from '../entities/config-entity';
+import { ConfigEntity } from '../entities/config-entity';
+import { EntityConfig, EnumConfig, MutationConfigFn, QueryConfigFn } from './domain-configuration';
 import { Runtime } from './runtime';
 
 
@@ -87,7 +96,7 @@ export class SchemaFactory {
     }
   }
 
-  private createQueryBuilder( name:string, config:QueryConfig ):undefined|QueryBuilder{
+  private createQueryBuilder( name:string, config:QueryConfigFn ):undefined|QueryBuilder{
     try {
       return QueryConfigBuilder.create( name, config );
     } catch (error) {
@@ -95,7 +104,7 @@ export class SchemaFactory {
     }
   }
 
-  private createMutationBuilder( name:string, config:MutationConfig ):undefined|MutationBuilder{
+  private createMutationBuilder( name:string, config:MutationConfigFn ):undefined|MutationBuilder{
     try {
       return MutationConfigBuilder.create( name, config );
     } catch (error) {
@@ -115,7 +124,7 @@ export class SchemaFactory {
 
   private async buildFromBuilders(){
     _.forEach( this.builders(), type => type.init( this.runtime ) );
-    _.forEach( this.builders(), type => type.build() );
+    for( const builder of this.builders() ) await Promise.resolve( builder.build() );
     await this.extendTypeBuilders();
   }
 

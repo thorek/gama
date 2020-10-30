@@ -4,6 +4,7 @@ export * from './core/data-store';
 export * from './core/resolver-context';
 export * from './core/runtime';
 export * from './core/domain-definition';
+export * from './core/domain-configuration';
 export * from './core/runtime';
 export * from './core/seeder';
 export * from './apollo/apollo';

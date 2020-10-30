@@ -1,9 +1,11 @@
-import _ from 'lodash';
 import * as FakerDE from 'faker/locale/de';
 import * as FakerEN from 'faker/locale/en';
-import { Entity, AssocType } from './entity';
-import { EntityModule } from './entity-module';
+import _ from 'lodash';
+
+import { AssocType } from '../core/domain-configuration';
+import { Entity } from './entity';
 import { EntityItem } from './entity-item';
+import { EntityModule } from './entity-module';
 
 const fakers = {de: FakerDE, en: FakerEN};
 

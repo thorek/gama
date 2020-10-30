@@ -1,11 +1,7 @@
 import _ from 'lodash';
 
-import { Runtime } from '../core/runtime';
+import { QueryConfigFn } from '../core/domain-configuration';
 import { SchemaBuilder } from './schema-builder';
-
-export type QueryConfig = {
-  query:(runtime:Runtime) => any;
-}
 
 export abstract class QueryBuilder extends SchemaBuilder {
 
@@ -19,12 +15,12 @@ export abstract class QueryBuilder extends SchemaBuilder {
 }
 
 export class QueryConfigBuilder extends QueryBuilder {
-  static create( name:string, config:QueryConfig ):QueryConfigBuilder {
+  static create( name:string, config:QueryConfigFn ):QueryConfigBuilder {
     return new QueryConfigBuilder( name, config );
   }
 
   name() { return this._name }
   query(){ return this.config.query( this.runtime ) }
 
-  constructor( protected readonly _name:string, protected readonly config:QueryConfig ){ super() }
+  constructor( protected readonly _name:string, protected readonly config:QueryConfigFn ){ super() }
 }

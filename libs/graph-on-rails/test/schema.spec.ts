@@ -1,6 +1,7 @@
 import { printSchema } from 'graphql';
 
-import { DomainConfiguration, DomainDefinition } from '../core/domain-definition';
+import { DomainConfiguration } from '../core/domain-configuration';
+import { DomainDefinition } from '../core/domain-definition';
 import { Runtime } from '../core/runtime';
 import { Entity } from '../entities/entity';
 

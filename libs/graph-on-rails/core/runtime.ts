@@ -13,7 +13,8 @@ import { MongoDbDataStore } from '../mongodb-datastore/mongodb.data-store';
 import { ValidateJs } from '../validation/validate-js';
 import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
-import { DomainConfiguration, DomainDefinition } from './domain-definition';
+import { DomainConfiguration } from './domain-configuration';
+import { DomainDefinition } from './domain-definition';
 import { GraphX } from './graphx';
 import { SchemaFactory } from './schema-factory';
 

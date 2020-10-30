@@ -1,7 +1,8 @@
 import _ from 'lodash';
-import { EntityModule } from './entity-module';
-import { AssocFromType } from './entity';
+
+import { AssocFromType } from '../core/domain-configuration';
 import { EntityItem } from './entity-item';
+import { EntityModule } from './entity-module';
 
 //
 //

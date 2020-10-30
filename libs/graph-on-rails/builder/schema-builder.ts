@@ -17,7 +17,7 @@ export abstract class SchemaBuilder {
   init( runtime:Runtime ):void { this._runtime = runtime }
 
   abstract name():string;
-  abstract build():void;
+  abstract build():void|Promise<void>;
 }
 
 

@@ -1,9 +1,9 @@
 import { ApolloServerExpressConfig } from 'apollo-server-express';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
-
+import { DomainConfiguration, DomainDefinition, MutationConfig, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
+
 
 //
 //
@@ -51,8 +51,8 @@ export class SimpleLogin {
       login: ( runtime:Runtime ) => ({
         type: runtime.graphx.type('string'),
         args: {
-          username: { type: runtime.graphx.type('string!') },
-          password: { type: runtime.graphx.type('string') }
+          username: 'string!',
+          password: 'string'
         },
         resolve: (root:any, args:any) => this.login( runtime, args.username, args.password )
       })

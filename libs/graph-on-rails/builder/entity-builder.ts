@@ -14,20 +14,20 @@ import {
 } from 'graphql';
 import _, { Dictionary } from 'lodash';
 
+import { AssocToType, AssocType } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
-import { AssocToType, AssocType, Entity } from '../entities/entity';
+import { Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
 import { FilterType } from './filter-type';
 import { TypeBuilder } from './schema-builder';
-
-
-type AttributePurpose = 'createInput'|'updateInput'|'filter'|'type';
 
 type AttrFieldConfig = {
   type:GraphQLType
   description?:string
   resolve?:any
 }
+
+type AttributePurpose = 'createInput'|'updateInput'|'filter'|'type';
 
 export class EntityBuilder extends TypeBuilder {
 
