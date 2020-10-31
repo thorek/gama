@@ -31,7 +31,7 @@ export type Config = {
   schemaBuilder?:SchemaBuilder[]
   metaDataBuilder?:SchemaBuilder
   domainDefinition:DomainDefinition|DomainConfiguration|string|string[]
-  uploadRootDir?:string[]
+  uploadRootDir?:string
 }
 
 export class Runtime {
@@ -70,8 +70,8 @@ export class Runtime {
       metaDataBuilder: new MetaDataBuilder(),
       contextUser: 'user',
       contextRoles: 'roles',
-      uploadRootDir: ['server', 'uploads'],
-      domainDefinition: 'none'
+      uploadRootDir: 'uploads ',
+      domainDefinition: {}
     };
   }
 

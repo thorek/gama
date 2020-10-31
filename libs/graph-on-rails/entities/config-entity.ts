@@ -149,15 +149,15 @@ export class ConfigEntity extends Entity {
   private resolveMediaType( attrConfig:AttributeConfig ):void {
     switch( attrConfig.type ){
       case 'image':
-        attrConfig.type = 'file';
+        attrConfig.type = 'File';
         attrConfig.mediaType = 'image';
         break;
       case 'video':
-        attrConfig.type = 'file';
+        attrConfig.type = 'File';
         attrConfig.mediaType = 'video';
         break;
       case 'audio':
-        attrConfig.type = 'file';
+        attrConfig.type = 'File';
         attrConfig.mediaType = 'audio';
         break;
     }

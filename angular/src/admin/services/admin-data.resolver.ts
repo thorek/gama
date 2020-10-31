@@ -130,7 +130,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
   }
 
   protected getFieldInFieldQuery( field:FieldConfigType ):string {
-    return field.type === 'file' ? `${field.name} { filename encoding mimetype }` : field.name;
+    return field.type === 'File' ? `${field.name} { filename encoding mimetype }` : field.name;
   }
 
   protected getAssocFields( entityConfig:EntityConfigType, assoc:AssocConfigType ):string|undefined {

@@ -16,7 +16,8 @@ export class SimpleLogin {
     domainDefinition.add( login.getConfiguration() );
     config.context = (context:{req:express.Request }) => {
       const token:string|undefined = context.req.headers.authorization;
-      return { user: login.getUser(token) };
+      const user = login.getUser( token );
+      return { user };
     }
   }
 
@@ -25,7 +26,7 @@ export class SimpleLogin {
       User: {
         attributes: {
           username: { type: 'string!' },
-          password: { type: 'string!' },
+          password: { type: 'string!' }
         },
         seeds: {
           admin: {
@@ -49,17 +50,18 @@ export class SimpleLogin {
     },
     mutation: {
       login: ( runtime:Runtime ) => ({
-        type: runtime.graphx.type('string'),
+        type: 'string',
         args: {
           username: 'string!',
           password: 'string'
         },
-        resolve: (root:any, args:any) => this.login( runtime, args.username, args.password )
+        resolve: (root:any, args:any) => this.login( runtime, args.username, args.password ),
+        description: 'returns a token if successfull, null otherwise'
       })
     }
   });
 
-  getUser = (token?:string) => token ? this.users[token] : undefined;
+  getUser = (token?:string) => token ? _.pick(this.users[token], ['username']) : undefined;
 
   private login = async (runtime:Runtime, username:string, password = "" ):Promise<string|undefined> => {
     const entity = runtime.entities['User'];
@@ -75,7 +77,7 @@ export class SimpleLogin {
   private setUser = (token:string, user:any):void => {
     const key = _.findKey( this.users, value => value.id === user.id );
     if( key ) _.unset( this.users, key );
-    _.set( this.users, token, user );
+    this.users[token] = user;
   }
 
   private password = (password:string):string => {

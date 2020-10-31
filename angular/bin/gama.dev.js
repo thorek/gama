@@ -9,7 +9,7 @@ concurrently(
       name: 'ng'
     },
     {
-      command: './server/node_modules/.bin/ts-node-dev -P ./server/tsconfig.json --no-notify --inspect -- ./server/app.ts --watch ./server',
+      command: '../express/node_modules/.bin/ts-node-dev -P ../express/tsconfig.json --no-notify --inspect -- ../express/app.ts --watch ../express',
       prefixColor: 'yellow',
       name: 'gql'
     }

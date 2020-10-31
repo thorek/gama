@@ -63,13 +63,11 @@ export class AdminService {
     _.forEach( config.fields, field => {
       const value = _.get( input, field.name );
       if( ! _.isUndefined( value ) ) switch( field.type ) {
-        case 'file': return _.unset( input, field.name );
+        case 'File': return _.unset( input, field.name );
         case 'int': return _.set( input, field.name, _.toInteger( value ) );
       }
     });
   }
-
-
 
   private create( variables:any, config:EntityConfigType ):Promise<SaveResultType> {
     const mutation = this.getCreateMutation( config );
@@ -119,6 +117,6 @@ export class AdminService {
   private getMutationContext = (variables:any) => ({ useMultipart: _.keys( variables ).length > 0 });
 
   private fileAttributes( config:EntityConfigType ):string[] {
-    return _(config.fields).filter( field => field.type === 'file' ).map( field => field.name ).value();
+    return _(config.fields).filter( field => field.type === 'File' ).map( field => field.name ).value();
   }
 }

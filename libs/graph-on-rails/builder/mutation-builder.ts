@@ -7,7 +7,8 @@ export abstract class MutationBuilder extends SchemaBuilder {
 
   async build(){
     const mutation = await Promise.resolve( this.mutation() );
-    _.mapValues( mutation.args, arg => _.isString( arg) ? {type: this.graphx.type(arg)} : arg );
+    _.isString( mutation.type ) && ( mutation.type = this.graphx.type( mutation.type ) );
+    mutation.args = _.mapValues( mutation.args, arg => _.isString( arg) ? {type: this.graphx.type(arg)} : arg );
     this.graphx.type( 'mutation' ).extendFields( () => _.set( {}, this.name(), mutation) );
   }
 

@@ -235,7 +235,7 @@ export class AdminConfig {
   private fieldFromEntityField( field:string|FieldConfigType, fieldConfig:FieldConfigType ):FieldConfigType {
     if( _.isString( field ) ) field = { name: field };
     if( fieldConfig.mediaType ) fieldConfig.render = this.getMediaFieldDefaultRenderMethod( fieldConfig );
-    if( fieldConfig.type === 'file' ) fieldConfig.control = 'file';
+    if( fieldConfig.type === 'File' ) fieldConfig.control = 'File';
     this.setDefaultFieldForType( fieldConfig );
 
     return _.defaults( field, fieldConfig );

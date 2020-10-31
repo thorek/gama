@@ -15,17 +15,21 @@ console.log('Start Express');
   const app = express();
   app.use('*', cors());
   app.use(compression());
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+  const uploadRootDir = path.join(__dirname, 'uploads');
+  app.use('/uploads', express.static(uploadRootDir));
 
-  const config:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
-  const domainDefinition = login( config );
-  const server = await Apollo.server( config, domainDefinition );
+  const apolloConfig:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
+  const domainDefinition = login( apolloConfig );
+  const gamaConfig = { domainDefinition, uploadRootDir };
+  const server = await Apollo.server( apolloConfig, gamaConfig );
   server.applyMiddleware({ app, path: '/graphql' });
 
   const httpServer = createServer( app );
   httpServer.listen(
     { port: 3000 },
-    () => { console.log(`\n🚀 GraphQL is now running on http://localhost:3000/graphql\n`) }
+    () => console.log(`
+      🚀 GraphQL is now running on http://localhost:3000/graphql
+      Uploads in ${uploadRootDir}`)
   );
 
 })();
