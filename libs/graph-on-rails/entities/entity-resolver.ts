@@ -91,17 +91,11 @@ export class EntityResolver extends EntityModule {
   /**
    *
    */
-  async deleteType( resolverCtx:ResolverContext ):Promise<string[]> {
+  async deleteType( resolverCtx:ResolverContext ):Promise<void|string[]> {
     const id = resolverCtx.args.id;
-    try {
-      await this.accessor.delete( id );
-      return [];
-    } catch (error) {
-      return [
-        'Error',
-        _.toString(error)
-      ];
-    }
+    try { await this.accessor.delete( id ) }
+    catch (error){ return [ 'Error', _.toString(error)] }
+    await this.entity.fileSave.deleteFiles( id ); // silent fail?
   }
 
   /**
@@ -193,15 +187,13 @@ export class EntityResolver extends EntityModule {
     const filePromise = _.get( args, name );
     if( ! filePromise ) return;
     return new Promise( resolve => Promise.resolve(filePromise).then( value => {
+      value.filename = this.entity.fileSave.sanitizeFilename( value.filename );
       _.set( attributes, name, _.pick(value, 'filename', 'encoding', 'mimetype') );
       resolve({ name, filename: _.get(value, 'filename'), stream: value.createReadStream() });
     }));
   }
 
-  /**
-   *
-   */
-  private async saveFiles( id:string, fileInfos:FileInfo[] ):Promise<void> {
+  private async saveFiles( id:string, fileInfos:FileInfo[]  ):Promise<void> {
     for( const fileInfo of fileInfos ) await this.entity.fileSave.saveFile( id, fileInfo );
   }
 

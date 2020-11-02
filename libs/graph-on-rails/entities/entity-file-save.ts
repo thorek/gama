@@ -1,7 +1,8 @@
+import inflection from 'inflection';
+import fs from 'fs-extra';
 import _ from 'lodash';
-import fs from 'fs';
 import path from 'path';
-import mkdirp from 'mkdirp';
+
 import { EntityModule } from './entity-module';
 
 
@@ -22,11 +23,28 @@ export class EntityFileSave extends EntityModule {
         this.entity.typeName,
         _.toString(id),
         fileAttribute.name ];
-      await mkdirp( path.join(...dirname) );
+      await fs.mkdirp( path.join(...dirname) );
       const filename = path.join( ...dirname, fileAttribute.filename );
       const data = await this.getData( fileAttribute.stream );
       fs.writeFile( filename, data, (error) => error ? reject( error ) : resolve() );
     });
+  }
+
+  deleteFiles( id:string ):Promise<void> {
+    return new Promise( async (resolve, reject) => {
+      const dirPath = path.join(
+        this.runtime.config.uploadRootDir as string,
+        this.entity.typeName,
+        _.toString(id) );
+      fs.remove( dirPath, err => err ? reject( err ) : resolve() );
+    });
+
+  }
+
+  sanitizeFilename( filename:string ):string {
+    if( ! filename ) return 'no-name-given';
+    filename = filename.replace('#', '-' );
+    return inflection.dasherize( filename );
   }
 
   getData( stream:any ):Promise<Buffer>{
