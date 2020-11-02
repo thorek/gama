@@ -20,7 +20,26 @@ console.log('Start Express');
 
   const apolloConfig:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
   const domainDefinition = login( apolloConfig );
-  const gamaConfig = { domainDefinition, uploadRootDir };
+  const gamaConfig = { domainDefinition: {
+      entity: {
+        User: {
+          attributes: {
+            username: 'string!',
+            roles: '[string]'
+          },
+          seeds: {
+            admin: {
+              username: 'admin',
+              roles: ['user', 'admin']
+            },
+            regular: {
+              username: 'regular',
+              roles: ['user']
+            }
+          }
+        }
+      }
+    }, uploadRootDir };
   const server = await Apollo.server( apolloConfig, gamaConfig );
   server.applyMiddleware({ app, path: '/graphql' });
 

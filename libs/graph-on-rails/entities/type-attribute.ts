@@ -12,6 +12,7 @@ export type TypeAttribute = {
   // input?:boolean
   defaultValue?:any
   mediaType?:'image'|'video'|'audio'
+  list?:boolean
   calculate?:( root?:any, args?:any, context?:any ) => any
 }
 

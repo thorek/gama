@@ -94,6 +94,7 @@ export class ConfigEntity extends Entity {
     attrConfig = this.resolveShortcut( attrConfig );
     this.resolveKey( attrConfig );
     this.resolveScopedKey( attrConfig );
+    this.resolveListBrackets( attrConfig );
     this.resolveExclamationMark( attrConfig );
     this.resolveFilterType( attrConfig );
     this.warnVirtual( name, attrConfig );
@@ -104,6 +105,7 @@ export class ConfigEntity extends Entity {
       validation: attrConfig.validation,
       unique: attrConfig.unique,
       required: attrConfig.required,
+      list: attrConfig.list,
       description: attrConfig.description,
       // input: attrConfig.input,
       defaultValue: attrConfig.default,
@@ -131,6 +133,14 @@ export class ConfigEntity extends Entity {
       attrConfig.type = 'string';
       attrConfig.required = true;
       attrConfig.unique = attrConfig.key;
+    }
+  }
+
+  private resolveListBrackets( attrConfig:AttributeConfig ):void {
+    if( ! attrConfig.type ) return;
+    if( _.startsWith( attrConfig.type, '[') && _.endsWith( attrConfig.type, ']' ) ){
+      attrConfig.type = attrConfig.type.slice(1, -1);
+      attrConfig.list = true;
     }
   }
 

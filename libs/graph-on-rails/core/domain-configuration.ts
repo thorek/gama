@@ -34,6 +34,7 @@ export type AttributeConfig = {
   default?:any
 
   label?:string
+  list?:boolean
   sortable?:string
   mediaType?:'image'|'video'|'audio'
 
