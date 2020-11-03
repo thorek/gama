@@ -1,15 +1,10 @@
 import { EntityModule } from '../entities/entity-module';
 import { ValidationViolation } from '../entities/entity-validator';
 
-/**
- *
- */
 export abstract class Validator extends EntityModule{
 
-  /**
-   *
-   */
   abstract validate( attributes:any, action:'create'|'update' ):Promise<ValidationViolation[]>
+  abstract validatorSyntaxHint():string;
 }
 
 /**
@@ -17,8 +12,6 @@ export abstract class Validator extends EntityModule{
  */
 export class NonValidator extends Validator {
 
-  async validate(): Promise<ValidationViolation[]> {
-    return [];
-  }
-
+  async validate() { return [] }
+  validatorSyntaxHint() { return 'none' }
 }

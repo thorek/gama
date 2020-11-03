@@ -17,7 +17,7 @@ export type ValidationViolation = {
 //
 export class EntityValidator  {
 
-  private validator!:Validator;
+  readonly validator!:Validator;
   get runtime() { return this.entity.runtime }
 
 

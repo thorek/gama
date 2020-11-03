@@ -23,6 +23,9 @@ export class ValidatorJs extends Validator {
     this.buildConstraints();
   }
 
+  validatorSyntaxHint() { return 'validator.js <https://github.com/chriso/validator.js>' }
+
+
   /**
    *
    */

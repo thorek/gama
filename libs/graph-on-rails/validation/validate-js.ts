@@ -20,6 +20,8 @@ export class ValidateJs extends Validator {
     this.buildConstraints();
   }
 
+  validatorSyntaxHint() { return 'validate.js <https://validatejs.org>' }
+
   /**
    *
    */

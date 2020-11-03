@@ -153,6 +153,14 @@ export class SchemaFactory {
       parseLiteral: (ast:any) => ast.kind === Kind.STRING ? new Date(ast.value) : null,
       serialize: (value:any) => value instanceof Date ? value.toJSON() : `[${value}]`
     });
+
+    this.graphx.type( 'JSON', {
+      name: 'JSON',
+      from: GraphQLScalarType,
+      parseValue: (value:any) => value,
+      serialize: (value:any) => value
+    });
+
   }
 
   private createCommonTypes(){

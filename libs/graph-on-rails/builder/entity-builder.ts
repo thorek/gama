@@ -321,12 +321,19 @@ export class EntityBuilder extends TypeBuilder {
   private getFieldConfig(name:string, attribute:TypeAttribute, purpose:AttributePurpose ):AttrFieldConfig|undefined {
     if( _.includes(['createInput', 'updateInput'], purpose) && this.entity.isFileAttribute( attribute ) ) return;
     const addNonNull = this.addNonNull( name, attribute, purpose);
-    const fieldConfig = {
-      type: this.getGraphQLType(attribute, addNonNull, purpose ),
-      description: attribute.description
-    };
+    const description = this.getDescriptionForField( attribute, purpose );
+    const fieldConfig = { type: this.getGraphQLType(attribute, addNonNull, purpose ), description };
     if( this.skipCalculatedAttribute( name, attribute, purpose, fieldConfig ) ) return;
     return fieldConfig;
+  }
+
+  private getDescriptionForField(attribute:TypeAttribute, purpose:AttributePurpose):string|undefined {
+    if( ! attribute.validation ) return attribute.description;
+    if( ! _.includes( ['updateInput', 'createInput'], purpose )) return attribute.description;
+    const validationConfig = JSON.stringify(attribute.validation, null, 2);
+    const validationSyntax = this.entity.validator.validator.validatorSyntaxHint();
+    const validation = `Validation of this field:\n \`\`\`\n${validationConfig} \n \`\`\`\nFor syntax check: ${validationSyntax}`;
+    return attribute.description ? `${attribute.description}\n${validation}` : validation;
   }
 
   //

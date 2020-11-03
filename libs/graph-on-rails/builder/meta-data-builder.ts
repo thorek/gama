@@ -12,15 +12,16 @@ export class MetaDataBuilder extends SchemaBuilder {
 
     const fieldMetaData = new GraphQLObjectType({
       name: 'fieldMetaData',
-      fields: {
+      fields: () => ({
         name: { type: GraphQLNonNull( GraphQLString ) },
         type: { type: GraphQLString },
         required: { type: GraphQLBoolean },
+        validation: { type: this.graphx.type('JSON') },
         unique: { type: GraphQLString },
         calculated: { type: GraphQLBoolean },
         filter: {type: GraphQLString },
         mediaType: {type: GraphQLString }
-      }
+      })
     });
 
     const assocMetaData:GraphQLObjectType = new GraphQLObjectType({
@@ -86,7 +87,8 @@ export class MetaDataBuilder extends SchemaBuilder {
     const entity = root as Entity;
     return _.map( entity.attributes, (attribute, name) => ({
       name, type: attribute.graphqlType, required: attribute.required, calculated: _.isFunction(attribute.calculate),
-      unique: _.toString(attribute.unique), filter: attribute.filterType, mediaType: attribute.mediaType }));
+      unique: _.toString(attribute.unique), filter: attribute.filterType, mediaType: attribute.mediaType,
+      validation: attribute.validation }));
   }
 
   resolveAssocTo( root:any ) {
