@@ -2,24 +2,12 @@ import { ApolloServerExpressConfig } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
-import { Apollo, DomainConfiguration, DomainDefinition, Entity } from 'graph-on-rails';
+import { Apollo } from 'graph-on-rails';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import path from 'path';
 
-import { login } from './domain-definition';
-
-
-class MyEntity extends Entity {
-
-  protected getName(): string {
-    return "house";
-  }
-
-  getCreateMutation(){ return 'buildHouse' }
-
-
-}
+import { domainDefinition } from './domain-definition';
 
 console.log('Start Express');
 
@@ -33,40 +21,7 @@ console.log('Start Express');
 
   const apolloConfig:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
 
-  const domainConfiguration:DomainConfiguration = {
-    enum: {
-      CarModel: [
-        'Mercedes',
-        'Volkswagen',
-        'BMW'
-      ]
-    },
-    entity: {
-      Car: {
-        typeName: 'Vehicle',
-        attributes: {
-          model: 'CarModel!',
-          color: {
-            type: 'string',
-            validation: {
-              presence: true,
-              length: {
-                minimum: 2
-              }
-
-            }
-          },
-          licence: 'string',
-          mileage: 'int'
-        }
-      }
-    }
-  };
-
-  const domainDefinition = new DomainDefinition( domainConfiguration );
-  domainDefinition.entities.push( new MyEntity() );
-
-  const server = await Apollo.server( apolloConfig, { domainDefinition} );
+  const server = await Apollo.server( apolloConfig, domainDefinition);
   server.applyMiddleware({ app, path: '/graphql' });
 
   const httpServer = createServer( app );

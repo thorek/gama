@@ -1,9 +1,138 @@
 import { ApolloServerExpressConfig } from 'apollo-server-express';
 import express from 'express';
-import { DomainDefinition, Entity } from 'graph-on-rails';
+import { DomainDefinition, Entity, DomainConfiguration } from 'graph-on-rails';
 import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
+
+
+const domainConfiguration:DomainConfiguration = {
+  enum: {
+    CarModel: [
+      'Mercedes',
+      'Volkswagen',
+      'BMW'
+    ]
+  },
+  entity: {
+    Car: {
+      typeName: 'Vehicle',
+      attributes: {
+        model: 'CarModel!',
+        color: {
+          type: 'string',
+          validation: {
+            presence: true,
+            length: {
+              minimum: 2
+            }
+          }
+        },
+        licence: 'string',
+        mileage: 'int'
+      },
+      seeds: {
+        black_bmw: { model: 'BMW', color: 'black' }
+      }
+    },
+    Driver: {
+      attributes: {
+        firstname: 'string!',
+        lastname: 'string',
+      },
+      assocFrom: ['Department'],
+      seeds: {
+        Faker: {
+          count: 100,
+          firstname: 'faker.name.firstName',
+          lastname: 'faker.name.lastName'
+        },
+        max: { firstname: 'Max', lastname: 'Mayer' },
+        saad: { firstname: 'Saad'}
+      }
+    },
+    Department: {
+      attributes: {
+        name: {
+          type: 'string',
+          required: true,
+          unique: 'Company'
+        }
+      },
+      assocToMany: 'Driver',
+      assocTo: 'Company!',
+      seeds: {
+        Faker: {
+          count: 30,
+          name: 'faker.commerce.department',
+
+        },
+        hr_disphere: { Company: 'disphere', Driver: ['max', 'saad'], name: 'hr' },
+        hr_ms: { Company: 'ms', Driver: ['saad'], name: 'hr' },
+      }
+    },
+    Company: {
+      attributes: {
+        name: 'key'
+      },
+      assocFrom: 'Department',
+      seeds: {
+        Faker: {
+          count: 10,
+          name: 'faker.company.companyName'
+        },
+        disphere: { name: 'Disphere' },
+        ms: { name: 'Microsoft' }
+      }
+    }
+  }
+};
+
+export const domainDefinition = new DomainDefinition( domainConfiguration );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

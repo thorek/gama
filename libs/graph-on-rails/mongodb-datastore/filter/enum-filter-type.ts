@@ -22,16 +22,17 @@ export class EnumFilterType extends FilterType {
   }
 
   getFilterExpression( condition:any, field:string ):any {
+    return _.merge( {}, ... _.compact( _.map( condition, (operand, operator) => this.getOperation( operator, operand ) ) ) );
+  }
+
+  private getOperation( operator:string, operand:any ):any {
     const enumType = this.graphx.type( this.enumName );
     if( ! ( enumType instanceof GraphQLEnumType ) ) return null;
-    const operator = _.toString( _.first( _.keys( condition ) ) );
-    const operand = condition[operator];
     switch( operator ){
-      case 'eq': return {$eq: operand};
-      case 'nw': return {$nw: operand } ;
-      case 'contains': return {$regex : new RegExp(`.*${operand}.*`, 'i') };
-      case 'notContains':return {$regex : new RegExp(`.*^[${operand}].*`, 'i') };
-      case 'beginsWith': return {$regex : new RegExp(`${operand}.*`, 'i') };
+      case 'eq': return { $eq: operand };
+      case 'ne': return { $ne: operand };
+      case 'in': return { $in: operand };
+      case 'notIn': return { $nin: operand };
     }
     console.warn(`EnumFilterType '${this.enumName}' unknown operator '${operator}' `);
   }

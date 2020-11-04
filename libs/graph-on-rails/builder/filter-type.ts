@@ -19,25 +19,23 @@ export abstract class FilterType extends TypeBuilder {
 
   abstract graphqlTypeName():string;
 
-  abstract getFilterExpression( args:any, field:string ):any;
+  abstract getFilterExpression( args:any, field?:string ):any;
 
   build():void {
     const filterName = this.name();
     this.graphx.type( filterName, {
       name: filterName,
       from: GraphQLInputObjectType,
-      fields: () => {
-        const fields = {};
-        this.setAttributes( fields );
-        return fields;
-      }
-      });
+      fields: () => this.getFilterAttributes()
+    });
   }
 
-  protected setAttributes( fields:any ):void {
+  protected getFilterAttributes() {
+    const fields = {};
     _.forEach( this.attributes(), (attribute,name) => {
       _.set( fields, name, { type: attribute.graphqlType, description: attribute.description } );
     });
+    return fields;
   }
 
 }

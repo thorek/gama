@@ -26,7 +26,7 @@ export class StringFilterType extends FilterType{
 
   //
   //
-  getFilterExpression( condition:any, field:string ):any {
+  getFilterExpression( condition:any ):any {
     const caseSensitive = _.get( condition, 'caseSensitive' ) === true;
     delete condition.caseSensitive;
     const operations = _.compact( _.map( condition,

@@ -1,4 +1,4 @@
-import { GraphQLInt, GraphQLList } from 'graphql';
+import { GraphQLFloat, GraphQLList } from 'graphql';
 import _ from 'lodash';
 
 import { FilterType } from '../../builder/filter-type';
@@ -6,21 +6,21 @@ import { FilterType } from '../../builder/filter-type';
 /**
  *
  */
-export class IntFilterType extends FilterType{
+export class FloatFilterType extends FilterType{
 
-  graphqlTypeName() { return GraphQLInt.name }
+  graphqlTypeName() { return GraphQLFloat.name }
 
   attributes() { return {
-    eq: { graphqlType: GraphQLInt, description: 'equal' },
-    ne: { graphqlType: GraphQLInt, description: 'not equal' },
-    le: { graphqlType: GraphQLInt, description: 'lower or equal than' },
-    lt: { graphqlType: GraphQLInt, description: 'lower than' },
-    ge: { graphqlType: GraphQLInt, description: 'greater or equal than' },
-    gt: { graphqlType: GraphQLInt, description: 'greater than' },
-    isIn: { graphqlType: new GraphQLList(GraphQLInt), description: 'is in list of numbers' },
-    notIn: { graphqlType: new GraphQLList(GraphQLInt), description: 'is not in list of numbers' },
+    eq: { graphqlType: GraphQLFloat, description: 'equal' },
+    ne: { graphqlType: GraphQLFloat, description: 'not equal' },
+    le: { graphqlType: GraphQLFloat, description: 'lower or equal than' },
+    lt: { graphqlType: GraphQLFloat, description: 'lower than' },
+    ge: { graphqlType: GraphQLFloat, description: 'greater or equal than' },
+    gt: { graphqlType: GraphQLFloat, description: 'greater than' },
+    isIn: { graphqlType: new GraphQLList(GraphQLFloat), description: 'is in list of numbers' },
+    notIn: { graphqlType: new GraphQLList(GraphQLFloat), description: 'is not in list of numbers' },
     between: {
-      graphqlType: new GraphQLList(GraphQLInt),
+      graphqlType: new GraphQLList(GraphQLFloat),
       description: 'is greater or equal than the first and lower then the last number of a list'
     },
   }}
