@@ -36,7 +36,7 @@ export class EnumConfigBuilder extends EnumBuilder {
   name() { return this._name }
   enum(){
     return _.isArray( this.config) ?
-      _.reduce( this.config, (config, item) => _.set( config, _.toUpper( item ), _.toLower( item ) ), {} ) :
+      _.reduce( this.config, (config, item) => _.set( config, _.toUpper( item ), item ), {} ) :
       this.config;
   }
 

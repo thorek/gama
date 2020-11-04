@@ -1,5 +1,4 @@
-import { GraphQLScalarType, GraphQLType } from "graphql";
-import { Runtime } from "./runtime";
+import { Runtime } from './runtime';
 
 export type DomainConfiguration = {
   entity?:{[name:string]:EntityConfig},
@@ -15,9 +14,7 @@ export type MutationConfig = {
 }
 export type MutationConfigFn = (runtime:Runtime) => MutationConfig|Promise<MutationConfig>;
 
-export type QueryConfigFn = {
-  query:(runtime:Runtime) => any;
-}
+export type QueryConfigFn = (runtime:Runtime) => any;
 
 /**
  *

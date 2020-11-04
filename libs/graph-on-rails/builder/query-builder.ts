@@ -20,7 +20,7 @@ export class QueryConfigBuilder extends QueryBuilder {
   }
 
   name() { return this._name }
-  query(){ return this.config.query( this.runtime ) }
+  query(){ return this.config( this.runtime ) }
 
   constructor( protected readonly _name:string, protected readonly config:QueryConfigFn ){ super() }
 }

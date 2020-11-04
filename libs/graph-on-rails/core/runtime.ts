@@ -134,6 +134,8 @@ export class Runtime {
     return this.filterTypes[ defaultFilterName ];
   }
 
+  type( name:string ):any { return this.graphx.type( name ) }
+
   warn<T>( message:string, returnValue:T ):T{
     console.warn( message );
     return returnValue;

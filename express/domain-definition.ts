@@ -1,9 +1,33 @@
 import { ApolloServerExpressConfig } from 'apollo-server-express';
+
 import express from 'express';
-import { DomainDefinition, Entity, DomainConfiguration } from 'graph-on-rails';
+import { DomainDefinition, Entity, DomainConfiguration, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
+
+const domainConfiguration1:DomainConfiguration = {
+  enum: {
+    CarBrand: ['Mercedes', 'BMW', 'Volkswagen', 'Audi', 'Porsche', 'Toyota', 'Bentley']
+  },
+  entity: {
+    car: {
+      attributes: {
+        brand: 'CarBrand',
+        mileage: 'int'
+      }
+    }
+  },
+  query: {
+    leMansWinner: (rt:Runtime) => ({
+      type: rt.type('[Int!]'),
+      args: { brand: { type: rt.type('CarBrand') } },
+      resolve: ( root:any, args:any ) => _.get( {
+        Toyota: [2020, 2019, 2018], Porsche: [2017,2016,2015,2014,2013,2012,2011,2010], Peugeot: [2009], Audi: [2008,2007,2006,2005,2004], Bentley:[2003]
+      }, args.brand as string )
+    })
+  }
+}
 
 
 const domainConfiguration:DomainConfiguration = {
@@ -88,7 +112,7 @@ const domainConfiguration:DomainConfiguration = {
   }
 };
 
-export const domainDefinition = new DomainDefinition( domainConfiguration );
+export const domainDefinition = new DomainDefinition( domainConfiguration1 );
 
 
 
