@@ -1,8 +1,8 @@
-import { GraphQLInputObjectType, GraphQLType } from 'graphql';
+import { GraphQLInputObjectType } from 'graphql';
 import _ from 'lodash';
 
 import { Runtime } from '../core/runtime';
-import { SchemaBuilder, TypeBuilder } from './schema-builder';
+import { TypeBuilder } from './schema-builder';
 
 
 /**

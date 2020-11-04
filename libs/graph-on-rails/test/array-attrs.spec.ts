@@ -43,8 +43,6 @@ describe('Permissions', () => {
     if( false ) console.log( printSchema( runtime.schema ) );
   })
 
-  //
-  //
   it('should have array values from seed', async ()=> {
     const user = runtime.entities['User'];
     const admin = await user.findOneByAttribute( {username: 'admin'} );
@@ -52,14 +50,17 @@ describe('Permissions', () => {
     expect( admin?.item.someIds ).toEqual([1,2,3]);
   });
 
-  //
-  //
   it('should store and read array values', async ()=> {
     const user = runtime.entities['User'];
     await user.accessor.save( { username: 'another', roles: ['foo', 'bar'], someIds: [23]})
     const another = await user.findOneByAttribute( {username: 'another'} );
     expect( another?.item.roles ).toEqual(['foo', 'bar']);
     expect( another?.item.someIds ).toEqual([23]);
+  });
+
+  it('should filter array values', async ()=> {
+    const user = runtime.entities['User'];
+
   });
 
 })

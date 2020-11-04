@@ -322,7 +322,7 @@ export class EntityBuilder extends TypeBuilder {
     if( _.includes(['createInput', 'updateInput'], purpose) && this.entity.isFileAttribute( attribute ) ) return;
     const addNonNull = this.addNonNull( name, attribute, purpose);
     const description = this.getDescriptionForField( attribute, purpose );
-    const fieldConfig = { type: this.getGraphQLType(attribute, addNonNull, purpose ), description };
+    const fieldConfig = { type: this.getGraphQLTypeDecorated(attribute, addNonNull, purpose ), description };
     if( this.skipCalculatedAttribute( name, attribute, purpose, fieldConfig ) ) return;
     return fieldConfig;
   }
@@ -500,8 +500,8 @@ export class EntityBuilder extends TypeBuilder {
   /**
    *
    */
-  private getGraphQLType( attr:TypeAttribute, addNonNull:boolean, purpose:AttributePurpose ):GraphQLType {
-    let type = _.isString( attr.graphqlType ) ? this.getTypeForName(attr.graphqlType, purpose ) : attr.graphqlType;
+  private getGraphQLTypeDecorated( attr:TypeAttribute, addNonNull:boolean, purpose:AttributePurpose ):GraphQLType {
+    let type = this.getGraphQLType( attr, purpose );
     if( attr.list ) type = new GraphQLList( type );
     return addNonNull ? new GraphQLNonNull( type ) : type;
   }
@@ -509,13 +509,14 @@ export class EntityBuilder extends TypeBuilder {
   /**
    *
    */
-  private getTypeForName( name:string, purpose:AttributePurpose ):GraphQLType {
-    const type = this.getScalarType( name, purpose );
+  private getGraphQLType( attr:TypeAttribute, purpose:AttributePurpose ):GraphQLType {
+    if( ! _.isString( attr.graphqlType ) ) return attr.graphqlType;
+    const type = this.getScalarType( attr.graphqlType, purpose );
     if( type ) return type;
     try {
-      return this.graphx.type(name);
+      return this.graphx.type(attr.graphqlType);
     } catch (error) {
-      console.error(`no such graphqlType:`, name, ` - using GraphQLString instead` );
+      console.error(`no such graphqlType:`, attr.graphqlType, ` - using GraphQLString instead` );
     }
     return GraphQLString;
   }
@@ -526,8 +527,8 @@ export class EntityBuilder extends TypeBuilder {
   private getScalarType( name:string, purpose:AttributePurpose ):GraphQLScalarType | undefined {
     name = _.toLower(name)
     if( name === 'File' && _.includes(['createInput', 'updateInput'], purpose) ) return GraphQLUpload as GraphQLScalarType;
-    const type = this.graphx.scalarTypes[name];
-    if( type ) return type;
+    // const type = this.graphx.scalarTypes[name];
+    // if( type ) return type;
   }
 
   /**
@@ -535,16 +536,24 @@ export class EntityBuilder extends TypeBuilder {
    */
   private getFilterType( attr:TypeAttribute):FilterType|undefined {
     if( attr.filterType === false ) return;
-    if( ! attr.filterType ){
-      let typeName = _.isString( attr.graphqlType ) ? attr.graphqlType : _.get(attr.graphqlType, 'name' ) as string;
-      typeName = `${_.toUpper(typeName.substring(0,1))}${typeName.substring(1)}`;
-      attr.filterType = TypeBuilder.getFilterName( typeName );
-    }
-    if( ! _.isString( attr.filterType ) ) return attr.filterType;
+
     try {
-      return this.runtime.graphx.type(attr.filterType);
+      if( attr.filterType ) return this.runtime.graphx.type( attr.filterType );
     } catch (error) {
-      console.error(`no such filterType:`, attr.filterType, ` - skipping filter`,  );
+      console.error( `[${this.entity.name}:${attr.graphqlType}] no such filterType: ${attr.filterType}` );
+    }
+
+    return this.getDefaultFilterTypeForAttributeType( attr );
+  }
+
+  private getDefaultFilterTypeForAttributeType( attr:TypeAttribute ):FilterType|undefined {
+    const attrType = this.getGraphQLType( attr, 'type' );
+    const filterTypeName = TypeBuilder.getFilterName( attrType );
+
+    try {
+      return this.runtime.graphx.type(filterTypeName);
+    } catch (error) {
+      console.error( `[${this.entity.name}:${attr.graphqlType}] no such filterType: ${filterTypeName}` );
     }
   }
 

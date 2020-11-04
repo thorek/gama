@@ -1,3 +1,4 @@
+import { GraphQLType } from 'graphql';
 import _ from 'lodash';
 
 import { Runtime } from '../core/runtime';
@@ -28,7 +29,10 @@ export abstract class TypeBuilder extends SchemaBuilder {
 
   //
   //
-  static getFilterName( type:string ):string { return `${type}Filter` }
+  static getFilterName( type:string|GraphQLType ):string {
+    if( ! _.isString(type) ) type = _.get( type, 'name' );
+    return `${type}Filter`
+  }
 
   attributes():{[name:string]:TypeAttribute} { return {} }
 

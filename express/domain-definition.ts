@@ -7,16 +7,59 @@ import { SimpleLogin } from './extras/simple-login';
 
 
 
-export const doc = () => {
-  return `${__dirname}/config-types/doc`;
-}
-
 
 export const login = ( config:ApolloServerExpressConfig ):DomainDefinition => {
   const domainDefinition = new DomainDefinition( `${__dirname}/config-types/d2prom` );
   SimpleLogin.addToDefinition( domainDefinition, config );
   return domainDefinition;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const doc = () => {
+  return `${__dirname}/config-types/doc`;
+}
+
+
+
+
+
 
 export const d2prom = ():DomainDefinition => {
 

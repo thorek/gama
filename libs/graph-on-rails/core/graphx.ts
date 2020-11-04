@@ -5,13 +5,10 @@ import {
   GraphQLID,
   GraphQLInt,
   GraphQLInterfaceType,
-  GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLOutputType,
   GraphQLScalarType,
   GraphQLSchema,
   GraphQLString,
-  GraphQLType,
   GraphQLUnionType,
 } from 'graphql';
 import _ from 'lodash';
@@ -19,20 +16,18 @@ import _ from 'lodash';
 import { Runtime } from './runtime';
 import { Seeder } from './seeder';
 
+export const scalarTypes:{[scalar:string]:GraphQLScalarType} = {
+  ID: GraphQLID,
+  String: GraphQLString,
+  Int: GraphQLInt,
+  Float: GraphQLFloat,
+  Boolean: GraphQLBoolean
+}
 
 
 //
 //
 export class GraphX {
-
-  scalarTypes:{[scalar:string]:GraphQLScalarType} = {
-    id: GraphQLID,
-    string: GraphQLString,
-    int: GraphQLInt,
-    float: GraphQLFloat,
-    boolean: GraphQLBoolean
-  }
-
 
   rawTypes:any = {};
 
@@ -101,9 +96,9 @@ export class GraphX {
   //
   //
   type( name:string, obj?:any ) {
+    const scalar = scalarTypes[name];
+    if( scalar ) return scalar;
     if (obj === undefined) {
-      const scalar = this.getScalarType( name );
-      if( scalar ) return scalar;
       if (this.rawTypes[name] === undefined) throw new Error(`Type '${name}' does not exist in this GraphX.`);
       return this.rawTypes[name];
     }
@@ -119,16 +114,6 @@ export class GraphX {
       query: this.type('query'),
       mutation: this.type('mutation')
     });
-  }
-
-  private getScalarType( name:string ):GraphQLType|undefined {
-    let nonNull = false;
-    if( _.endsWith( name, '!' ) ){
-      name = name.slice(0, -1);
-      nonNull = true;
-    }
-    const scalar = this.scalarTypes[name];
-    if( scalar ) return nonNull ? GraphQLNonNull( scalar ) : scalar;
   }
 
   /**

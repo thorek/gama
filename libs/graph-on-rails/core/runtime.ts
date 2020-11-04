@@ -1,3 +1,4 @@
+import { TypeAttribute } from '../entities/type-attribute';
 import { GraphQLSchema, GraphQLType } from 'graphql';
 import _ from 'lodash';
 
@@ -125,14 +126,12 @@ export class Runtime {
     return this.config.entitySeeder(entity);
   }
 
-  filterType( filterType:string|FilterType|false|undefined, fieldType:string|GraphQLType ):FilterType|undefined {
-    if( filterType === false ) return undefined;
-    if( ! filterType ) {
-      if( ! _.isString( fieldType ) ) fieldType = _.get( fieldType, 'name' );
-      return this.filterTypes[ TypeBuilder.getFilterName(fieldType as string) ];
-    } else if( _.isString( filterType ) ) {
-      return this.filterTypes[ filterType ];
-    } else return filterType;
+  filterImplementation( attribute:TypeAttribute|undefined ):FilterType|undefined {
+    if( ! attribute || attribute.filterType === false ) return undefined;
+    if( _.isString(attribute.filterType) ) return this.filterTypes[attribute.filterType];
+
+    const defaultFilterName = FilterType.getFilterName( attribute.graphqlType );
+    return this.filterTypes[ defaultFilterName ];
   }
 
   warn<T>( message:string, returnValue:T ):T{

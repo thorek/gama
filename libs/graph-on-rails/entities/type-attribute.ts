@@ -1,10 +1,9 @@
 import { GraphQLType } from 'graphql';
-import { FilterType } from '../builder/filter-type';
 
 //
 export type TypeAttribute = {
   graphqlType:GraphQLType|string
-  filterType?:FilterType|string|false
+  filterType?:string|false
   validation?:any
   unique?:string|boolean;
   required?:boolean|'create'|'update'

@@ -1,8 +1,10 @@
+import inflection from 'inflection';
 import _ from 'lodash';
 
 import { AssocFromType, AttributeConfig, EntityConfig } from '../core/domain-configuration';
 import { Entity } from './entity';
 import { TypeAttribute } from './type-attribute';
+import { scalarTypes } from '../core/graphx'
 
 export class ConfigEntity extends Entity {
 
@@ -96,9 +98,9 @@ export class ConfigEntity extends Entity {
     this.resolveScopedKey( attrConfig );
     this.resolveListBrackets( attrConfig );
     this.resolveExclamationMark( attrConfig );
-    this.resolveFilterType( attrConfig );
-    this.warnVirtual( name, attrConfig );
+    this.capitalizeScalarTypes( attrConfig );
     this.resolveMediaType( attrConfig );
+    this.warnAttribute( name, attrConfig );
     return {
       graphqlType: attrConfig.type || 'string',
       filterType: attrConfig.filterType as string|false|undefined,
@@ -152,8 +154,10 @@ export class ConfigEntity extends Entity {
     }
   }
 
-  private resolveFilterType( attrConfig:AttributeConfig ):void {
-    if( attrConfig.filterType === true ) attrConfig.filterType === undefined;
+  private capitalizeScalarTypes( attrConfig:AttributeConfig ):void {
+    if( ! attrConfig.type ) return;
+    const scalarType = inflection.capitalize( attrConfig.type );
+    if( scalarTypes[scalarType] ) attrConfig.type = scalarType;
   }
 
   private resolveMediaType( attrConfig:AttributeConfig ):void {
@@ -173,11 +177,13 @@ export class ConfigEntity extends Entity {
     }
   }
 
-  private warnVirtual( name: string, attrConfig:AttributeConfig ):void {
+  private warnAttribute( name: string, attrConfig:AttributeConfig ):void {
     if( _.isFunction( attrConfig.calculate ) ){
       if( attrConfig.filterType ) console.warn(
         this.name, `[${name}]`, 'filterType makes no sense for attribute that is resolved manually' )
     }
+    if( _.toLower( attrConfig.type ) === 'id') console.warn(
+      this.name, `[${name}]`, 'you should not use ID in attributes' )
   }
 
 }

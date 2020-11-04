@@ -1,4 +1,4 @@
-import { GraphQLType } from "graphql";
+import { GraphQLScalarType, GraphQLType } from "graphql";
 import { Runtime } from "./runtime";
 
 export type DomainConfiguration = {
@@ -25,7 +25,7 @@ export type QueryConfigFn = {
 export type AttributeConfig = {
   type?:string;
   key?:string;
-  filterType?:string|boolean;
+  filterType?:string|false;
   validation?:any;
   required?:boolean|'create'|'update'
   unique?:boolean|string
