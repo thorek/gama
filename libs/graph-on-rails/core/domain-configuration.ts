@@ -7,14 +7,15 @@ export type DomainConfiguration = {
   mutation?:{[name:string]:MutationConfigFn}
 }
 
-export type MutationConfig = {
+type QueryMutationArgConfig = { type: string|object }
+export type QueryMutationConfig = {
   type: any
-  args?:{[name:string]:object|string}
+  args?:{[name:string]:string | QueryMutationArgConfig }
   resolve?: (root:any, args:any, context:any ) => any
 }
-export type MutationConfigFn = (runtime:Runtime) => MutationConfig|Promise<MutationConfig>;
 
-export type QueryConfigFn = (runtime:Runtime) => any;
+export type MutationConfigFn = (runtime:Runtime) => QueryMutationConfig
+export type QueryConfigFn = (runtime:Runtime) => QueryMutationConfig
 
 /**
  *

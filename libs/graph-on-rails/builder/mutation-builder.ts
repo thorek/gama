@@ -1,18 +1,21 @@
 import _ from 'lodash';
 
-import { MutationConfig, MutationConfigFn } from '../core/domain-configuration';
+import { QueryMutationConfig, MutationConfigFn } from '../core/domain-configuration';
 import { SchemaBuilder } from './schema-builder';
 
 export abstract class MutationBuilder extends SchemaBuilder {
 
-  async build(){
-    const mutation = await Promise.resolve( this.mutation() );
-    _.isString( mutation.type ) && ( mutation.type = this.graphx.type( mutation.type ) );
-    mutation.args = _.mapValues( mutation.args, arg => _.isString( arg) ? {type: this.graphx.type(arg)} : arg );
-    this.graphx.type( 'mutation' ).extendFields( () => _.set( {}, this.name(), mutation) );
+  build(){
+    this.graphx.type( 'mutation' ).extendFields( () => {
+      const mutation = this.mutation();
+      _.isString( mutation.type ) && ( mutation.type = this.graphx.type( mutation.type ) );
+      mutation.args = _.mapValues( mutation.args, arg => _.isString( arg ) ? {type: this.graphx.type(arg)} : arg );
+      mutation.args = _.mapValues( mutation.args, arg => ! _.isString(arg) && _.isString( arg.type ) ? {type: this.graphx.type(arg.type)} : arg );
+      return _.set( {}, this.name(), mutation );
+    });
   }
 
-  abstract mutation():Promise<MutationConfig>|MutationConfig;
+  abstract mutation():QueryMutationConfig;
 }
 
 export class MutationConfigBuilder extends MutationBuilder {
@@ -21,7 +24,7 @@ export class MutationConfigBuilder extends MutationBuilder {
   }
 
   name() { return this._name }
-  mutation():Promise<MutationConfig> { return Promise.resolve(this.config( this.runtime )) }
+  mutation():QueryMutationConfig { return this.config( this.runtime ) }
 
   constructor( protected readonly _name:string, protected readonly config:MutationConfigFn ){ super() }
 }

@@ -18,6 +18,13 @@ type DomainConfiguration = {
 You can provide the _Runtime_ with such an object (or multiple that will be merged) or write this in YAML files
 and point to folder(s) where to find this Domain Configuration files.
 
+For detailed documentation see
+
+  * [Entity Configuration](./entity-configuration.md)
+  * [Enum Configuration](./enum-configuration.md)
+  * [Custom Query Configuration](./custom-query-configuration.md)
+  * [Custom Mutation Configuration](./custom-mutation-configuration.md)
+
 ### Schema and Resolvers
 
 The Domain Configuration will be translated to a GraqhQL Schema and corresponding resolvers. How the schema and 
@@ -37,7 +44,7 @@ Based on the Schema and some meta information from the Domain Configuration a ge
 This Application can be customized as well.
 
 
-## Examples
+## Example
 
 ### Javascript Object 
 

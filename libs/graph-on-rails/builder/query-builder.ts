@@ -1,17 +1,21 @@
 import _ from 'lodash';
 
-import { QueryConfigFn } from '../core/domain-configuration';
+import { QueryConfigFn, QueryMutationConfig } from '../core/domain-configuration';
 import { SchemaBuilder } from './schema-builder';
 
 export abstract class QueryBuilder extends SchemaBuilder {
 
   build(){
     this.graphx.type( 'query' ).extendFields( () => {
-      return _.set( {}, this.name(), this.query() );
+      const query = this.query();
+      _.isString( query.type ) && ( query.type = this.graphx.type( query.type ) );
+      query.args = _.mapValues( query.args, arg => _.isString( arg ) ? {type: this.graphx.type(arg)} : arg );
+      query.args = _.mapValues( query.args, arg => ! _.isString(arg) && _.isString( arg.type ) ? {type: this.graphx.type(arg.type)} : arg );
+      return _.set( {}, this.name(), query );
     });
   }
 
-  abstract query():any;
+  abstract query():QueryMutationConfig;
 }
 
 export class QueryConfigBuilder extends QueryBuilder {
@@ -20,7 +24,7 @@ export class QueryConfigBuilder extends QueryBuilder {
   }
 
   name() { return this._name }
-  query(){ return this.config( this.runtime ) }
+  query():QueryMutationConfig{ return this.config( this.runtime ) }
 
   constructor( protected readonly _name:string, protected readonly config:QueryConfigFn ){ super() }
 }

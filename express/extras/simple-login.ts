@@ -1,7 +1,7 @@
 import { ApolloServerExpressConfig } from 'apollo-server-express';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import { DomainConfiguration, DomainDefinition, MutationConfig, Runtime } from 'graph-on-rails';
+import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
 
