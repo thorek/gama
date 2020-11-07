@@ -39,7 +39,7 @@ You can also write the entity configuration in yaml files and simply includes th
 [Domain Definition](./domain-definition).
 
 
-## Example
+## <a name="example"></a> Example
 
 _YAML_
 ```yaml 
