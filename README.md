@@ -12,6 +12,7 @@ an attempt to create a framework that
   * provides a Admin UI for basic CRUD applications 
   * allows to extend any non-convention requirement with custom code
 
+You can find the [documentation here](./libs/doc/gama.md)
 
 ## Repository
 
