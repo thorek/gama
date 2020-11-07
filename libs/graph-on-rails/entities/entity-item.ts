@@ -17,6 +17,7 @@ export class EntityItem {
   constructor( private readonly entity:Entity, public readonly item:any ){}
 
   static async create( entity:Entity, item:any ):Promise<EntityItem>{
+    item = _.merge({}, item ); // this is because the Apollo resolver refuse to resolve the orginal item instance
     const entityItem = new EntityItem( entity, item );
     await entityItem.defineVirtualAttributes();
     return entityItem;

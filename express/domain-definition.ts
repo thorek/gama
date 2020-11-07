@@ -6,43 +6,6 @@ import _ from 'lodash';
 
 import { SimpleLogin } from './extras/simple-login';
 
-const domainConfiguration1:DomainConfiguration = {
-  enum: {
-    CarBrand: ['Mercedes', 'BMW', 'Volkswagen', 'Audi', 'Porsche', 'Toyota', 'Bentley']
-  },
-  entity: {
-    car: {
-      attributes: {
-        brand: 'CarBrand',
-        mileage: 'int',
-        color: 'string'
-      }
-    }
-  },
-  query: {
-    leMansWinner: (rt:Runtime) => ({
-      type: '[Int!]',
-      args: { brand: { type: 'CarBrand' } },
-      resolve: ( root:any, args:any ) => _.get( {
-        Toyota: [2020, 2019, 2018], Porsche: [2017,2016,2015,2014,2013,2012,2011,2010], Peugeot: [2009], Audi: [2008,2007,2006,2005,2004], Bentley:[2003]
-      }, args.brand as string )
-    })
-  },
-  mutation: {
-    repaint: (rt:Runtime) => ({
-      type: 'Car',
-      args: { id: { type: 'ID' }, color: { type: 'String!' } },
-      resolve: async (root:any, args:any) => {
-        const car = rt.entities['Car'];
-        const c = await car.findById( args.id );
-        if( ! c ) throw new Error(`no car with id '${args.id}'`);
-        c.item.color = args.color;
-        await c.save();
-        return _.merge( {}, c.item ); // strange, very very strange
-      }
-    })
-  }
-}
 
 
 const domainConfiguration:DomainConfiguration = {
@@ -127,7 +90,7 @@ const domainConfiguration:DomainConfiguration = {
   }
 };
 
-export const domainDefinition = new DomainDefinition( domainConfiguration1 );
+export const domainDefinition = new DomainDefinition( domainConfiguration );
 
 
 

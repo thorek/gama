@@ -1,5 +1,12 @@
 # Entity Configuration
 
+A business domain is mainly described by its entities and their relation to each other. Think of an _entity_ as any 
+_thing_ in your business domain. We highly recommend using a [Domain Driven Design](https://www.amazon.de/Domain-Driven-Design-Tackling-Complexity-Software/dp/B001JDYE0O) approach.
+
+The configuration of an entity is done by an object of the following type: 
+
+### Configuration Type
+
 ```typescript
 export type EntityConfig  = {
   typeName?:string;
@@ -28,6 +35,12 @@ export type EntityConfig  = {
 
 From the definition of an _entity_ a full fledged GraphQL schema is generated incl. resolver to a _data store_. The behaviour is strongly oppionated and uses mostly conventions; nonetheless you can configure most of the details.
 
+You can also write the entity configuration in yaml files and simply includes these files in your 
+[Domain Definition](./domain-definition).
+
+
+## Example
+
 _YAML_
 ```yaml 
 entity:
@@ -40,11 +53,13 @@ entity:
 The same configuration in code 
 
 ```javascript
-const domainConfiguration = {
-  Car: {
-    attributes: {
-      brand: 'string!',
-      mileage: 'int'
+export const example2:DomainConfiguration = {
+  entity:{
+    Car: {
+      attributes: {
+        brand: 'string!',
+        mileage: 'int'
+      }
     }
   }
 }
@@ -72,8 +87,8 @@ type Car {
   id: ID!
   brand: String!
   mileage: Int
-  createdAt: String
-  updatedAt: String
+  createdAt: Date
+  updatedAt: Date
 }
 
 input CarCreateInput {
@@ -102,6 +117,18 @@ input CarUpdateInput {
   mileage: Int
 }
 
+input EntityPaging {
+  page: Int!
+  size: Int!
+}
+
+type EntityStats {
+  count: Int!
+  createdFirst: Date
+  createdLast: Date
+  updatedLast: Date
+}
+
 input IntFilter {
   eq: Int
   ne: Int
@@ -126,7 +153,8 @@ type Query {
   ping: String
   metaData(path: String): [entityMetaData]
   car(id: ID): Car
-  cars(filter: CarFilter, sort: CarSort): [Car]
+  cars(filter: CarFilter, sort: CarSort, paging: EntityPaging): [Car]
+  carsStats(filter: CarFilter): EntityStats
 }
 
 type SaveCarMutationResult {
@@ -152,15 +180,288 @@ type ValidationViolation {
 }
 ```
 
-## id
+Let's break this simple example down
 
-As you see any entity gets a unique `id` that is used to identify any item (instance) of an _entity_. This `id` is also used to implement the relationship of entities.
+### Type
+
+```graphql
+type Car {
+  id: ID!
+  brand: String!
+  mileage: Int
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+The `car` entity becomes a GraphQL type with attributes from the _Entity definition_ becoming attributes of this type. 
+As you see, in addition an entity gets a unique `id` that is used to identify any item (instance) of an _entity_. 
+This `id` is also used to implement the relationship of entities.
 
 The `id` is assigned by the framework (in fact the actual datastore implementation) when you call the _create_ mutation. 
 
-## timestamps
+Every entity type has also `createdAt` and `updatedAt` timestamp fields. That are set automatically by the mutation resolvers. 
 
-Every entity type has `createdAt` and `updatedAt` timestamp fields. That are set automatically by the mutation resolvers. 
+### Input Types
+
+The mutations use _Input Types_ to hold the value of items that should be created or updated. 
+
+```graphql
+input CarCreateInput {
+  brand: String!
+  mileage: Int
+}
+
+input CarUpdateInput {
+  id: ID!
+  brand: String
+  mileage: Int
+}
+```
+
+As you see there are seperate types used by the create and update mutations. The CreateType does not have an `id` - 
+this will be assigned by the _datastore_, where the UpdateType does. The `id` determines which entity item should be 
+updated. Also note that the `brand` attribute in this case is not a mandatory field in the `CarUpdateInput`, even it 
+is configured as such, and the `CarCreateInput` does have it as mandatory. This is because a client is not forced to 
+pass all attributes in the _update mutation_ but only those it wants to change. But making required attributes 
+mandatory in the GraphQL schema would not allow to leave the brand untouched. 
+
+### Filter
+
+```graphql
+input CarFilter {
+  id: ID
+  brand: StringFilter
+  mileage: IntFilter
+}
+```
+
+For every entity-type a filter-type is created that is used in the types query. For every attribute a corresponding
+filter type is determined. E.g. the `StringFilter` for the `brand` attribute. This filter-types are defined by 
+the _datastore_ since their implementation is dependent to the datastore (e.g. database). For this example
+the default _mongodb datastore_ provides the following _scalar filter-types_:
+
+```graphql
+input StringFilter {
+  is: String
+  isNot: String
+  in: [String]
+  notIn: [String]
+  contains: String
+  doesNotContain: String
+  beginsWith: String
+  endsWith: String
+  caseSensitive: Boolean
+}
+
+input IntFilter {
+  eq: Int
+  ne: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  isIn: [Int]
+  notIn: [Int]
+  between: [Int]
+}
+```
+
+For more details check [Filter Types](./filter-types.md)
+
+### Sort
+
+```graphql
+enum CarSort {
+  brand_ASC
+  brand_DESC
+  mileage_ASC
+  mileage_DESC
+  id_ASC
+  id_DESC
+}
+```
+
+The _types query_ uses this the _entity sort enum_ to determine the sort order of the result. For every attribute 
+(unless configured otherwise) two enum values are created. One for ascending order (e.g. `brand_ASC`) and one for
+descending order (e.g. `mileage_DESC`).
+
+### Paging 
+
+```graphql
+input EntityPaging {
+  page: Int!
+  size: Int!
+}
+```
+
+If a query to the _types query_ wants to use a subset instead of the whole result it can use the _paging input type_.
+So a result set with 100 items would deliver the first 10 items when used with the query 
+
+```graphql
+  query {
+    cars( paging: { page: 0, size: 10 } )
+  }
+```
+
+For the next 10 items it would be 
+```graphql
+  query {
+    cars( paging: { page: 1, size: 10 } )
+  }
+```
+
+Pages start with 0.
+
+### Queries
+
+```graphql
+type Query {
+  ping: String
+  car(id: ID): Car
+  cars(filter: CarFilter, sort: CarSort, paging: EntityPaging): [Car]
+  carsStats(filter: CarFilter): EntityStats
+}
+```
+
+Any schema includes a query `ping` that simply sends back the value `pong` and can be used whether a GraphQL API can 
+be accessed without the need to build any specific query or mutation.
+
+#### Type Query
+
+If a client knows the `id` of an entity item it can access this via the type query, eg. 
+```graphql
+query {
+  car( id:"5fa5138860b514597c3c6fa5"){ id brand mileage }
+}
+```
+
+If this `id` does not exist an exception will be thrown. 
+
+#### Types Query
+
+A client can request a result set of entity items with filtering, sorting and paging, e.g.
+```graphql
+query {
+  cars { id brand  mileage} 
+}
+```
+will return all car entities in no specific order.
+
+A more sophisticated usage of the `cars` _types query_:
+```graphql
+query {
+  cars( 
+    filter: { brand: { in: [ "Mercedes", "Porsche"] } }
+    sort: mileage_DESC
+    paging: { page: 0, size: 3 }    
+  ) 
+  { id brand  mileage} 
+}
+```
+would return the three `cars` of the brand "Mercedes" and "Porsche" with the highest `milage`.
+
+
+### Mutations 
+
+```graphql
+type Mutation {
+  ping(some: String): String
+  seed(truncate: Boolean): String
+  createCar(car: CarCreateInput): SaveCarMutationResult
+  updateCar(car: CarUpdateInput): SaveCarMutationResult
+  deleteCar(id: ID): [String]
+}
+```
+
+Any schema includes a mutation `ping` that simply sends the value back and can be used wheter a GraphQL API can 
+be accessed without the need to build any specific query or mutation.
+
+```graphql
+mutation {
+    ping(some: "Thomas")
+}
+```
+```json
+{
+  "data": {
+    "ping": "pong, Thomas!"
+  }
+}
+```
+
+Also any schema comes with the `seed` mutation that can be called to seed the datastore with seed data, as defined
+in the _entity configuration_. Since we haven't included any seed data in this simple example - nothing would 
+happen, except when you would call 
+```graphql
+mutation {
+    seed(truncate: true)
+}
+``` 
+In this case all entity collections (e.g. tables) in the datastore would be truncated. So you should use this 
+carefully.
+
+TODO - should be disabled in production.
+
+The _create, update, delete mutations_ will take the input values and create, update or delete the entity item 
+in the datastore.
+
+### Mutation Result Types
+
+The _create and update mutations_ have a different return whether the operation could be executed or validation
+errors prevented this. They return a _mutation result type_ that hold either the _validation violations_ or the
+successfully created/updated entity item.
+
+```graphql
+type SaveCarMutationResult {
+  validationViolations: [ValidationViolation]!
+  car: Car
+}
+
+type ValidationViolation {
+  attribute: String
+  message: String!
+}
+```
+
+To get possible validation errors from a `createCar` mutation or the assigned id of the newly created car, 
+a client would use something like the following mutation:
+```graphql
+mutation {
+  createCar( car: { brand: "Porsche", mileage: 20000 } ){ 
+    validationViolations { attribute message } }
+  	car { id }
+}
+``` 
+
+Since we did not include any validation in our simple example we would always get the `id` from this mutation. Any 
+non-validation error would lead to an exception in the GraphQL layer and its handling is not part of the schema.
+
+### Statistics
+
+A client can request some basic statistics about the entity. This can also be used for filtered result sets. 
+
+  * `count` the number of items
+  * `createdFirst` the date when the first item was created
+  * `createdLast` the date when the last item was created
+  * `updatedLast` the date when the first item was updated
+
+```graphql
+type EntityStats {
+  count: Int!
+  createdFirst: Date
+  createdLast: Date
+  updatedLast: Date
+}
+```
+To know how many `cars` of the brand 'Porsche' exist a client can use the following query:
+```graphql
+  query {
+    carsStats( filter: {brand: "Porsche" } ){ count }
+  }
+```
+
+
 
 # Properties of Entity configuration
 
@@ -335,7 +636,7 @@ _Result_
 ## attributes
 
 The attributes of an entity as _key/value_ pairs. See
-_AttributeConfiguration_ for details.
+[Attribute Configuration](./attribute-configuration) for details.
 
 _YAML_
 ```yaml

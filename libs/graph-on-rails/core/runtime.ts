@@ -19,7 +19,7 @@ import { DomainDefinition } from './domain-definition';
 import { GraphX } from './graphx';
 import { SchemaFactory } from './schema-factory';
 
-export type Config = {
+export type GamaConfig = {
   name?:string
   dataStore?:(name?:string) => Promise<DataStore>
   validator?:(entity:Entity) => Validator
@@ -47,19 +47,19 @@ export class Runtime {
   readonly contextUser = this.config.contextUser;
   readonly contextRoles = this.config.contextRoles;
 
-  private constructor( public readonly config:Config ){ }
+  private constructor( public readonly config:GamaConfig ){ }
 
   /**
    *
    */
-  static async create( config:Config|DomainDefinition|DomainConfiguration|string ):Promise<Runtime> {
+  static async create( config:GamaConfig|DomainDefinition|DomainConfiguration|string ):Promise<Runtime> {
     const runtime = new Runtime( this.resolveConfig( config ) );
     await runtime.init();
     await runtime.createSchema();
     return runtime;
   }
 
-  private static getDefaultConfig():Config {
+  private static getDefaultConfig():GamaConfig {
     return {
       name: 'GAMA',
       dataStore: ( name?:string ) => MongoDbDataStore.create({ url: 'mongodb://localhost:27017', dbName: name || 'GAMA' }),
@@ -76,7 +76,7 @@ export class Runtime {
     };
   }
 
-  private static resolveConfig(config:Config|DomainDefinition|DomainConfiguration|string):Config {
+  private static resolveConfig(config:GamaConfig|DomainDefinition|DomainConfiguration|string):GamaConfig {
     if( _.isString( config ) ) config = { domainDefinition: config };
     if( config instanceof DomainDefinition ) config = { domainDefinition: config as DomainDefinition };
     if( ! _.has( config, 'domainDefinition') ) config = { domainDefinition: config as DomainConfiguration };
@@ -135,6 +135,11 @@ export class Runtime {
   }
 
   type( name:string ):any { return this.graphx.type( name ) }
+
+  entity( name:string ) {
+    if( this.entities[name] ) return this.entities[name];
+    throw new Error(`no such entity '${name}'`);
+  }
 
   warn<T>( message:string, returnValue:T ):T{
     console.warn( message );
