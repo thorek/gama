@@ -382,6 +382,7 @@ mutation {
     ping(some: "Thomas")
 }
 ```
+
 ```json
 {
   "data": {
@@ -429,7 +430,7 @@ a client would use something like the following mutation:
 ```graphql
 mutation {
   createCar( car: { brand: "Porsche", mileage: 20000 } ){ 
-    validationViolations { attribute message } }
+    validationViolations { attribute message } 
   	car { id }
 }
 ``` 
