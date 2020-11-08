@@ -30,6 +30,7 @@ export type EntityConfig  = {
   description?:string
 
   extendEntity?:( context:Context ) => void | Promise<void>
+  validate?:( item:any, action:'create'|'update') => ValidationReturnType
 }
 ```
 
@@ -1012,3 +1013,157 @@ _Result_
 ```
 
 For more details e.g. how to reference type items see _Seed Configuration_.
+
+## Entity Validation 
+
+_Configuration Object Only_
+
+Some basic restrictions as `required` and `unique` attributes are always validated. In addition you can add
+validation specifications to the Attribute configuration. 
+Please check [Attribute Validation](./attribute-validation.md).
+
+But sometimes you want to add entitiy validation that
+is not bound to an attribute, e.g. if it reflects two or more attributes  - in this case you can add a function that 
+is called everytime before entity item is created or updated. 
+
+```typescript
+export type EntityConfig  = {  
+  validate?:( item:any, action:'create'|'update') => ValidationReturnType
+  ...
+}
+
+export type ValidationReturnType = 
+  ValidationViolation[]|string|undefined|Promise<ValidationViolation[]|string|undefined>
+
+export type ValidationViolation = {
+  attribute?:string
+  message:string
+}
+```
+
+Your custom method will get the item that is about to be saved and the action (either `create` or `update`) so 
+you can use that in your implementation. Please note that for updates the item is complete, that means even if 
+a client only attempts to update one attribute, all other existing attribute values are set prior the call to this
+method. 
+
+The validation method can return the following (or any of these as `Promise`): 
+  * `undefined` or `[]` to indicate the validation passes
+  * an Array of `ValidationViolation` with your validation messages (with or without the `attribute` value set)
+  * a `string` with your validation message, the `attribtute` of the `ValidationViolation` would not be set then
+
+If a `validate` method is present and returns something else but `undefined` or `[]` the validation fails and the
+enitity item will not be saved. The return message (probably combined with other `ValidationViolation`
+messages) will be send to the client.
+
+
+For mor information please check [Validation](./validation.md).
+
+### Example
+
+```Typescript
+export const example3:DomainConfiguration = {
+  entity:{
+    Car: {
+      attributes: {
+        brand: 'string!',
+        mileage: 'int'
+      },
+      validate: (item:any) => (item.brand !== 'Mercedes' && item.mileage > 300000 ) ? 'I wouldnt believe that' : undefined
+    }
+  }
+}
+```
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%">
+  Request
+</td>
+<td width="50%">
+  Response
+</td>
+</tr>
+<tr valign="top">
+<td width="50%">
+
+```graphql
+mutation {
+  createCar( 
+    car: { brand: "Kia", mileage: 310000 } 
+  )
+  {
+    car{ id brand mileage }
+    validationViolations { attribute message }
+  }
+}
+```
+
+</td>
+<td width="50%">
+
+```json
+{
+  "data": {
+    "createCar": {
+      "car": null,
+      "validationViolations": [
+        {
+          "attribute": null,
+          "message": "I wouldnt believe that"
+        }
+      ]
+    }
+  }
+}
+```
+
+</td>
+</tr>
+</table>
+
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%">
+  Request
+</td>
+<td width="50%">
+  Response
+</td>
+</tr>
+<tr valign="top">
+<td width="50%">
+
+```graphql
+mutation {
+  createCar( 
+    car: { brand: "Mercedes", mileage: 310000 } 
+  )
+  {
+    car{ id brand mileage }
+    validationViolations { attribute message }
+  }
+}
+```
+
+</td>
+<td width="50%">
+
+```json
+{
+  "data": {
+    "createCar": {
+      "car": {
+        "id": "5fa87cc40dd707984e939524",
+        "brand": "Mercedes",
+        "mileage": 310000
+      },
+      "validationViolations": []
+    }
+  }
+}
+```
+
+</td>
+</tr>
+</table>

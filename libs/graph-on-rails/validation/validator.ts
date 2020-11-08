@@ -1,5 +1,5 @@
 import { EntityModule } from '../entities/entity-module';
-import { ValidationViolation } from '../entities/entity-validator';
+import { ValidationViolation } from '../entities/entity-validation';
 
 export abstract class Validator extends EntityModule{
 

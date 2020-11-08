@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { Entity } from '../entities/entity';
 import { Validator } from './validator';
-import { ValidationViolation } from '../entities/entity-validator';
+import { ValidationViolation } from '../entities/entity-validation';
 
 const is = require( 'validator.js' ).Assert;
 const validator = require( 'validator.js' ).validator();

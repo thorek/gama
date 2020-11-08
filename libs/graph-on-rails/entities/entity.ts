@@ -1,7 +1,7 @@
 import inflection from 'inflection';
 import _ from 'lodash';
 
-import { AssocFromType, AssocToManyType, AssocToType, CrudAction, EntityPermissionType } from '../core/domain-configuration';
+import { AssocFromType, AssocToManyType, AssocToType, CrudAction, EntityPermissionType, ValidationReturnType } from '../core/domain-configuration';
 import { ResolverContext } from '../core/resolver-context';
 import { Runtime } from '../core/runtime';
 import { EntityAccessor } from './entity-accessor';
@@ -10,7 +10,7 @@ import { EntityItem } from './entity-item';
 import { EntityPermissions } from './entity-permissions';
 import { EntityResolver } from './entity-resolver';
 import { EntitySeeder } from './entity-seeder';
-import { EntityValidator, ValidationViolation } from './entity-validator';
+import { EntityValidation, ValidationViolation } from './entity-validation';
 import { TypeAttribute } from './type-attribute';
 
 
@@ -24,14 +24,14 @@ export abstract class Entity {
   get entityPermissions() { return this._entityPermissions }
   get seeder() { return this._entitySeeder }
   get resolver() { return this._entityResolver }
-  get validator() { return this._entityValidator }
+  get validation() { return this._entityValidation }
   get accessor() { return this._entityAccessor }
   get fileSave() { return this._entityFileSave }
 
   protected _entitySeeder!:EntitySeeder;
   protected _entityResolver!:EntityResolver;
   protected _entityPermissions!:EntityPermissions;
-  protected _entityValidator!:EntityValidator;
+  protected _entityValidation!:EntityValidation;
   protected _entityAccessor!:EntityAccessor;
   protected _entityFileSave!:EntityFileSave;
 
@@ -46,7 +46,7 @@ export abstract class Entity {
     this._entitySeeder = this.runtime.entitySeeder( this );
     this._entityPermissions = this.runtime.entityPermissions( this );
     this._entityFileSave = this.runtime.entityFileSave( this );
-    this._entityValidator = new EntityValidator( this );
+    this._entityValidation = new EntityValidation( this );
     this._entityAccessor = new EntityAccessor( this );
   }
 
@@ -88,6 +88,7 @@ export abstract class Entity {
   get statsQuery():string { return this.getStatsQuery() }
   get path() { return this.getPath() }
   get assign() { return this.getAssign() }
+  get validatFn() { return this.getValidateFn() }
 
   protected abstract getName():string;
   protected getTypeName() { return inflection.camelize( this.name ) }
@@ -122,6 +123,7 @@ export abstract class Entity {
   protected getDeleteMutation():string { return `delete${this.typeName}` }
   protected getPath() { return inflection.underscore( this.plural ) }
   protected getAssign():string|undefined { return undefined }
+  protected getValidateFn():(( item:any, action:'create'|'update')=>ValidationReturnType)|undefined { return undefined }
 
   /**
    *
@@ -182,7 +184,7 @@ export abstract class Entity {
    *
    */
   async validate( attributes:any ):Promise<ValidationViolation[]> {
-    return this.validator.validate( attributes );
+    return this.validation.validate( attributes );
   }
 
   /**

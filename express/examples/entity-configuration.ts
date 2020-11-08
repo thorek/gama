@@ -11,3 +11,15 @@ export const example2:DomainConfiguration = {
     }
   }
 }
+
+export const example3:DomainConfiguration = {
+  entity:{
+    Car: {
+      attributes: {
+        brand: 'string!',
+        mileage: 'int'
+      },
+      validate: (item:any) => (item.brand !== 'Mercedes' && item.mileage > 300000 ) ? 'I wouldnt believe that' : undefined
+    }
+  }
+}

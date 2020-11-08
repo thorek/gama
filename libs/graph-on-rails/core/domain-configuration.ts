@@ -1,3 +1,4 @@
+import { ValidationViolation } from '../entities/entity-validation';
 import { Runtime } from './runtime';
 
 export type DomainConfiguration = {
@@ -73,7 +74,10 @@ export type EntityConfig  = {
 
   description?:string
   extendEntity?:( runtime:Runtime ) => void | Promise<void>
+  validate?:( item:any, action:'create'|'update') => ValidationReturnType
 }
+
+export type ValidationReturnType = ValidationViolation[]|string|undefined|Promise<ValidationViolation[]|string|undefined>
 
 export type EnumConfig = _.Dictionary<any>|(string[])
 

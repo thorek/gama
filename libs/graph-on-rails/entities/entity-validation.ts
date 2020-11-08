@@ -1,3 +1,4 @@
+import { UV_FS_O_FILEMAP } from 'constants';
 import _ from 'lodash';
 
 import { AssocType } from '../core/domain-configuration';
@@ -15,7 +16,7 @@ export type ValidationViolation = {
 
 //
 //
-export class EntityValidator  {
+export class EntityValidation  {
 
   readonly validator!:Validator;
   get runtime() { return this.entity.runtime }
@@ -35,6 +36,7 @@ export class EntityValidator  {
     violations.push( ... await this.validateRequiredAssocTos( validatable ) );
     violations.push( ... await this.validateUniqe( validatable ) );
     violations.push( ... await this.validator.validate( validatable, action ) );
+    violations.push( ... await this.validateFn( validatable, action ) );
     return violations;
   }
 
@@ -92,6 +94,14 @@ export class EntityValidator  {
     }
     return violations;
   }
+
+  private async validateFn( attributes:any, action:'create'|'update' ):Promise<ValidationViolation[]>  {
+    if( ! this.entity.validatFn ) return [];
+    const violations = await Promise.resolve( this.entity.validatFn( attributes, action ) );
+    if( _.isString( violations ) ) return [{message: violations}]
+    return violations ? violations : [];
+  }
+
 
   /**
    *

@@ -3,7 +3,7 @@ import validate from 'validate.js';
 
 import { Entity } from '../entities/entity';
 import { Validator } from './validator';
-import { ValidationViolation } from '../entities/entity-validator';
+import { ValidationViolation } from '../entities/entity-validation';
 
 /**
  *

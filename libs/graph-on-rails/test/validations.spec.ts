@@ -17,6 +17,10 @@ describe('Validations', () => {
             foo: { type: 'int' }
           },
           assocTo: ['Delta'],
+          validate:( item:any ) => {
+            if( item.name == 'foo' && item.some == 'bar' ) return [{message: 'no foobar'}]
+            return undefined;
+          },
           seeds: {
             alpha1: { name: 'alpha1', some: 'some1', Delta: 'delta1' },
             alpha2: { name: 'alpha2', some: 'some2', Delta: 'delta1' },
@@ -37,6 +41,9 @@ describe('Validations', () => {
           attributes: {
             name: { type: 'string' }
           },
+          validate:( item:any, action:'create'|'update' ) => {
+            if( action === 'create' && item.name == 'foobar' ) return [{ attribute: 'name', message: "no foobar" } ]
+          },
           seeds: {
             delta1: { name: 'delta1' },
             delta2: { name: 'delta2' },
@@ -47,10 +54,6 @@ describe('Validations', () => {
     });
 
     await Seeder.create( runtime ).seed( true );
-  })
-
-  it('no', () => {
-    expect(true).toBeTruthy()
   })
 
   //
@@ -182,6 +185,35 @@ describe('Validations', () => {
     const alpha = runtime.entities['Alpha'];
     const alpha1 = _.first( await alpha.findByAttribute({name: 'alpha1'}));
     const result = await alpha.validate( { id: alpha1?.id, name: 'alpha1' } );
+    expect( result ).toHaveLength( 0 );
+  })
+
+  it( 'should validate the entity from config', async () => {
+    const alpha = runtime.entities['Alpha'];
+    let result = await alpha.validate( { name: 'foo', some: 'bar' } );
+    expect( result ).toHaveLength( 1 );
+    expect( result ).toEqual( expect.arrayContaining([
+      expect.objectContaining( {
+        message: 'no foobar'
+      }),
+      expect.not.objectContaining( { attribute: null } )
+    ]));
+  })
+
+  it( 'should validate the entity from config only create', async () => {
+    const delta = runtime.entities['Delta'];
+    let result = await delta.validate( { name: 'foobar' } );
+    expect( result ).toHaveLength( 1 );
+    expect( result ).toEqual( expect.arrayContaining([
+      expect.objectContaining( {
+        attribute: 'name',
+        message: 'no foobar'
+      })
+    ]));
+
+    const delta1 = await delta.findOneByAttribute( {name: 'delta1' } );
+    expect( delta1 ).toBeDefined();
+    result = await delta.validate( { id: delta1?.id, name: 'foobar' } );
     expect( result ).toHaveLength( 0 );
   })
 

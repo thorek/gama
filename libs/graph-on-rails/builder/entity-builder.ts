@@ -331,7 +331,7 @@ export class EntityBuilder extends TypeBuilder {
     if( ! attribute.validation ) return attribute.description;
     if( ! _.includes( ['updateInput', 'createInput'], purpose )) return attribute.description;
     const validationConfig = JSON.stringify(attribute.validation, null, 2);
-    const validationSyntax = this.entity.validator.validator.validatorSyntaxHint();
+    const validationSyntax = this.entity.validation.validator.validatorSyntaxHint();
     const validation = `Validation of this field:\n \`\`\`\n${validationConfig} \n \`\`\`\nFor syntax check: ${validationSyntax}`;
     return attribute.description ? `${attribute.description}\n${validation}` : validation;
   }

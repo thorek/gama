@@ -5,7 +5,7 @@ import { AssocType } from '../core/domain-configuration';
 import { EntityDeleter } from './entity-deleter';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
-import { ValidationViolation } from './entity-validator';
+import { ValidationViolation } from './entity-validation';
 
 //
 //
