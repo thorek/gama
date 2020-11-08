@@ -2,8 +2,9 @@
 
 We think [GraphQL](https://graphql.org) is a great way to expose your business domain to any client or 3rd party system. 
 Implementing a GraphQL API is a tedious task though. You need to decide how to structure your schema, how to handle
-concepts like searching, sorting, paging etc. Writing resolvers that read data from and write data to a database or
-similar etc etc.
+concepts like searching, sorting, paging, validating. 
+How to write resolvers that read data from and write data to a database or
+similar, validate input etc.
 
 GAMA supports this development with an oppinionated approach based on the configuration of a business domain 
 (mainly entities and its relations to each other). You can check out the simplicity and power 

@@ -3,22 +3,22 @@
 A business domain is mainly described by its entities and their relation to each other. Think of an _entity_ as any 
 _thing_ in your business domain. We highly recommend using a [Domain Driven Design](https://www.amazon.de/Domain-Driven-Design-Tackling-Complexity-Software/dp/B001JDYE0O) approach.
 
-The configuration of an entity is done by an object of the following type: 
-
 ### Configuration Type
+
+The configuration of an entity is done by an object of the following type: 
 
 ```typescript
 export type EntityConfig  = {
+  attributes?:{[name:string]:string|AttributeConfig};
+  assocTo?:string|(string|AssocToType)[];
+  assocToMany?:string|(string|AssocToManyType)[];
+  assocFrom?:string|string[]|AssocFromType[];
+
   typeName?:string;
   plural?:string
   singular?:string;
   collection?:string;
   path?:string;
-
-  attributes?:{[name:string]:string|AttributeConfig};
-  assocTo?:string|(string|AssocToType)[];
-  assocToMany?:string|(string|AssocToManyType)[];
-  assocFrom?:string|string[]|AssocFromType[];
 
   union?:string[]
   interface?:boolean
@@ -33,13 +33,25 @@ export type EntityConfig  = {
 }
 ```
 
-From the definition of an _entity_ a full fledged GraphQL schema is generated incl. resolver to a _data store_. The behaviour is strongly oppionated and uses mostly conventions; nonetheless you can configure most of the details.
-
 You can also write the entity configuration in yaml files and simply includes these files in your 
 [Domain Definition](./domain-definition).
 
+From the definition of an _entity_ a full fledged GraphQL schema is generated incl. resolver to a _data store_. 
+The behaviour is strongly oppionated and uses mostly conventions; nonetheless you can configure most of the details. 
+You will probably only ever use the following configuration attributes: 
+
+  * `attributes` the attributes of the entity
+  * `assocTo`, `assocToMany`, `assocFrom` to express the relation of one entity to another (has relationships)
+  * `union`, `interface`, `implements` to express identity relations between entities
+  * `permissions` to configure the access of users and roles to entity data
+  * `seeds` to declare seed data you can use to develop or run your API
+  * `description` to document the entity in the GraqphQL schema
+
 
 ## <a name="example"></a> Example
+
+Let's look at a very simple example that does not yet use any of the more sophisticated features but a mere 
+defintion of a business entity with some basic attributes.
 
 _YAML_
 ```yaml 
@@ -462,18 +474,22 @@ To know how many `cars` of the brand 'Porsche' exist a client can use the follow
   }
 ```
 
+This example covered just some basic concepts. Please refer to the documentation to see the possibilities to 
+translate your business domain into a GraqphQL API and UI.
+
 
 
 # Properties of Entity configuration
 
 ## typeName
 
-The `typeName` is the name GraphqlType in the schema. Per default it is identical to the `name` of this _entity_ in the _domain configuration_. Only set this if know very well, what you want to achieve.
+The `typeName` is the name GraphqlType in the schema. Per default it is _capitalized_ `name` of this _entity_ in the 
+_domain configuration_. Only set this if know very well, what you want to achieve.
 
 _YAML_
 ```yaml
 entity: 
-  Car: 
+  car: 
   Driver: 
     typeName: Chauffeur
 ```
@@ -481,7 +497,7 @@ entity:
 _Code_
 ```javascript
 const domainConfiguration = {
-  Car: {}, 
+  car: {}, 
   Driver: { typeName: 'Chauffeur' }
 }
 ```
@@ -528,6 +544,8 @@ type SaveChauffeurMutationResult {
   chauffeur: Chauffeur
 }
 ```
+
+We suggest to use the capitalized version of the type name as key in the `entity` object of the configuration.
 
 ## singular 
 
