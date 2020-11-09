@@ -35,7 +35,7 @@ const domainConfiguration:DomainConfiguration = {
   }
 }
 
-export const example1 = new DomainDefinition( '../config-types/car-config-1');
+export const example1 = new DomainDefinition( './config-types/car-config-1');
 example1.add( domainConfiguration );
 
 export const example4:DomainConfiguration = {
@@ -51,6 +51,22 @@ export const example4:DomainConfiguration = {
         mercedes: { brand: 'Mercedes' },
         vw: { brand: 'Volkswagen' },
       }
+    }
+  }
+}
+
+
+export const example5:DomainConfiguration = {
+  entity: {
+    Organisation: {
+      attributes: { name: 'Key' },
+      seeds: { ms: { name: 'Microsoft' }, fb: { name: 'Facebook' } },
+      assocFrom: 'Department'
+    },
+    Department: {
+      attributes: { name: { type: 'String!', unique: 'Organisation' } },
+      assocTo: 'Organisation!',
+      seeds: { hrms: { name: 'HR', Organisation: 'ms' } }
     }
   }
 }

@@ -8,15 +8,14 @@ Entities have attributes describing the data of the entity. Many aspects to this
 export type AttributeConfig = {
   type?:string;
   required?:boolean|'create'|'update'
+  list?:boolean
   unique?:boolean|string
+  description?:string
   filterType?:string|false;
   validation?:any;
-  description?:string
   input?:boolean
   default?:any
 
-  label?:string
-  list?:boolean
   sortable?:string
   mediaType?:'image'|'video'|'audio'
 
@@ -26,8 +25,8 @@ export type AttributeConfig = {
 
 ### String shortcut
 
-Instead of providing a config object you can simply write the type instead. The reast of the attrinbute configuration 
-object will be set as default. You can even use all type shortcut notations (as `String!` or `Key` described below) 
+Instead of providing a config object you can simply write the type instead. The rest of the attribute configuration 
+object will be set as default. You can even use all type shortcut notations (as `String!` or `Key` as described below) 
 when using this. The follwing examples are equivalant:
 
 <table width="100%" style="font-size: 0.9em">
@@ -141,8 +140,8 @@ You can mix shortcut and regular configuration and you can use it in YAML or cod
 You can use a shortcut notations for the type attribute:
 
   * `Key` configures this attribute as as a unique `String`
-  * trailing `!` decorates this as a NonNull type in the schema
-  * surrounding `[]` uses this type as type for a List in the schema
+  * trailing `!` sets the `required` attribute to true
+  * surrounding `[]` sets the `list` attribute to true
 
 The type of an attribute can be on of the following:
 
@@ -180,6 +179,15 @@ An attribute can use any Enum type you add to the business domain configuration 
   required?:boolean|'create'|'update'
 ```
 
+| Value      | Shortcut        | Description                                                                    |
+| ---------- | --------------- | ------------------------------------------------------------------------------ |
+| **false**  | if not provided | no effect                                                                      |
+| true       | attributeName!  | NonNull in the type and create input type, `{presence: true}` validation added |
+| create     |                 | NonNull only create input type                                                 |
+| update     |                 | NonNull only in update input type                                              | 
+
+<br>
+
 If you set the required modifier the corresponding field of the following types become an NonNull type in the 
 GraphQL schema: 
 
@@ -195,7 +203,7 @@ In addition to the schema field a `{ presence: true }` validation is added to th
 You might ask why, since the GraphQL layer would prevent any non-null value. The answer is that custom mutations
 could (and should) use an entity to create or update entity items. These values are not "checked" by the 
 GraphQL schema of course. Therefore before saving an entity item, all validations - incl. this required - validation
-must be met.
+must be met. 
 
 The information will also be part of the MetaData and therefore used in the GAMA Admin UI to render a mandatory
 text field for this attribute.
@@ -243,15 +251,34 @@ input CarCreateInput {
 </tr>
 </table>
 
-### Possible Values
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%"> Request </td> <td width="50%"> Response </td>
+</tr>
+<tr valign="top"><td>
 
-| Value               | Description                                                                    |
-| ------------------- | ------------------------------------------------------------------------------ |
-| **false**           | the default, no effect                                                         |
-| true                | NonNull in the type and create input type, `{presence: true}` validation added |
-| create              | NonNull only create input type                                                 |
-| update              | NonNull only in update input type                                              | 
+```graphql
+mutation{
+  createCar( car: { } ){
+    car{ id brand }
+    validationViolations { attribute message }
+  }
+}
+```
 
+</td><td>
+
+```json
+{
+  "error": {
+    "errors": [
+      {
+        "message": "Field \"CarCreateInput.brand\" of required type \"String!\" was not provided.",
+...
+````
+
+</td></tr>
+</table>
 
 ---
 ## Unique
@@ -260,8 +287,18 @@ input CarCreateInput {
 unique?:boolean|string
 ```
 
+
+| Value               | Shortcut  |  Description                                                     |
+| ------------------- | --------- | ---------------------------------------------------------------- |
+| **false**           | (default) | no effect                                                       |
+| true                |           | adding validation of uniqueness of this attribute to the entity |
+| assocTo Name        |           | adding validation of uniqueness within the scope of the assoc of this attribute to the entity |
+
+<br>
+
 If an attribute is declared as unique, the entity validation checks that no equal value for this entity already
-exists.
+exists before any actual write to the datastore happens. If it finds the input value not unique it adds a message
+to the `ValidationViolaton` return type.
 
 ### Example
 
@@ -343,4 +380,158 @@ mutation {
 </td></tr>
 </table>
 
-Sometimes 
+Sometimes a value must only be unique in a certain scope, e.g. a department in an organisation. There is only one 
+_HR department_ in any organisation. But there can be many organisations with an _HR department_. You can simply 
+scope the `unique` configuration with a `assocTo` association to achieve this. 
+
+### Example
+
+```yaml
+entity: {
+  Organisation: 
+    attributes: 
+      name: Key
+    assocFrom: Department
+    seeds: 
+      ms:
+        name: Microsoft
+      fb:
+        name: Facebook
+  
+  Department: 
+    attributes:   
+      name: 
+        type: String!
+        unique: Organisation
+    assocTo: Organisation!
+    seeds: 
+      hrms: 
+        name: HR
+        Organisation: ms
+  }
+}
+
+```
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%"> Request </td> <td width="50%"> Response </td>
+</tr>
+<tr valign="top"><td>
+
+```graphql
+query { 
+  organisations{ id name departments { id name } }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "organisations": [
+      {
+        "id": "5fa98edc64b80ecc74810d81",
+        "name": "Facebook",
+        "departments": []
+      },
+      {
+        "id": "5fa98edc64b80ecc74810d80",
+        "name": "Microsoft",
+        "departments": [
+          {
+            "id": "5fa98edc64b80ecc74810d82",
+            "name": "HR"
+          }
+        ]
+      }
+    ]
+  }
+}
+````
+
+</td></tr>
+<tr valign="top"><td>
+
+```graphql
+mutation {
+  createDepartment( department: { 
+    name: "HR" 
+    organisationId: "5fa98edc64b80ecc74810d80"} ){
+  department { id name organisation { id name } }
+  validationViolations { attribute message }
+  }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "createDepartment": {
+      "department": null,
+      "validationViolations": [
+        {
+          "attribute": "name",
+          "message": "value 'HR' must be unique within scope 'Organisation'"
+        }
+      ]
+    }
+  }
+}
+````
+
+</td></tr>
+<tr valign="top"><td>
+
+```graphql
+mutation {
+  createDepartment( department: { 
+    name: "HR" 
+    organisationId: "5fa98edc64b80ecc74810d81"} ){
+  department { id name organisation { id name } }
+  validationViolations { attribute message }
+  }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "createDepartment": {
+      "department": {
+        "id": "5fa98f7964b80ecc74810d83",
+        "name": "HR",
+        "organisation": {
+          "id": "5fa98edc64b80ecc74810d81",
+          "name": "Facebook"
+        }
+      },
+      "validationViolations": []
+    }
+  }
+}
+````
+
+</td></tr>
+</table>
+
+---
+## List scalars
+
+```typescript
+  list?:boolean
+```
+
+| Value      | Shortcut        | Description                                                                    |
+| ---------- | --------------- | ------------------------------------------------------------------------------ |
+| **false**  | (default)       | no effect                                                                      |
+| true       | [attributeName] | type of this attrribute is a list of the scalar type                           |
+
+<br>
+
+

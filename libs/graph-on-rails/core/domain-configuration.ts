@@ -23,11 +23,11 @@ export type QueryConfigFn = (runtime:Runtime) => QueryMutationConfig
  */
 export type AttributeConfig = {
   type?:string;
-  filterType?:string|false;
-  validation?:any;
   required?:boolean|'create'|'update'
   unique?:boolean|string
   description?:string
+  filterType?:string|false;
+  validation?:any;
   input?:boolean
   default?:any
 
