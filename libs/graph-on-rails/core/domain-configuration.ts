@@ -23,7 +23,6 @@ export type QueryConfigFn = (runtime:Runtime) => QueryMutationConfig
  */
 export type AttributeConfig = {
   type?:string;
-  key?:string;
   filterType?:string|false;
   validation?:any;
   required?:boolean|'create'|'update'
@@ -32,7 +31,6 @@ export type AttributeConfig = {
   input?:boolean
   default?:any
 
-  label?:string
   list?:boolean
   sortable?:string
   mediaType?:'image'|'video'|'audio'

@@ -49,7 +49,7 @@ You will probably only ever use the following configuration attributes:
   * `description` to document the entity in the GraqphQL schema
 
 
-## <a name="example"></a> Example
+## <a name="entity-configuration-example"></a> Example
 
 Let's look at a very simple example that does not yet use any of the more sophisticated features but a mere 
 defintion of a business entity with some basic attributes.
@@ -94,106 +94,7 @@ will create
 * resolver for the queries and mutations that read/write to a data store (per default a mongo db)
 * and some helper types, query and mutations we'll cover later
 
-_generated fully functional GraphQL schema (excerpt)_
-```graphql
-type Car {
-  id: ID!
-  brand: String!
-  mileage: Int
-  createdAt: Date
-  updatedAt: Date
-}
-
-input CarCreateInput {
-  brand: String!
-  mileage: Int
-}
-
-input CarFilter {
-  id: ID
-  brand: StringFilter
-  mileage: IntFilter
-}
-
-enum CarSort {
-  brand_ASC
-  brand_DESC
-  mileage_ASC
-  mileage_DESC
-  id_ASC
-  id_DESC
-}
-
-input CarUpdateInput {
-  id: ID!
-  brand: String
-  mileage: Int
-}
-
-input EntityPaging {
-  page: Int!
-  size: Int!
-}
-
-type EntityStats {
-  count: Int!
-  createdFirst: Date
-  createdLast: Date
-  updatedLast: Date
-}
-
-input IntFilter {
-  eq: Int
-  ne: Int
-  le: Int
-  lt: Int
-  ge: Int
-  gt: Int
-  isIn: [Int]
-  notIn: [Int]
-  between: [Int]
-}
-
-type Mutation {
-  ping(some: String): String
-  seed(truncate: Boolean): String
-  createCar(car: CarCreateInput): SaveCarMutationResult
-  updateCar(car: CarUpdateInput): SaveCarMutationResult
-  deleteCar(id: ID): [String]
-}
-
-type Query {
-  ping: String
-  metaData(path: String): [entityMetaData]
-  car(id: ID): Car
-  cars(filter: CarFilter, sort: CarSort, paging: EntityPaging): [Car]
-  carsStats(filter: CarFilter): EntityStats
-}
-
-type SaveCarMutationResult {
-  validationViolations: [ValidationViolation]!
-  car: Car
-}
-
-input StringFilter {
-  is: String
-  isNot: String
-  in: [String]
-  notIn: [String]
-  contains: String
-  doesNotContain: String
-  beginsWith: String
-  endsWith: String
-  caseSensitive: Boolean
-}
-
-type ValidationViolation {
-  attribute: String
-  message: String!
-}
-```
-
-Let's break this simple example down
+Let's break the generated GraphQL scheme for this simple example down
 
 ### Type
 
@@ -239,6 +140,75 @@ is configured as such, and the `CarCreateInput` does have it as mandatory. This 
 pass all attributes in the _update mutation_ but only those it wants to change. But making required attributes 
 mandatory in the GraphQL schema would not allow to leave the brand untouched. 
 
+<table width="100%" style="font-size: 0.9em"><tr valign="top">
+<td width="50%">Request</td><td width="50%">Response</td></tr>
+<tr valign="top"><td width="50%">
+
+```graphql
+mutation {
+  createCar(  car: { mileage: 310000 }  ) 
+  {
+    car{ id brand mileage }
+    validationViolations { attribute message }
+  }
+}
+```
+
+</td><td width="50%">
+
+```json
+{
+  "error": {
+    "errors": [
+      {
+        "message": "Field \"CarCreateInput.brand\" of required type \"String!\" was not provided.",
+        ...
+      }
+  }
+}
+```
+
+</td></tr></table>
+
+
+<table width="100%" style="font-size: 0.9em"><tr valign="top">
+<td width="50%">Request</td><td width="50%">Response</td></tr>
+<tr valign="top"><td width="50%">
+
+```graphql
+mutation {
+  updateCar( 
+    car: { 
+      id: "5fa94775477b8bba016e81b0" 
+      mileage: 310000 
+  )
+  {
+    car{ id brand mileage }
+    validationViolations { attribute message }
+  }
+}
+```
+
+</td><td width="50%">
+
+```json
+{
+  "data": {
+    "updateCar": {
+      "car": {
+        "id": "5fa94775477b8bba016e81b0",
+        "brand": "Porsche",
+        "mileage": 310000
+      },
+      "validationViolations": []
+    }
+  }
+}
+```
+
+</td></tr></table>
+
+
 ### Filter
 
 ```graphql
@@ -279,6 +249,51 @@ input IntFilter {
   between: [Int]
 }
 ```
+
+<table width="100%" style="font-size: 0.9em"><tr valign="top">
+<td width="50%">Request</td><td width="50%">Response</td></tr>
+<tr valign="top"><td width="50%">
+
+```graphql
+query { 
+  cars( filter: { 
+    brand: { contains: "a" }, 
+    mileage: { gt: 100000 } } ){
+  	id brand mileage
+  }
+}
+```
+
+</td><td width="50%">
+
+```json
+{
+  "data": {
+    "cars": [
+      {
+        "id": "5fa94775477b8bba016e81a4",
+        "brand": "Audi",
+        "mileage": 125331
+      },
+      {
+        "id": "5fa94775477b8bba016e81a1",
+        "brand": "Audi",
+        "mileage": 121349
+      },
+      {
+        "id": "5fa94775477b8bba016e8196",
+        "brand": "Audi",
+        "mileage": 105400
+      },
+      {
+        "id": "5fa94775477b8bba016e8195",
+        "brand": "Toyota",
+        "mileage": 141964
+      },
+  ...
+```
+</td></tr></table>
+
 
 For more details check [Filter Types](./filter-types.md)
 
@@ -487,7 +502,10 @@ translate your business domain into a GraqphQL API and UI.
 The `typeName` is the name GraphqlType in the schema. Per default it is _capitalized_ `name` of this _entity_ in the 
 _domain configuration_. Only set this if know very well, what you want to achieve.
 
-_YAML_
+<table width="100%" style="font-size: 0.9em"><tr valign="top">
+<td width="50%">YAML</td><td width="50%">Code</td></tr>
+<tr valign="top"><td width="50%">
+
 ```yaml
 entity: 
   car: 
@@ -495,7 +513,8 @@ entity:
     typeName: Chauffeur
 ```
 
-_Code_
+</td><td width="50%">
+
 ```javascript
 const domainConfiguration = {
   car: {}, 
@@ -503,9 +522,10 @@ const domainConfiguration = {
 }
 ```
 
+</td></tr></table>
+
 _Schema (excerpt)_
 ```graphql
-
 type Car {
   id: ID!
   createdAt: String
@@ -566,7 +586,6 @@ entity:
 
 _Schema for Car (excerpt)_
 ```schema
-
 type Driver {
   car: Car
 }

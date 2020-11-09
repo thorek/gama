@@ -97,14 +97,13 @@ export class ConfigEntity extends Entity {
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );
     this.resolveKey( attrConfig );
-    this.resolveScopedKey( attrConfig );
     this.resolveListBrackets( attrConfig );
     this.resolveExclamationMark( attrConfig );
     this.capitalizeScalarTypes( attrConfig );
     this.resolveMediaType( attrConfig );
     this.warnAttribute( name, attrConfig );
     return {
-      graphqlType: attrConfig.type || 'string',
+      graphqlType: attrConfig.type || 'String',
       filterType: attrConfig.filterType as string|false|undefined,
       validation: attrConfig.validation,
       unique: attrConfig.unique,
@@ -120,23 +119,15 @@ export class ConfigEntity extends Entity {
 
   private resolveShortcut( attrConfig:string|AttributeConfig):AttributeConfig {
     if( _.isString( attrConfig ) ) attrConfig = { type: attrConfig };
-    if( ! attrConfig.type ) attrConfig.type = 'string';
+    if( ! attrConfig.type ) attrConfig.type = 'String';
     return attrConfig;
   }
 
   private resolveKey( attrConfig:AttributeConfig ):void {
     if( _.toLower(attrConfig.type) === 'key' ){
-      attrConfig.type = 'string';
+      attrConfig.type = 'String';
       attrConfig.required = true;
-      attrConfig.unique = true;
-    }
-  }
-
-  private resolveScopedKey( attrConfig:AttributeConfig ):void {
-    if( _.isString(attrConfig.key) ){
-      attrConfig.type = 'string';
-      attrConfig.required = true;
-      attrConfig.unique = attrConfig.key;
+      if( ! attrConfig.unique ) attrConfig.unique = true;
     }
   }
 

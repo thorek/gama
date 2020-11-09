@@ -57,9 +57,38 @@ For detailed documentation see: [GAMA Angular Admin UI](./gama-angular.md)
 
 ## Example
 
-### Javascript Object 
+Let's look at some of the concepts at this simple example. We use YAML files and a Typescript object to configure a 
+very easy business domain of _cars_.
 
-```javascript
+```yaml
+enum:
+  CarBrand:
+    - Mercedes
+    - Volkswagen
+    - Audi
+    - Porsche
+    - Toyota
+    - Bentley
+
+entity: 
+  Car: 
+    attributes:      
+      brand: CarBrand!
+      mileage: Int
+      color: String
+```
+
+Lets assume we put this in a yaml file (we could also split these in two files) in a folder with the name 
+`./car-config`. Since we want to add some custom code we use now a TypeScript object for the rest of our 
+domain definition. Note that you could also have included the above Enum and Entity definition in this object. You can 
+split and combine this as you like. All YAML file definitions and all configuration objects are merged into one
+single domain definition in the end.
+
+We recommend having one YAML file per enum / type, and add custom code in one configuration object per use case.
+
+Here we want to add a non-Entity based query (Winners of the Le Mans Race) and a custom mutation (repaint of a car). 
+
+```typescript
 const winnerYear = {
   Toyota: [2020, 2019, 2018],
   Porsche: [2017,2016,2015,2014,2013,2012,2011,2010],
@@ -71,25 +100,11 @@ const winnerYear = {
 const repaint = async (rt:Runtime, id:string, color:string) => {
   const car = rt.entity('Car');
   const c = await car.findById( id );
-  c.item.color = color;
-  await c.save();
-  return c.item;
+  c.item.color = color;  
+  return (await c.save()).item;
 }
 
-
-export const example1:DomainConfiguration = {
-  enum: {
-    CarBrand: ['Mercedes', 'BMW', 'Volkswagen', 'Audi', 'Porsche', 'Toyota', 'Bentley']
-  },
-  entity: {
-    car: {
-      attributes: {
-        brand: 'CarBrand',
-        mileage: 'int',
-        color: 'string'
-      }
-    }
-  },
+export const domainConfiguration:DomainConfiguration = {
   query: {
     leMansWinner: (rt:Runtime) => ({
       type: '[Int!]',
@@ -107,15 +122,35 @@ export const example1:DomainConfiguration = {
 }
 ```
 
-In this example we define an Enum, an Entity, which defines types (the type "Car" itself, but also Filter 
-and Input Types etc.) and Querys/Mutations regarding this types. We also added a non-Entity based query (Winners
-of the Le Mans Race) and a custom mutation (repaint). You might realize we are not using any GraphQL type 
-directly but its string representation. This is mainly because of an Apollo scpecific we will cover in the 
-_Custom Querys and Mutation_ section.
+You might realize we are using some helper methods (e.g. `findById`) and also not referring any GraphQL type
+directly but its string representation. All this we will be covered in the  [Custom Querys and Mutations]() section. 
+But you already should see that you can add any query and mutation that is not party of the default generated schema. 
+These queries and mutation can make use of the Graph-on-Rails library (as the mutation in this example) or can be 
+totally independent from it (as the query shows). The use of [Lodash](https://lodash.com) `_.get( ... )` is optional
+of course.
 
-This example would lead to the following schema: 
+We can then combine this into one Domain Definition that provides our GraphQL API.
+
+```typescript
+const domainDefinition = new DomainDefinition( './car-config' );
+domainDefinition.add( domainConfiguration );
+```
+
+This example would lead to the following schema (the annotations / desciptions) are only added here for explanation 
+and are not part of the schema generation: 
 
 ```graphql
+''' meta information for the Gama Admin UI so it can generate a generic UI for a human user '''
+type assocMetaData {
+  path: String
+  query: String
+  required: Boolean
+  typesQuery: String
+  foreignKey: String
+  scope: String
+}
+
+''' the GraphQL type of our Car entity '''
 type Car {
   id: ID!
   brand: CarBrand
@@ -125,6 +160,7 @@ type Car {
   updatedAt: Date
 }
 
+''' the GraphQL Enum type for the CarBrand enum '''
 enum CarBrand {
   MERCEDES
   BMW
@@ -135,6 +171,7 @@ enum CarBrand {
   BENTLEY
 }
 
+''' type to filter Cars by the CarBrand enum '''
 input CarBrandFilter {
   ne: CarBrand
   eq: CarBrand
@@ -142,12 +179,14 @@ input CarBrandFilter {
   notIn: [CarBrand]
 }
 
+''' the input type for the create mutation for Car '''
 input CarCreateInput {
   brand: CarBrand
   mileage: Int
   color: String
 }
 
+''' filter type on all attributes of the Car type that is used in the cars types query '''
 input CarFilter {
   id: ID
   brand: CarBrandFilter
@@ -155,6 +194,7 @@ input CarFilter {
   color: StringFilter
 }
 
+''' Enum to express desired sort by attribute for the cars types query ''' 
 enum CarSort {
   brand_ASC
   brand_DESC
@@ -166,6 +206,7 @@ enum CarSort {
   id_DESC
 }
 
+''' the input type for the update mutation for Car '''
 input CarUpdateInput {
   id: ID!
   brand: CarBrand
@@ -173,8 +214,10 @@ input CarUpdateInput {
   color: String
 }
 
+''' a Data scalar you can use in your entity configurations, queries or mutations '''
 scalar Date
 
+''' meta information for the Gama Admin UI so it can generate a generic UI for a human user '''
 type entityMetaData {
   path: String
   typeQuery: String
@@ -191,11 +234,13 @@ type entityMetaData {
   assocFrom: [assocMetaData]
 }
 
+''' type to get a certain subset of a types query '''
 input EntityPaging {
   page: Int!
   size: Int!
 }
 
+''' type for statistics about entity data '''
 type EntityStats {
   count: Int!
   createdFirst: Date
@@ -203,6 +248,7 @@ type EntityStats {
   updatedLast: Date
 }
 
+''' meta information for the Gama Admin UI so it can generate a generic UI for a human user '''
 type fieldMetaData {
   name: String!
   type: String
@@ -214,6 +260,7 @@ type fieldMetaData {
   mediaType: String
 }
 
+''' the default type to filter entities by int attribute (provided by the datastore) '''
 input IntFilter {
   eq: Int
   ne: Int
@@ -226,16 +273,20 @@ input IntFilter {
   between: [Int]
 }
 
+''' a JSON scalar you can use in your entity configurations, queries or mutations '''
 scalar JSON
 
+''' the CUD mutations for the car type are added, you also find the custom mutation here '''
 type Mutation {
   ping(some: String): String
   seed(truncate: Boolean): String
+  repaint(id: ID, color: String!): Car
   createCar(car: CarCreateInput): SaveCarMutationResult
   updateCar(car: CarUpdateInput): SaveCarMutationResult
   deleteCar(id: ID): [String]
 }
 
+''' the type queries for the car type are added, you also find the custom query here '''
 type Query {
   ping: String
   metaData(path: String): [entityMetaData]
@@ -245,11 +296,13 @@ type Query {
   carsStats(filter: CarFilter): EntityStats
 }
 
+''' the return type for the generated saveCar mutation '''
 type SaveCarMutationResult {
   validationViolations: [ValidationViolation]!
   car: Car
 }
 
+''' the default type to filter entities by int attribute (provided by the datastore) '''
 input StringFilter {
   is: String
   isNot: String
@@ -262,9 +315,11 @@ input StringFilter {
   caseSensitive: Boolean
 }
 
+``` the type for possible validation errors in the return of the create and update mutation '''
 type ValidationViolation {
   attribute: String
   message: String!
 }
 ```
+
 

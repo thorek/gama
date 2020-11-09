@@ -1,0 +1,15 @@
+enum:
+  CarBrand:
+    - Mercedes
+    - Volkswagen
+    - Audi
+    - Porsche
+    - Toyota
+    - Bentley
+
+entity:
+  Car:
+    attributes:
+      brand: CarBrand!
+      mileage: Int
+      color: String

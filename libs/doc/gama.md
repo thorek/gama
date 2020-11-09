@@ -2,14 +2,13 @@
 
 We think [GraphQL](https://graphql.org) is a great way to expose your business domain to any client or 3rd party system. 
 Implementing a GraphQL API is a tedious task though. You need to decide how to structure your schema, how to handle
-concepts like searching, sorting, paging, validating. 
-How to write resolvers that read data from and write data to a database or
-similar, validate input etc.
+concepts like searching, sorting, paging, validating. How to implement resolvers that read data from and write 
+data to a database or similar, validate input, relationships etc.
 
 GAMA supports this development with an oppinionated approach based on the configuration of a business domain 
 (mainly entities and its relations to each other). You can check out the simplicity and power 
 of a business-domain-configuration-based API creation by looking at an simple 
-[Example for an Entity Configuration](./entity-configuration.md#example).
+[Example for an Entity Configuration](./entity-configuration.md#entity-configuration-example).
 
 
 ## Technologies 
@@ -42,9 +41,9 @@ The following diagram shows an overview of GAMA
 
 ![GAMA Overview][overview]
 
-[overview]: ./gama-overview.png "GAMA Overview"
+[overview]: ./img/gama-overview.png "GAMA Overview"
 
-GAMA provides 4 packages: 
+GAMA provides 4 packages / modules: 
 
 ### Graph-on-Rails Server Library
 
@@ -60,12 +59,24 @@ a GraphQL API. It uses a typed configuration to easily express domain logic from
 
 ### Graph-on-Rails Server Application
 
-The server application ... TODO
+The server application to expose your GraphQL API. You can embed the Graph-on-Rails library in your own
+express application or use this application as a boilerplate 
+[Apollo Express Server](https://www.apollographql.com/docs/apollo-server/).
+
+This (or your custom) application is the place for your domain configuration.
+
+Please check out the [documentation](./server.md) for more information.
 
 ### GAMA UI Angular Module
 
-Angular Module ... TODO
+An Angular Module that uses a Graph-on-Rails GraphQL API to create generic (often Admin) views and services to enable
+a human user to interact with your API - search, list, sort entries and create, update, delete operations etc.
+
+Please check out the [documentation](./angular-module.md) for more information.
 
 ### GAMA UI Angular Application
 
-Angular Application ... TODO
+You can embedd the GAMA UI Angular Module in your own Angular application or use this boilerplate Angular application 
+that provides the Admin UI in a generic fashion.
+
+Please check out the [documentation](./angular-application.md) for more information.
