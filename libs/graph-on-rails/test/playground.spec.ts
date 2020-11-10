@@ -1,3 +1,4 @@
+import { DomainConfiguration } from '../core/domain-configuration';
 import _ from 'lodash';
 
 describe('playground', () => {
@@ -30,3 +31,4 @@ describe('playground', () => {
     expect( idStrings ).toEqual(['1','3'])
   })
 })
+

@@ -70,3 +70,33 @@ export const example5:DomainConfiguration = {
     }
   }
 }
+
+
+export const unique1:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        brand: 'String',
+        licence: 'Key'
+      },
+      seeds: {
+        red_mercedes: { brand: 'Mercedes', licence: 'HH-BO 2020' }
+      }
+    }
+  }
+}
+
+
+export const unique2:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        brand: 'String',
+        color: { type: 'String', unique: 'brand' }
+      },
+      seeds: {
+        red_mercedes: { brand: 'Mercedes', color: 'red' }
+      }
+    }
+  }
+}
