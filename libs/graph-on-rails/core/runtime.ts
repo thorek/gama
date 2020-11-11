@@ -149,6 +149,10 @@ export class Runtime {
     return Seeder.create( this ).seed( truncate );
   }
 
+  configuration(){
+    return (this.config.domainDefinition as DomainDefinition).getConfiguration();
+  }
+
   warn<T>( message:string, returnValue:T ):T{
     console.warn( message );
     return returnValue;
