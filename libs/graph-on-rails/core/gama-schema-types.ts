@@ -100,9 +100,6 @@ export class GamaSchemaTypes {
           (values, enumName) => _.set( values, enumName, { value: enumName } ), {} )
       });
 
-      console.log( _.reduce( this.runtime.enums,
-        (values, enumName) => _.set( values, enumName, { value: enumName } ), {} ) )
-
       this.runtime.type('query').extendFields( () => {
         return {
           domainDefinition: {
