@@ -1,12 +1,4 @@
-import {
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLSchema,
-  GraphQLString,
-  Kind,
-} from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import _ from 'lodash';
 
 import { EntityBuilder } from '../builder/entity-builder';
@@ -16,6 +8,7 @@ import { QueryBuilder, QueryConfigBuilder } from '../builder/query-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { ConfigEntity } from '../entities/config-entity';
 import { EntityConfig, EnumConfig, MutationConfigFn, QueryConfigFn } from './domain-configuration';
+import { GamaSchemaTypes } from './gama-schema-types';
 import { Runtime } from './runtime';
 
 
@@ -42,6 +35,16 @@ export class SchemaFactory {
     this._schema = await this.createSchema();
     return this._schema;
   }
+
+  private async createSchema():Promise<GraphQLSchema> {
+    this.graphx.init( this.runtime );
+    await this.buildFromBuilders();
+    await new GamaSchemaTypes( this.runtime ).createTypes();
+    await this.extendSchema();
+    const schema = this.graphx.generate();
+    return schema;
+  }
+
 
   private builders():SchemaBuilder[] {
     if( this._builders ) return this._builders;
@@ -112,16 +115,6 @@ export class SchemaFactory {
     }
   }
 
-  async createSchema():Promise<GraphQLSchema> {
-    this.graphx.init( this.runtime );
-    this.createScalars();
-    this.createCommonTypes();
-    await this.buildFromBuilders();
-    await this.extendSchema();
-    const schema = this.graphx.generate();
-    return schema;
-  }
-
   private async buildFromBuilders(){
     _.forEach( this.builders(), type => type.init( this.runtime ) );
     for( const builder of this.builders() ) await Promise.resolve( builder.build() );
@@ -145,74 +138,5 @@ export class SchemaFactory {
     }
   }
 
-  private createScalars():void {
-    this.graphx.type( 'Date', {
-      name: 'Date',
-      from: GraphQLScalarType,
-      parseValue: (value:any) => new Date(value),
-      parseLiteral: (ast:any) => ast.kind === Kind.STRING ? new Date(ast.value) : null,
-      serialize: (value:any) => value instanceof Date ? value.toJSON() : `[${value}]`
-    });
-
-    this.graphx.type( 'JSON', {
-      name: 'JSON',
-      from: GraphQLScalarType,
-      parseValue: (value:any) => value,
-      serialize: (value:any) => value
-    });
-
-  }
-
-  private createCommonTypes(){
-    this.createValidationViolationType();
-    this.createEntityPagingType();
-    this.createFileType();
-    this.createEntityStatsType();
-  }
-
-  private createValidationViolationType():void {
-    this.graphx.type('ValidationViolation', {
-      name: 'ValidationViolation',
-      fields: () => ({
-        attribute: { type: GraphQLString },
-        message: { type: new GraphQLNonNull( GraphQLString ) }
-      })
-    });
-  }
-
-  private createEntityPagingType():void {
-    this.graphx.type('EntityPaging', {
-      name: 'EntityPaging',
-      description: 'use this to get a certain fraction of a (large) result set',
-      from: GraphQLInputObjectType,
-      fields: () => ({
-        page: { type: GraphQLNonNull( GraphQLInt ), description: 'page of set, starts with 0' },
-        size: { type: new GraphQLNonNull( GraphQLInt ), description: 'number of items in page, 0 means no limit' }
-      })
-    });
-  }
-
-  private createFileType( ):void {
-    this.graphx.type('File', {
-      name: 'File',
-      fields: () => ({
-        filename: { type: GraphQLNonNull(GraphQLString) },
-        mimetype: { type: GraphQLNonNull(GraphQLString) },
-        encoding: { type: GraphQLNonNull(GraphQLString) }
-      })
-    });
-  }
-
-  private createEntityStatsType( ):void {
-    this.graphx.type('EntityStats', {
-      name: 'EntityStats',
-      fields: () => ({
-        count: { type: GraphQLNonNull(GraphQLInt) },
-        createdFirst: { type: this.graphx.type('Date') },
-        createdLast: { type: this.graphx.type('Date') },
-        updatedLast: { type: this.graphx.type('Date') }
-      })
-    });
-  }
 
 }

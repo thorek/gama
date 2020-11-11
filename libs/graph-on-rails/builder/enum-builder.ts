@@ -13,6 +13,7 @@ export abstract class EnumBuilder extends TypeBuilder {
     const values = {};
     _.forEach( this.enum(), (value,key) => _.set( values, key, { value }));
     this.graphx.type( name, { name, values, from: GraphQLEnumType	} );
+    this.runtime.enums.push( name );
   }
 
   extendTypes():void {
@@ -34,12 +35,13 @@ export class EnumConfigBuilder extends EnumBuilder {
   }
 
   name() { return this._name }
+
   enum(){
-    return _.isArray( this.config) ?
-      _.reduce( this.config, (config, item) => _.set( config, _.toUpper( item ), item ), {} ) :
-      this.config;
+    if( _.isArray( this.config) ) this.config = _.reduce( this.config,
+      (config, item) => _.set( config, _.toUpper( item ), item ), {} );
+    return this.config;
   }
 
-  constructor( protected readonly _name:string, protected readonly config:EnumConfig ){ super() }
+  constructor( protected readonly _name:string, protected config:EnumConfig ){ super() }
 
 }
