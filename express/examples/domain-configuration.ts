@@ -1,6 +1,7 @@
 import { example } from "examples";
 import { DomainConfiguration, DomainDefinition, Runtime } from "graph-on-rails";
 import _ from 'lodash';
+import YAML from 'yaml';
 
 const winnerYear = {
   Toyota: [2020, 2019, 2018],
@@ -36,3 +37,27 @@ const domainConfiguration:DomainConfiguration = {
 
 export const example1 = new DomainDefinition( './config-types/car-config-1');
 example1.add( domainConfiguration );
+
+
+export const queryConfig:DomainConfiguration = YAML.parse(`
+enum:
+  CarBrand:
+    - Mercedes
+    - Porsche
+    - Audi
+    - BMW
+  Color:
+    - red
+    - green
+    - black
+entity:
+  Car:
+    attributes:
+      licence: Key
+      brand: CarBrand!
+      colors: "[Color]"
+  Driver:
+    attributes:
+      firstname: String
+      lastname: String!
+`);

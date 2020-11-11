@@ -4,7 +4,7 @@ The generation of the GraphQL schema and the read/write access to data and funct
 configuration of your business domain, by large parts entities with its attributes in addition to custom queries and
 mutations.
 
-The Domain Configuration is Javascript object of the type
+The Domain Configuration is a TypeScript object of the type
 
 ```
 type DomainConfiguration = {
@@ -21,13 +21,14 @@ and point to folder(s) where to find this Domain Configuration files.
 ### Schema and Resolvers
 
 The Domain Configuration will be translated to a GraqhQL Schema and corresponding resolvers. How the schema and 
-resolver for Entities and Enums are structured is highly oppionoated, but can be influenced and even replaced
+resolver for Entities and Enums are structured is highly oppinionated, but can be influenced and even replaced
 by a total different implementation and can always be complemented by adding custom queries, mutations, 
 types and resolvers. 
 
 For detailed documentation see
 
   * [Entity Configuration](./entity-configuration.md)
+  * [Attribute Configuration](./attribute-configuration.md)
   * [Enum Configuration](./enum-configuration.md)
   * [Custom Query Configuration](./custom-query-configuration.md)
   * [Custom Mutation Configuration](./custom-mutation-configuration.md)
@@ -41,7 +42,8 @@ The generated Schema and Resolvers can be made available as a GraphQL API using 
 GAMA includes a default / example application that you can customize.
 
 This can be used by any GrapqhQL Client - restrictions in regards of accessing 
-the API are out of concern of GAMA and should be handled on a custom level.
+the API technical (e.g. API call limits, restriced client IPs) are out of concern of GAMA and should be 
+handled on a custom level.
 
 For detailed documentation see: [GAMA Express Application](./gama-express.md)
 
@@ -82,11 +84,13 @@ Lets assume we put this in a yaml file (we could also split these in two files) 
 `./car-config`. Since we want to add some custom code we use now a TypeScript object for the rest of our 
 domain definition. Note that you could also have included the above Enum and Entity definition in this object. You can 
 split and combine this as you like. All YAML file definitions and all configuration objects are merged into one
-single domain definition in the end.
+single domain configuration in the end.
 
 We recommend having one YAML file per enum / type, and add custom code in one configuration object per use case.
 
-Here we want to add a non-Entity based query (Winners of the Le Mans Race) and a custom mutation (repaint of a car). 
+From the simple domain configuration above we will alread get full fledged CRUD queries and mutations 
+(incl. filtering, sorting, paging, validation etc.) but we alsow want to add a non-Entity based query 
+(Winners of the Le Mans Race) and a custom mutation (repaint of a car). 
 
 ```typescript
 const winnerYear = {
@@ -322,4 +326,128 @@ type ValidationViolation {
 }
 ```
 
+### Inpect Domain Configuration via GraqpQL 
 
+Wouldn't it be great if you could inspect the current domain configuration via GraqpQL? You might ask, why though? 
+You may not always have access to the actual configuration. Since this could also be a security concern, 
+this feature is only available in the development stage. See how you can set the stage in the 
+[GAMA Configuration Documentation](./gama-configuration).
+
+
+You can query the whole configuration via GraphQL, we of course see always the typed configuration and no longer any
+YAML content; also we see only the names of the custom queries and mutations.
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="40%"> Request </td> <td width="60%"> Response </td>
+</tr>
+<tr valign="top"><td>
+
+```graphql
+query {
+	domainConfiguration
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "domainConfiguration": {
+      "enum": {
+        "CarBrand": [
+          "Mercedes",
+          "Volkswagen",
+          "Audi",
+          "Porsche",
+          "Toyota",
+          "Bentley"
+        ]
+      },
+      "entity": {
+        "Car": {
+          "attributes": {
+            "brand": "CarBrand!",
+            "mileage": "Int",
+            "color": "String"
+          }
+        }
+      },
+      "query": {
+        "leMansWinner": "[Custom Function]"
+      },
+      "mutation": {
+        "repaint": "[Custom Function]"
+      }
+    }
+  }
+}
+```
+
+</td></tr>
+</table>
+
+GAMA even offers Enums for all Enties and Enum Configurations in your Domain Configuration which you can use to get a 
+specific Entity or Enum Configuration in your query which might practical in large configuration sets.
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="40%"> Request </td> <td width="60%"> Response </td>
+</tr>
+<tr valign="top"><td>
+
+```graphql
+query {
+	domainConfiguration( entity: Car )
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "domainConfiguration": {
+      "Car": {
+        "attributes": {
+          "brand": "CarBrand!",
+          "mileage": "Int",
+          "color": "String"
+        }
+      }
+    }
+  }
+}
+```
+
+</td></tr>
+<tr valign="top"><td>
+
+```graphql
+query {
+	domainConfiguration( enum: CarBrand )
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "domainConfiguration": {
+      "CarBrand": [
+        "Mercedes",
+        "Volkswagen",
+        "Audi",
+        "Porsche",
+        "Toyota",
+        "Bentley"
+      ]
+    }
+  }
+}
+```
+
+</td></tr>
+</table>

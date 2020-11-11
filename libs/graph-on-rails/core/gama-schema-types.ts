@@ -102,7 +102,7 @@ export class GamaSchemaTypes {
 
       this.runtime.type('query').extendFields( () => {
         return {
-          domainDefinition: {
+          domainConfiguration: {
             type: this.runtime.type( 'JSON' ),
             args: {
               entity: { type: this.runtime.type( _.isEmpty( this.runtime.enums) ? 'String' : 'Entity' ) },
@@ -118,7 +118,10 @@ export class GamaSchemaTypes {
   private resolveDomainDefinition( args:any ) {
     if( args.entity ) return this.resolveEntityDefinition( args.entity );
     if( args.enum ) return this.resolveEnumDefinition( args.enum );
-    return this.runtime.config.domainDefinition as DomainDefinition;
+    const config:any = _.cloneDeep( (this.runtime.config.domainDefinition as DomainDefinition).getConfiguration() );
+    config.query = _.mapValues( config.query, () => '[Custom Function]');
+    config.mutation = _.mapValues( config.mutation, () => '[Custom Function]');
+    return config;
   }
 
   private resolveEntityDefinition( entity:string ) {
