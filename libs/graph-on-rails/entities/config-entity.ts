@@ -26,7 +26,8 @@ export class ConfigEntity extends Entity {
   protected getAttributes() {
     if( ! this.entityConfig.attributes ) return super.getAttributes();
     if( ! this._attributes ) {
-      const attributes = _.mapValues( this.entityConfig.attributes, (attrConfig, name) => this.buildAttribute( name, attrConfig ) );
+      const attributes = _.mapValues( this.entityConfig.attributes,
+          (attrConfig, name) => this.buildAttribute( name, attrConfig ) );
       this._attributes = _.pickBy( attributes, _.identity ) as {[name:string]:TypeAttribute};
     }
     return this._attributes;
@@ -97,10 +98,11 @@ export class ConfigEntity extends Entity {
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );
     this.resolveKey( attrConfig );
-    this.resolveListBrackets( attrConfig );
+    this.resolveListBrackets( name, attrConfig );
     this.resolveExclamationMark( attrConfig );
     this.capitalizeScalarTypes( attrConfig );
-    this.resolveFileAndMediaType( attrConfig );
+    this.resolveMediaType( attrConfig );
+    this.resolveUnknownFilter( attrConfig );
     this.warnAttribute( name, attrConfig );
     return {
       graphqlType: attrConfig.type || 'String',
@@ -131,9 +133,15 @@ export class ConfigEntity extends Entity {
     }
   }
 
-  private resolveListBrackets( attrConfig:AttributeConfig ):void {
+  private resolveListBrackets( attrName:string, attrConfig:AttributeConfig ):void {
     if( ! attrConfig.type ) return;
-    if( _.startsWith( attrConfig.type, '[') && _.endsWith( attrConfig.type, ']' ) ){
+    if( ! _.startsWith( attrConfig.type, '[' ) ) return;
+    if( ! _.endsWith( attrConfig.type, ']' ) ) {
+      const error = `unrecognized type '${attrConfig.type}' - 'String' is used to prevent invalid schema`;
+      attrConfig.description = attrConfig.description ? `${attrConfig.description}\n${error}` : error;
+      console.error( `[${this.name}:${attrName}]: ${error}` );
+      attrConfig.type = 'String';
+    } else {
       attrConfig.type = attrConfig.type.slice(1, -1);
       attrConfig.list = true;
     }
@@ -153,7 +161,7 @@ export class ConfigEntity extends Entity {
     if( scalarTypes[scalarType] ) attrConfig.type = scalarType;
   }
 
-  private resolveFileAndMediaType( attrConfig:AttributeConfig ):void {
+  private resolveMediaType( attrConfig:AttributeConfig ):void {
     switch( attrConfig.type ){
       case 'image':
         attrConfig.type = 'File';
@@ -168,7 +176,10 @@ export class ConfigEntity extends Entity {
         attrConfig.mediaType = 'audio';
         break;
     }
-    if( attrConfig.type === 'File' ) attrConfig.filterType = false;
+  }
+
+  private resolveUnknownFilter( attrConfig:AttributeConfig ){
+    if( _.includes( ['File', 'JSON'], attrConfig.type ) ) attrConfig.filterType = false;
   }
 
   private warnAttribute( name: string, attrConfig:AttributeConfig ):void {

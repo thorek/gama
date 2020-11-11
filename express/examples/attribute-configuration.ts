@@ -115,7 +115,14 @@ export const list1:DomainConfiguration = {
     Car: {
       attributes: {
         licence: 'Key',
-        repairsAtKm: '[Int!]'
+        repairsAtKm: '[Int!]',
+        tags: { type: 'String', required: true, list: true }
+      },
+      seeds: {
+        1: { licence: 'HH TR 2929', repairsAtKm: [30000, 20000, 40000], tags: ['foo', 'bar', 'foobar'] },
+        2: { licence: 'MA HH 4324', repairsAtKm: [10000, 55000, 44000, 5000], tags: [] },
+        3: { licence: 'BO ZU 7365', repairsAtKm: [5500, 100], tags: ['foo', 'bar', 'baz'] },
+        4: { licence: 'LG ZT 6578', repairsAtKm: [], tags: ['foobar'] }
       }
     }
   }

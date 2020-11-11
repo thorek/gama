@@ -35,7 +35,7 @@ export type EntityConfig  = {
 ```
 
 You can also write the entity configuration in yaml files and simply includes these files in your 
-[Domain Definition](./domain-definition).
+[Domain Configuration](./domain-configuration).
 
 From the definition of an _entity_ a full fledged GraphQL schema is generated incl. resolver to a _data store_. 
 The behaviour is strongly oppionated and uses mostly conventions; nonetheless you can configure most of the details. 
@@ -675,7 +675,7 @@ _Result_
 ## attributes
 
 The attributes of an entity as _key/value_ pairs. See
-[Attribute Configuration](./attribute-configuration) for details.
+[Attribute Configuration](./attribute-configuration.md) for details.
 
 _YAML_
 ```yaml

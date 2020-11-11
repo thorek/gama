@@ -98,7 +98,7 @@ const winnerYear = {
   Porsche: [2017,2016,2015,2014,2013,2012,2011,2010],
   Peugeot: [2009],
   Audi: [2008,2007,2006,2005,2004],
-  Bentley:[2003]
+  Bentley: [2003]
 }
 
 const repaint = async (rt:Runtime, id:string, color:string) => {
@@ -389,7 +389,7 @@ query {
 </table>
 
 GAMA even offers Enums for all Enties and Enum Configurations in your Domain Configuration which you can use to get a 
-specific Entity or Enum Configuration in your query which might practical in large configuration sets.
+specific Entity or Enum Configuration in your query which might be practical with large configuration sets.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">

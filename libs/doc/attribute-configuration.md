@@ -8,13 +8,13 @@ Entities have attributes describing the data of the entity. Many aspects to this
 export type AttributeConfig = {
   type?:string;
   required?:boolean|'create'|'update'
-  list?:boolean
   unique?:boolean|string
+  list?:boolean
+  default?:any
   description?:string
   filterType?:string|false;
   validation?:any;
   input?:boolean
-  default?:any
 
   sortable?:string
   mediaType?:'image'|'video'|'audio'
@@ -394,12 +394,12 @@ entity:
   required?:boolean|'create'|'update'
 ```
 
-| Value      | Shortcut        | Description                                                                    |
-| ---------- | --------------- | ------------------------------------------------------------------------------ |
-| **false**  | if not provided | no effect                                                                      |
-| true       | attributeName!  | NonNull in the type and create input type, `{presence: true}` validation added |
-| create     |                 | NonNull only create input type                                                 |
-| update     |                 | NonNull only in update input type                                              | 
+| Value        | Shortcut        | Description                                                                    |
+| ------------ | --------------- | ------------------------------------------------------------------------------ |
+| **`false`**  | if not provided | no effect                                                                      |
+| `true`       | attributeName!  | NonNull in the type and create input type, `{presence: true}` validation added |
+| 'create'     |                 | NonNull only create input type                                                 |
+| 'update'     |                 | NonNull only in update input type                                              | 
 
 <br>
 
@@ -445,6 +445,15 @@ entity:
       brand: 
         type: String
         required: true
+```
+
+same as short
+
+```yaml
+entity:
+  Car: 
+    attributes:
+      brand: String! 
 ```
 
 </td>
@@ -788,17 +797,24 @@ entity:
   list?:boolean
 ```
 
-| Value      | Shortcut        | Description                                                                    |
-| ---------- | --------------- | ------------------------------------------------------------------------------ |
-| **false**  | (default)       | no effect                                                                      |
-| true       | [attributeName] | type of this attrribute is a list of the scalar type                           |
+| Value        | Shortcut        | Description                                                                    |
+| ------------ | --------------- | ------------------------------------------------------------------------------ |
+| **`false`**  | (default)       | no effect                                                                      |
+| `true`       | [attributeName] | type of this attrribute is a list of the scalar type                           |
 
 <br>
 
-Setting this configuration to true will use the attribute `type` as a list. Pleas be aware that your datastore 
-implementation might be able to handle this or at least makes it harder or impossible to select / filter for 
-these attributes. The default datastore implementation uses MongoDB and will therefor store arrays in the entity
-item document quiet easily.
+Setting this to `true` will set the attribute `field` as a `GraphQLList` type. Please be aware that your datastore 
+implementation might not be able to handle this or at least makes it harder or impossible to filter or sort 
+these attributes. The default datastore implementation nontheless uses MongoDB and will therefor store arrays 
+in the entity item document quiet easily.
+
+Please note it is only possible to set one `required` configuration per attribute. This is always treated as 
+setting the list values to a NonNull type, but never the list field itself. So you can set the configuration to 
+`[String!]` which would be treated as `{ type: 'String', required: true, list: true }` and the resulting field type
+of the expected value `[String!]`. But you cannot express a configuration that would lead to a schema field type
+of `[String]!` or `[String!]!`. In other words: list scalar fields are never `required`.
+
 
 ### Example
 
@@ -813,8 +829,22 @@ entity:
   Car: 
     attributes: 
       licence: Key
+      repairsAtKm: 
+        type: Int
+        required: true
+        list: true
+```
+
+same as short
+
+```yaml
+entity: 
+  Car: 
+    attributes: 
+      licence: Key
       repairsAtKm: [Int!]
 ```
+
 
 </td><td>
 
@@ -822,14 +852,14 @@ entity:
 type Car {
   id: ID!
   licence: String!
-  repairsAtKm: [Int]!
+  repairsAtKm: [Int!]
   createdAt: Date
   updatedAt: Date
 }
 
 input CarCreateInput {
   licence: String!
-  repairsAtKm: [Int]!
+  repairsAtKm: [Int!]
 }
 
 input CarFilter {
@@ -850,9 +880,21 @@ enum CarSort {
 input CarUpdateInput {
   id: ID!
   licence: String
-  repairsAtKm: [Int]
+  repairsAtKm: [Int!]  
 }
 ```
 
 </td></tr>
 </table>
+
+As you see the regular filter and sort types are used. Also please note that the `repairsAtKm` field for the update 
+type is a NonNull type. This is a client can decide to not provide a list for an update - the current values would
+be left untouched. But when a list is updated is must meet the required configuration.
+
+You can filter List scalar the same way you would filter a regular field, instead it uses any entry in the list
+to match against the filter. The same goes for sorting. Whey you sort after a list attribute the max/min, first/last
+entry is used (depending on the type) to find the sorted position of an entity item. 
+
+If you need more control over how you want to filter or handle these kind of data we strongly suggest to model these
+as seperate entities with associations with eachother. 
+

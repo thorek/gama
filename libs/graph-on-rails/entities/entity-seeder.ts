@@ -76,16 +76,16 @@ export class EntitySeeder extends EntityModule {
    */
   private async generateFakeSeed( fakerSeed:any ):Promise<any> {
     const seed = {};
-    for( const name of _.keys(fakerSeed) ){
-      let value = fakerSeed[name];
-      if( ! this.entity.isAssoc( name ) ) {
+    for( const key of _.keys(fakerSeed) ){
+      let value = fakerSeed[key];
+      if( ! this.entity.isAssoc( key ) ) {
         if( value.every ) {
           if( _.random( value.every ) !== 1 ) continue;
           value = value.value;
         }
         value = await this.evalFake( value, seed )
       };
-      _.set( seed, name, value );
+      _.set( seed, key, value );
     }
     return seed;
   }

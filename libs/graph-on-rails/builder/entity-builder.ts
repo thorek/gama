@@ -320,9 +320,9 @@ export class EntityBuilder extends TypeBuilder {
   //
   private getFieldConfig(name:string, attribute:TypeAttribute, purpose:AttributePurpose ):AttrFieldConfig|undefined {
     if( _.includes(['createInput', 'updateInput'], purpose) && this.entity.isFileAttribute( attribute ) ) return;
-    const addNonNull = this.addNonNull( name, attribute, purpose);
+    const shouldAddNonNull = this.shouldAddNonNull( name, attribute, purpose);
     const description = this.getDescriptionForField( attribute, purpose );
-    const fieldConfig = { type: this.getGraphQLTypeDecorated(attribute, addNonNull, purpose ), description };
+    const fieldConfig = { type: this.getGraphQLTypeDecorated(attribute, shouldAddNonNull, purpose ), description };
     if( this.skipCalculatedAttribute( name, attribute, purpose, fieldConfig ) ) return;
     return fieldConfig;
   }
@@ -338,8 +338,10 @@ export class EntityBuilder extends TypeBuilder {
 
   //
   //
-  private addNonNull( name:string, attribute:TypeAttribute, purpose:AttributePurpose ):boolean {
-    if( ! attribute.required || _.includes(['filter', 'updateInput'], purpose ) ) return false;
+  private shouldAddNonNull( name:string, attribute:TypeAttribute, purpose:AttributePurpose ):boolean {
+    if( ! attribute.required ) return false;
+    if( purpose === 'filter' ) return false;
+    if( purpose === 'updateInput' ) return attribute.list ? attribute.required === true : false;
     if( attribute.required === true ) return _.includes( ['createInput', 'type'], purpose );
     if( attribute.required === 'create' ) return _.includes( ['createInput', 'type'], purpose );
     if( attribute.required === 'update' ) return false
@@ -502,8 +504,9 @@ export class EntityBuilder extends TypeBuilder {
    */
   private getGraphQLTypeDecorated( attr:TypeAttribute, addNonNull:boolean, purpose:AttributePurpose ):GraphQLType {
     let type = this.getGraphQLType( attr, purpose );
+    if( addNonNull ) type = new GraphQLNonNull( type );
     if( attr.list ) type = new GraphQLList( type );
-    return addNonNull ? new GraphQLNonNull( type ) : type;
+    return type;
   }
 
   /**

@@ -1,4 +1,3 @@
-import { example } from "examples";
 import { DomainConfiguration, DomainDefinition, Runtime } from "graph-on-rails";
 import _ from 'lodash';
 import YAML from 'yaml';
