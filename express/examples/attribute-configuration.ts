@@ -1,5 +1,6 @@
 import { DomainConfiguration, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
+import YAML from 'yaml';
 
 const winnerYear = {
   Toyota: [2020, 2019, 2018],
@@ -123,6 +124,37 @@ export const list1:DomainConfiguration = {
         2: { licence: 'MA HH 4324', repairsAtKm: [10000, 55000, 44000, 5000], tags: [] },
         3: { licence: 'BO ZU 7365', repairsAtKm: [5500, 100], tags: ['foo', 'bar', 'baz'] },
         4: { licence: 'LG ZT 6578', repairsAtKm: [], tags: ['foobar'] }
+      }
+    }
+  }
+}
+
+export const defaultValue1:DomainConfiguration = YAML.parse(`
+entity:
+  Car:
+    attributes:
+      brand: String!
+      color:
+        type: String
+        default: white
+      mileage:
+        type: Int!
+        default: 0
+`)
+
+export const defaultValue2:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        brand: 'String!',
+        color: {
+          type: 'String',
+          default: 'white'
+        },
+        registration: {
+          type: 'Date',
+          default: (rt:Runtime) => new Date()
+        }
       }
     }
   }

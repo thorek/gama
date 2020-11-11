@@ -121,7 +121,10 @@ export class EntityAccessor extends EntityModule {
   private setDefaultValues( attributes:any ):void {
     _.forEach( this.entity.attributes, (attribute, name) => {
       if( _.has( attributes, name ) || _.isUndefined( attribute.defaultValue ) ) return;
-      _.set( attributes, name, attribute.defaultValue );
+      const defaultValue = _.isFunction( attribute.defaultValue ) ?
+        attribute.defaultValue( this.runtime ) :
+        attribute.defaultValue;
+      _.set( attributes, name, defaultValue );
     });
   }
 

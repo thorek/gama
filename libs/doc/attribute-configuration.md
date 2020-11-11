@@ -898,3 +898,163 @@ entry is used (depending on the type) to find the sorted position of an entity i
 If you need more control over how you want to filter or handle these kind of data we strongly suggest to model these
 as seperate entities with associations with eachother. 
 
+<br>
+
+## Default Value
+
+```typescript
+default?:any
+```
+
+| Value                    | Shortcut  | Description                                           |
+| ------------------------ | --------- | ----------------------------------------------------- |
+| [empty]                  | (default) | no effect                                             |
+| [any value]              |           | default value when creating a new entity item         |
+| (runtime:Runtime) => any |           | called to get the default value for a new entity item |
+
+<br>
+
+### Example
+
+Let's assume any new car should have a mileage of _0_ and the color _white_. Notice how the required attribute "mileage"
+becomes still a NonNull field in the `Car` schema type but no longer in the `CarCreateInput` type. Since we have a 
+default value the required condition will be met when creating a new car entity even when not provided by a client. 
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%"> YAML Configuration </td> <td width="65%"> Schema (exerpt) </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+entity: 
+  Car: 
+    attributes: 
+      brand: String!
+      registration: 
+        type: Date
+        default: white
+      mileage:
+        type: Int!
+        default: 0
+```
+
+</td><td>
+
+```graphql
+type Car {
+  id: ID!
+  brand: String!
+  color: String
+  mileage: Int!
+  createdAt: Date
+  updatedAt: Date
+}
+
+input CarCreateInput {
+  brand: String!
+  color: String
+  mileage: Int
+}
+
+input CarUpdateInput {
+  id: ID!
+  brand: String
+  color: String
+  mileage: Int
+}
+```
+
+</td></tr>
+</table>
+
+Sometimes we need dynamic default values. Let's say the registration date of a car should be set to _today_ when
+not provided by a client. We could not add a static value for that - so we use the callback. We do not use the 
+`runtime` in our implementation - but we could e.g. to access other entities or similar.
+
+
+Of course when a client provides a value this value (and not the default) is used.
+
+```typescript
+{
+  entity: {
+    Car: {
+      attributes: {
+        brand: 'String!',
+        color: {
+          type: 'String',
+          default: 'white'
+        },
+        registration: {
+          type: 'Date',
+          default: (rt:Runtime) => new Date()
+        }
+      }
+    }
+  }
+}
+```
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%"> Request </td> <td width="50%"> Response </td></tr>
+<tr valign="top"><td>
+
+```graphql
+mutation { 
+  createCar( car: { brand: "Mercedes" } ){
+    car { id brand registration }
+  }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "createCar": {
+      "car": {
+        "id": "5fac51ca22e89a4ed29e172e",
+        "brand": "Mercedes",
+        "registration": "2020-11-11T21:04:10.731Z"
+      }
+    }
+  }
+}
+```
+
+</td></tr>
+<tr valign="top"><td>
+
+```graphql
+mutation { 
+  createCar( 
+    car: { 
+      brand: "Mercedes", 
+      registration: "2020-11-01" } 
+    ){
+    car { id brand registration }
+  }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "createCar": {
+      "car": {
+        "id": "5fac554ac0c9164fcce7530e",
+        "brand": "Mercedes",
+        "registration": "2020-11-01T00:00:00.000Z"
+      }
+    }
+  }
+}
+```
+
+</td></tr>
+</table>
+

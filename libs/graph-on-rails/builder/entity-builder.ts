@@ -12,7 +12,7 @@ import {
   GraphQLType,
   GraphQLUnionType,
 } from 'graphql';
-import _, { Dictionary } from 'lodash';
+import _, { at, Dictionary } from 'lodash';
 
 import { AssocToType, AssocType } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
@@ -341,6 +341,7 @@ export class EntityBuilder extends TypeBuilder {
   private shouldAddNonNull( name:string, attribute:TypeAttribute, purpose:AttributePurpose ):boolean {
     if( ! attribute.required ) return false;
     if( purpose === 'filter' ) return false;
+    if( _.includes( ['createInput', 'updateInput'], purpose) && ! _.isNil( attribute.defaultValue ) ) return false;
     if( purpose === 'updateInput' ) return attribute.list ? attribute.required === true : false;
     if( attribute.required === true ) return _.includes( ['createInput', 'type'], purpose );
     if( attribute.required === 'create' ) return _.includes( ['createInput', 'type'], purpose );
