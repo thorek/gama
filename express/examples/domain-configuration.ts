@@ -34,5 +34,5 @@ const domainConfiguration:DomainConfiguration = {
   }
 }
 
-export const example1 = new DomainDefinition( '../config-types/car-config-1');
+export const example1 = new DomainDefinition( './config-types/car-config-1');
 example1.add( domainConfiguration );

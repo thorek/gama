@@ -155,24 +155,165 @@ entity types as attribute types but instead describe the relations between entit
 
 You can use any GraphQL scalar type
 
-  - `Int`  A signed 32‐bit integer.
-  - `Float`  A signed double-precision floating-point value.
-  - `String` A UTF‐8 character sequence.
-  - `Boolean` true or false.
-  - `ID` The ID scalar type represents a unique identifier, often used to refetch an object or as the key for a cache. The ID type is serialized in the same way as a String; however, defining it as an ID signifies that it is not intended to be human‐readable.
 
-Although allowed it is advised not to use the `ID` type since GAMA uses this to identify entity items and establich
-relations between entities (this primary and foreign keys).
+| Value         | Description                                         | 
+| ------------- | --------------------------------------------------- | 
+| `Int`         | A signed 32‐bit integer.                            |
+| `Float`       | A signed double-precision floating-point value.     |
+| `String`      | A UTF‐8 character sequence.                         |
+| `Boolean`     | true or false                                       |
+| `String`      | A UTF‐8 character sequence.                         |
+| `ID`          | represents a unique identifier, Although allowed it is advised not to use the `ID` type since GAMA uses this to identify entity items and establich relations between entities (think primary and foreign keys). |
 
 Check also [GraphQL Type System](https://graphql.org/learn/schema/#type-system)
+
+<br>
 
 #### **GAMA scalar types**
 
 GAMA provides in addition to the GraphQL scalar type the following scalar types:
 
-  - `Date` String representation of a Date in the JSON data it serializes to/from `new Date().toJSON()` internally it
-           converts it to a TypeScript Date object
-  - `JSON` arbitrary JSON structure (you should use this with caution and prefer GraphQL types instead) 
+| Value         | Description                                         | 
+| ------------- | --------------------------------------------------- | 
+| `Date`        | String representation of a Date in the JSON data it serializes to/from `new Date().toJSON()` internally it converts it to a TypeScript Date object                            |
+| `JSON`        | arbitrary JSON structure (you should use this with caution and prefer GraphQL types instead)  |
+
+<br>
+
+#### **File**
+
+| Value         | Description                                             |  
+| ------------- | ------------------------------------------------------- | 
+| `File`        | attribute to hold binary data (images, pdf etc)         |
+| `image`       | short for `{ type: 'File', mediaType: 'image' }`        |
+| `video`       | short for `{ type: 'File', mediaType: 'video' }`        |
+| `audio`       | short for `{ type: 'File', mediaType: 'audio' }`        |
+
+
+<br>
+
+Gama provides a GrapqhQL type for binary data that you can use as an attribute type and is defined as follows.
+
+```graphql
+type File {
+    filename: String!
+    mimetype: String!
+    encoding: String!
+  }
+```
+
+In your queries any attribute of type `File` will expose these fields (`filename`, `mimetype`, `encoding`). Any 
+client could then try to download the actual file via GET request from an url with the following pattern:
+
+```
+[uploadsRootPath]/[Entity Type Name]/[Entity ID]/[Attribute Name]/[filename]
+e.g.:   
+/uploads/cars/1234567890/image/v_klasse.jpg
+```
+<br>
+
+For any `File` attribute a corresponding `GraphQLUpload` field is added to the create and update mutation (not 
+the input type).
+
+### Example
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="30%"> YAML Configuration </td> <td width="70%"> Schema (excerpt) </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+entity:
+  Car: 
+    attributes:
+      brand: String!
+      image: File
+```
+
+</td><td>
+
+```graphql
+type Car {
+  id: ID!
+  brand: String!
+  image: File
+  createdAt: Date
+  updatedAt: Date
+}
+
+type File {
+  filename: String!
+  mimetype: String!
+  encoding: String!
+}
+
+type Mutation {
+  createCar(car: CarCreateInput, image: Upload): SaveCarMutationResult
+  updateCar(car: CarUpdateInput, image: Upload): SaveCarMutationResult
+}
+
+scalar Upload
+```
+
+</td></tr>
+
+</table>
+
+You need a client with the ability to send multipart requests. Alas the GraphiQL playground that Apollo ships 
+with is not able to do that. You can test this feature with other API test tools like 
+[Altair](https://altair.sirmuel.design) e.g. though.
+
+![File Upload][file-upload]
+
+[file-upload]: ./img/file-upload.png "File Upload"
+
+<table width="100%" style="font-size: 0.8em">
+<tr valign="top">
+<td width="50%"> Request </td> <td width="50%"> Response </td>
+</tr>
+<tr valign="top"><td>
+
+```graphql
+mutation($image: Upload) {
+  createCar( car: { brand: "Mercedes" } image: $image ){
+    car{ id brand image { filename mimetype encoding } }
+    validationViolations { attribute message }
+  }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "createCar": {
+      "car": {
+        "id": "5faaef9164e3abf9383ae141",
+        "brand": "Mercedes",
+        "image": {
+          "filename": "01-mercedes-benz.jpeg",
+          "mimetype": "image/jpeg",
+          "encoding": "7bit"
+        }
+      },
+      "validationViolations": []
+    }
+  }
+}
+```
+
+</td></tr>
+</table>
+
+The actual handling of the file (save) is done by an instance of the class `EntityFileSave` - this stores the file
+on the local filesystem in the folder `uploadRootDir` from the GAMA Configuration.
+
+You can easily configure the usage your own `EntityFileSave` implementation and e.g. store files in a database or 
+on S3 or similar.
+
+<br>
 
 #### **Enum**
 
@@ -210,6 +351,7 @@ entity:
 
 
 
+
 ```
 
 </td><td>
@@ -243,7 +385,7 @@ entity:
 </td></tr>
 </table>
 
-
+<br>
 
 ---
 ## Required
@@ -637,7 +779,7 @@ entity:
         unique: CarPark
 
 ```
-
+<br>
 
 ---
 ## List scalars
@@ -653,4 +795,64 @@ entity:
 
 <br>
 
+Setting this configuration to true will use the attribute `type` as a list. Pleas be aware that your datastore 
+implementation might be able to handle this or at least makes it harder or impossible to select / filter for 
+these attributes. The default datastore implementation uses MongoDB and will therefor store arrays in the entity
+item document quiet easily.
 
+### Example
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="40%"> YAML Configuration </td> <td width="60%"> Schema (exerpt) </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+entity: 
+  Car: 
+    attributes: 
+      licence: Key
+      repairsAtKm: [Int!]
+```
+
+</td><td>
+
+```graphql
+type Car {
+  id: ID!
+  licence: String!
+  repairsAtKm: [Int]!
+  createdAt: Date
+  updatedAt: Date
+}
+
+input CarCreateInput {
+  licence: String!
+  repairsAtKm: [Int]!
+}
+
+input CarFilter {
+  id: ID
+  licence: StringFilter
+  repairsAtKm: IntFilter
+}
+
+enum CarSort {
+  licence_ASC
+  licence_DESC
+  repairsAtKm_ASC
+  repairsAtKm_DESC
+  id_ASC
+  id_DESC
+}
+
+input CarUpdateInput {
+  id: ID!
+  licence: String
+  repairsAtKm: [Int]
+}
+```
+
+</td></tr>
+</table>

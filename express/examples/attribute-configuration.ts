@@ -1,6 +1,4 @@
-import { Domain } from "domain";
-import { example } from "examples";
-import { DomainConfiguration, DomainDefinition, Runtime } from "graph-on-rails";
+import { DomainConfiguration, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
 const winnerYear = {
@@ -35,8 +33,8 @@ const domainConfiguration:DomainConfiguration = {
   }
 }
 
-export const example1 = new DomainDefinition( './config-types/car-config-1');
-example1.add( domainConfiguration );
+// export const example1 = new DomainDefinition( './config-types/car-config-1');
+// example1.add( domainConfiguration );
 
 export const example4:DomainConfiguration = {
   entity: {
@@ -96,6 +94,28 @@ export const unique2:DomainConfiguration = {
       },
       seeds: {
         red_mercedes: { brand: 'Mercedes', color: 'red' }
+      }
+    }
+  }
+}
+
+export const file1:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        brand: 'String!',
+        image: 'File'
+      }
+    }
+  }
+}
+
+export const list1:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        licence: 'Key',
+        repairsAtKm: '[Int!]'
       }
     }
   }
