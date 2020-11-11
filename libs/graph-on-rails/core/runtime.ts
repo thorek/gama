@@ -18,6 +18,7 @@ import { DomainConfiguration } from './domain-configuration';
 import { DomainDefinition } from './domain-definition';
 import { GraphX } from './graphx';
 import { SchemaFactory } from './schema-factory';
+import { Seeder } from './seeder';
 
 export type GamaConfig = {
   name?:string
@@ -33,6 +34,7 @@ export type GamaConfig = {
   metaDataBuilder?:SchemaBuilder
   domainDefinition:DomainDefinition|DomainConfiguration|string|string[]
   uploadRootDir?:string
+  stage?:'development'|'production'
 }
 
 export class Runtime {
@@ -42,6 +44,7 @@ export class Runtime {
 
   readonly graphx = new GraphX();
   readonly entities:{[name:string]:Entity} = {};
+  readonly enums:string[] = [];
   readonly filterTypes:{[name:string]:FilterType} = {};
 
   readonly contextUser = this.config.contextUser;
@@ -72,6 +75,7 @@ export class Runtime {
       contextUser: 'user',
       contextRoles: 'roles',
       uploadRootDir: 'uploads ',
+      stage: 'development',
       domainDefinition: {}
     };
   }
@@ -88,7 +92,7 @@ export class Runtime {
     this.schema = await schemaFactory.schema();
   }
 
-  async init(){
+  private async init(){
     if( ! _.isFunction(this.config.dataStore) ) throw new Error('Runtime - you must provide a dataStore factory method' );
     this.dataStore = await this.config.dataStore( this.config.name );
   }
@@ -139,6 +143,10 @@ export class Runtime {
   entity( name:string ) {
     if( this.entities[name] ) return this.entities[name];
     throw new Error(`no such entity '${name}'`);
+  }
+
+  seed( truncate = true ) {
+    return Seeder.create( this ).seed( truncate );
   }
 
   warn<T>( message:string, returnValue:T ):T{
