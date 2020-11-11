@@ -898,7 +898,7 @@ entry is used (depending on the type) to find the sorted position of an entity i
 If you need more control over how you want to filter or handle these kind of data we strongly suggest to model these
 as seperate entities with associations with eachother. 
 
-<br>
+---
 
 ## Default Value
 
@@ -911,6 +911,13 @@ default?:any
 | [empty]                  | (default) | no effect                                             |
 | [any value]              |           | default value when creating a new entity item         |
 | (runtime:Runtime) => any |           | called to get the default value for a new entity item |
+
+<br>
+
+You can set either a value or a callback function (configuration object only) to determine a default value for
+an attribute if a client does not provide a value for it. There will be no checks if the `value` matches 
+the `type` of the attribute. If you provide a value of another type it can come to unwanted casts or error, so 
+you have to ensure the correct type of the defaultValue.
 
 <br>
 
@@ -970,10 +977,8 @@ input CarUpdateInput {
 
 Sometimes we need dynamic default values. Let's say the registration date of a car should be set to _today_ when
 not provided by a client. We could not add a static value for that - so we use the callback. We do not use the 
-`runtime` in our implementation - but we could e.g. to access other entities or similar.
+`runtime` in this implementation - but it could be used to access other entities or similar.
 
-
-Of course when a client provides a value this value (and not the default) is used.
 
 ```typescript
 {
@@ -1057,4 +1062,103 @@ mutation {
 
 </td></tr>
 </table>
+
+---
+
+## Filter Type
+
+```typescript
+filterType?:string|false
+```
+
+| Value        | Shortcut  | Description                                           |
+| ------------ | --------- | ----------------------------------------------------- |
+| [empty]      | (default) | attribute will be added to the entity filter type if a default filter for the attribute type exists |
+| `false`      |           | attribute will not be added to the entity filter type  |
+| 'filterName' |           | attribute will be added to the entity filter type if this filter type exists |
+
+<br>
+
+Usually every attribute will be added to the filter type for the entity, so a client could filter or search 
+for entity items over this attribute's values. This is true with the exception of
+
+  * `File` 
+  * `JSON`
+
+For any other attribute it is tried to determine a filter type per convention `[TypeName]Filter` 
+so e.g. for the field type `String` a filter type `StringFilter` is used. These FilterTypes must come from the 
+_datastore_ implementation, since they are in their behaviour dependent on how a  _datastore_ gathers data. 
+
+The default GAMA _datastore_ uses MongoDB and provides the following FilterTypes: 
+
+  * `StringFilterType`
+  * `IntFilterType`
+  * `FloatFilterType`
+  * `BooleanFilterType`
+  * `DateFilterType`
+
+also for any `Enum` type a FilterType is added. So if you have an enum `CarBrand` the filter type `CarBrandFilter` 
+should exist.
+
+If you want to prevent to filter / search for a certain attribute you can set the `filter` configuration for this 
+attribute to `false`. 
+
+If your _datastore_ implementations offers more or other filter types you can also override the convention by 
+declaring the filter type name here. 
+
+<br>
+
+### Example
+
+Let's assume we do not want to allow a client to filter cars by their brand, only by its other attributes (mileage 
+or color). We will set the filter for `brand` to `false`. Notice how the `brand` is no longer part of the 
+`CarFilter` type.
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="50%"> YAML Configuration </td> <td width="50%"> Schema (excerpt) </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+{
+  entity: {
+    Car: {
+      attributes: {
+        brand: {
+          type: 'String!',
+          filterType: false
+        },
+        color: 'String!',
+        mileage: 'Int!'
+      }
+    }
+  }
+}
+```
+
+</td><td>
+
+```graphql
+type Car {
+  id: ID!
+  brand: String!
+  color: String!
+  mileage: Int!
+  createdAt: Date
+  updatedAt: Date
+}
+
+input CarFilter {
+  id: ID
+  color: StringFilter
+  mileage: IntFilter
+}
+```
+
+</td></tr>
+
+</table>
+
+
 

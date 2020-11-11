@@ -159,3 +159,18 @@ export const defaultValue2:DomainConfiguration = {
     }
   }
 }
+
+export const filterType1:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        brand: {
+          type: 'String!',
+          filterType: false
+        },
+        color: 'String!',
+        mileage: 'Int!'
+      }
+    }
+  }
+}

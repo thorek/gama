@@ -9,6 +9,7 @@ import { Entity } from '../entities/entity';
 import { BooleanFilterType } from './filter/boolean-filter-type';
 import { DateFilterType } from './filter/date-filter-type';
 import { EnumFilterType } from './filter/enum-filter-type';
+import { FloatFilterType } from './filter/float-filter-type';
 import { IntFilterType } from './filter/int-filter-type';
 import { StringFilterType } from './filter/string-filter-type';
 
@@ -170,6 +171,7 @@ export class MongoDbDataStore extends DataStore {
     return [
       new StringFilterType(),
       new IntFilterType(),
+      new FloatFilterType(),
       new BooleanFilterType(),
       new DateFilterType()
     ]
