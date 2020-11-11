@@ -10,6 +10,16 @@ GAMA supports this development with an oppinionated approach based on the config
 of a business-domain-configuration-based API creation by looking at an simple 
 [Example for an Entity Configuration](./entity-configuration.md#entity-configuration-example).
 
+You can also check out the configuration documentation with lots of examples:
+
+|   |    |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| [Domain Configuration](./domain-configuration.md)       | Starting point to describe your business domain  |
+| [Entity Configuration](./entity-configuration.md)       | How to describe entities in your business domain |
+| [Attribute Configuration](./attribute-configuration.md) | Configuration of the attributes of your entities |
+
+
+<br>
 
 ## Technologies 
 
