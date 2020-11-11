@@ -53,14 +53,9 @@ export class GraphX {
           type: GraphQLString,
           args: { some: { type: GraphQLString } },
           resolve: ( root:any, args:any ) => `pong, ${args.some}!`
-        },
-        seed: {
-          type: GraphQLString,
-          args: { truncate: { type: GraphQLBoolean } },
-          resolve: ( root:any, args:any, context:any ) => Seeder.create( runtime ).seed( args.truncate )
         }
-      } )
-    } );
+      })
+    });
   }
 
   /**
