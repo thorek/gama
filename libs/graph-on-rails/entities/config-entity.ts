@@ -100,7 +100,7 @@ export class ConfigEntity extends Entity {
     this.resolveListBrackets( attrConfig );
     this.resolveExclamationMark( attrConfig );
     this.capitalizeScalarTypes( attrConfig );
-    this.resolveMediaType( attrConfig );
+    this.resolveFileAndMediaType( attrConfig );
     this.warnAttribute( name, attrConfig );
     return {
       graphqlType: attrConfig.type || 'String',
@@ -153,7 +153,7 @@ export class ConfigEntity extends Entity {
     if( scalarTypes[scalarType] ) attrConfig.type = scalarType;
   }
 
-  private resolveMediaType( attrConfig:AttributeConfig ):void {
+  private resolveFileAndMediaType( attrConfig:AttributeConfig ):void {
     switch( attrConfig.type ){
       case 'image':
         attrConfig.type = 'File';
@@ -168,6 +168,7 @@ export class ConfigEntity extends Entity {
         attrConfig.mediaType = 'audio';
         break;
     }
+    if( attrConfig.type === 'File' ) attrConfig.filterType = false;
   }
 
   private warnAttribute( name: string, attrConfig:AttributeConfig ):void {
