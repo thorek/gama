@@ -8,7 +8,6 @@ export type TypeAttribute = {
   unique?:string|boolean;
   required?:boolean|'create'|'update'
   description?:string
-  // input?:boolean
   defaultValue?:any
   mediaType?:'image'|'video'|'audio'
   list?:boolean

@@ -1,6 +1,7 @@
 # Attribute Configuration
 
-Entities have attributes describing the data of the entity. Many aspects to this can be configured by the follwowing 
+Entities have attributes describing the data of the entity. Many aspects to this can be configured by the this 
+configuration type
 
 ### Configuration Type
 
@@ -13,19 +14,35 @@ export type AttributeConfig = {
   default?:any
   filterType?:string|false;
   description?:string
-  validation?:object
-  input?:boolean  
+  validation?:object  
   mediaType?:'image'|'video'|'audio'
   calculate?:( root?:any, args?:any, context?:any ) => any
 }
 ```
 
-Except the `calculate` and `validate` callbacks you can use YAML for the configuration as well. In the following 
-examples we will use YAML and object configuration equally.  
+Except the `calculate` callback you can use either an configuration object or YAML for the configuration. 
+In the following examples we will use YAML and object configuration equally.  
+
+All configuration options are documented in detail further below: 
+
+| | | |
+| - | - | - |
+| [type](#type)               | Type of attribute values  | can be any GraphQL or GAMA scalar or any of your defined enums  |
+| [required](#required)       | mandatory attribute value | adds schema and business validations for non-null values        |
+| [unique](#unique)           | uniqueness of value       | adds business validation for unique values, also scoped         |
+| [list](#list)               | list scalars              | allows to have list of scalar types                             |
+| [default](#default)         | default value             | static or dynamic default values for new entity items           |
+| [filterType](#filterType)   |                           | disable or change filter behaviour for attributes               |
+| [description](#description) |                           | adding documentaton to the public API                           |
+| [validation](#validation)   | field validation          | configure business validation using extensive ValidateJS syntax |
+| [mediatype](#mediatype)     |                           | only used as metadata for UI clients, e.g. GAMA Admin UI        |
+| [calculate](#calculate)     | dynamic attrirbute value  | determine custom value for (virtual) field                      |
+
+ <br>
 
 ### Shortcut Notation
 
-Instead of providing a config object you can simply just write the type instead. 
+Instead of providing the configuration object you can simply just write the type instead. 
 The rest of the attribute configuration object would then be set as default. 
 You can even use all type shortcut notations (such as `String!` or `Key` as described below) 
 when using this. The follwing examples are equivalant:
@@ -117,21 +134,29 @@ to each other.
 </table>
 
 ---
-## Type
+## type
 
 ```typescript
   type?:string;
 ```
 
-You can use a shortcut notations for the type attribute:
-
-  * `Key` configures this attribute as as `String`, `required` and `unique`
-  * trailing `!` sets the `required` attribute to true
-  * surrounding `[]` sets the `list` attribute to true
-
 The type of an attribute can be any Enum or Scalar type described as follows. Note that you should never use other 
 entity types as attribute types but instead describe the relations between entities as 
 [associations](./associations.md). 
+
+
+#### **Shortcut Notation**
+
+The most common attribute configurations can be done by via shortcut notation: 
+
+| Value         | Description                                                       | 
+| ------------- | ----------------------------------------------------------------- | 
+| `Key`         | sets the type to `String`, `required` and `unique` to `true`      |
+| `typeName!`   | sets the type to 'typeName' and `required` to true, e.g. `Int!` becomes `{ type: 'Int, required: true}` |
+| `[typeName]`  | sets type to 'typeName' and `list` to `true`, e.g. `Int!` becomes `{ type: 'Int, list: true}` |
+| `[typeName!]`  | sets type to 'typeName' and `list` and `required` to `true` |
+
+<br>
 
 #### **GraphQL scalar type**
 
@@ -159,6 +184,81 @@ GAMA provides in addition to the GraphQL scalar type the following scalar types:
 | ------------- | --------------------------------------------------- | 
 | `Date`        | String representation of a Date in the JSON data it serializes to/from `new Date().toJSON()` internally it converts it to a TypeScript Date object                            |
 | `JSON`        | arbitrary JSON structure (you should use this with caution and prefer GraphQL types instead)  |
+
+<br>
+
+#### **Enum**
+
+An attribute can use any Enum type you add to the business domain configuration or directly to the schema.
+
+### Example
+
+in the following example you see the usage of possible type values and notations to describe a _Car_ entity.
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="35%"> YAML Configuration </td> <td width="65%"> Similar object notatation </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+enum: 
+  CarBrand:
+    - Mercedes
+    - Audi
+    - Porsche
+    - BMW
+
+entity: 
+  Car: 
+    attributes: 
+      brand: CarBrand
+      licence: Key
+      mileage: Int    
+      fuelConsumption: 
+        type: Float
+        required: true
+      registration: Date
+      hasHitch: Boolean
+      repairProtocol: JSON
+      registrationScan: image      
+
+
+
+
+```
+
+</td><td>
+
+```typescript
+{
+  enum: {
+    CarBrand: { 
+      MERCEDES: 'Mercedes', 
+      AUDI: 'Audi', 
+      PORSCHE: 'Porsche', 
+      BMW: 'BMW' 
+    }
+  },
+  entity: {
+    Car: {
+      attributes: {
+        brand: { type: 'CarBrand' }, 
+        license: { type: 'String', unique: true, required: true },
+        mileage: { type: 'Int' },
+        fuelConsumption: { type: 'Float', required: true },
+        registration: { type: 'Date' },
+        hasHitch: { type: 'Boolean' },
+        repairProtocol: { type: 'JSON' },
+        registrationScan: { type: 'File', mediaType: 'image' }
+      }
+    }
+  }
+}
+```
+
+</td></tr>
+</table>
 
 <br>
 
@@ -297,83 +397,12 @@ on S3 or similar.
 
 <br>
 
-#### **Enum**
 
-An attribute can use any Enum type you add to the business domain configuration or directly to the schema.
-
-### Example
-
-in the following example you see the usage of possible type values and notations to describe a _Car_ entity.
-
-<table width="100%" style="font-size: 0.9em">
-<tr valign="top">
-<td width="35%"> YAML Configuration </td> <td width="65%"> Similar object notatation </td>
-</tr>
-<tr valign="top"><td>
-
-```yaml
-enum: 
-  CarBrand:
-    - Mercedes
-    - Audi
-    - Porsche
-    - BMW
-
-entity: 
-  Car: 
-    attributes: 
-      brand: CarBrand
-      licence: Key
-      mileage: Int    
-      fuelConsumption: 
-        type: Float
-        required: true
-      registration: Date
-      hasHitch: Boolean
-      repairProtocol: JSON
-      registrationScan: image      
-
-
-
-
-```
-
-</td><td>
-
-```typescript
-{
-  enum: {
-    CarBrand: { 
-      MERCEDES: 'Mercedes', 
-      AUDI: 'Audi', 
-      PORSCHE: 'Porsche', 
-      BMW: 'BMW' 
-    }
-  },
-  entity: {
-    Car: {
-      attributes: {
-        brand: { type: 'CarBrand' }, 
-        license: { type: 'String', unique: true, required: true },
-        mileage: { type: 'Int' },
-        fuelConsumption: { type: 'Float', required: true },
-        registration: { type: 'Date' },
-        hasHitch: { type: 'Boolean' },
-        repairProtocol: { type: 'JSON' },
-        registrationScan: { type: 'File', mediaType: 'image' }
-      }
-    }
-  }
-}
-```
-
-</td></tr>
-</table>
 
 <br>
 
 ---
-## Required
+## required
 
 ```typescript
   required?:boolean|'create'|'update'
@@ -492,7 +521,7 @@ mutation{
 </table>
 
 ---
-## Unique
+## unique
 
 ```typescript
 unique?:boolean|string
@@ -775,7 +804,7 @@ entity:
 <br>
 
 ---
-## List scalars
+## list
 
 ```typescript
   list?:boolean
@@ -884,7 +913,7 @@ as seperate entities with associations with eachother.
 
 ---
 
-## Default Value
+## default
 
 ```typescript
 default?:any
@@ -1049,7 +1078,7 @@ mutation {
 
 ---
 
-## Filter Type
+## filterType
 
 ```typescript
 filterType?:string|false
@@ -1094,9 +1123,8 @@ declaring the filter type name here.
 
 ### Example
 
-Let's assume we do not want to allow a client to filter cars by their brand, only by its other attributes (mileage 
-or color). We will set the filter for `brand` to `false`. Notice how the `brand` is no longer part of the 
-`CarFilter` type.
+Let's assume we do not want to allow a client to filter _cars_ by their "brand", only by its other attributes 
+("mileage" or "color"). We will set the filter for "brand" to `false`. Notice how the "brand" is no longer part of the `CarFilter` type.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
@@ -1145,15 +1173,15 @@ input CarFilter {
 
 ---
 
-## Description
+## description
 
 ```typescript
 description?:string
 ```
 
 You can add arbritary information / documentation to an attribute that will become part of the schema documentation.  
-In some circumstances GAMA adds some description itself (e.g. the validation information) but will leave your
-description intact. 
+In some circumstances GAMA adds some description itself (e.g. the validation information) but will always
+leave your description intact. 
 
 <br>
 
@@ -1219,7 +1247,7 @@ input CarUpdateInput {
 
 --- 
 
-## Validation 
+## validation 
 
 ```typescript
 validation?:object
@@ -1243,15 +1271,14 @@ non-null values, but also wenn used by any custom code. In other words only non-
 validated.
 
 Any validation configuration is added as stringified JSON to the description of an attribute, thus becoming
-part of your public API documentation. 
-
-It is also provided as MetaData so any UI client (as the GAMA Admin UI) could use this for client-side validation.
+part of your public API documentation. It is also provided as MetaData so any UI client (as the GAMA Admin UI) 
+could use this for client-side validation.
 
 #### **ValidateJS**
 
 The default `EntityValidation` uses ValidateJS for configurable validations of attribute values. If you decide to
-use another validation library (by providin another `EntityValidation` implementation) you can use the syntax of 
-that library then. 
+use another validation library (by providing another `EntityValidation` implementation) you should use the syntax of 
+the chosen library then. 
 
 For ValidateJS syntax check out their [documentation](https://validatejs.org).
 
@@ -1259,16 +1286,23 @@ For ValidateJS syntax check out their [documentation](https://validatejs.org).
 
 For non-trivial validations not expressable by configuring ValidatJS validation, you can always implemenet 
 a callback function on the entity definition and implement any custom validation logic there. 
+See [Entity Validation](./entity-configuration.md#validation)
 
 
 ### Example
 
+Let's assume we want to ensure that the "brand" of a _car_ item as at least 2 and max 20 characters, also the 
+"mileage" should be a positive number. The "brand" is required, we do not need to add a validation for this, 
+since the type is already indicating this attribute as `required`.
+The "mileage" is optional though but if provided must match the validation.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
 <td width="40%"> YAML Configuration </td> <td width="60%"> Schema Doc Viewer </td>
 </tr>
 <tr valign="top"><td>
+
+We can ValidateJS syntax in yaml. 
 
 ```yaml
 entity: 
@@ -1290,18 +1324,20 @@ entity:
 
 </td><td>
 
+The stringified JSON is added to the description of the field in the schema.
+
 ![Validation Description](./img/validation-description.png)
 
 </td></tr>
 </table>
 
-
-
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
-<td width="40%"> YAML Configuration </td> <td width="60%"> Schema Doc Viewer </td>
+<td width="40%"> Request </td> <td width="60%"> Response </td>
 </tr>
 <tr valign="top"><td>
+
+If we now try to create _car_ item with invalid values ... 
 
 ```graphql
 mutation { 
@@ -1313,6 +1349,8 @@ mutation {
 ```
 
 </td><td>
+
+... we get the ValidationViolations and no _car_ item was created.
 
 ```json
 {

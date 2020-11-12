@@ -30,7 +30,6 @@ export type AttributeConfig = {
   default?:any
   filterType?:string|false
   validation?:object
-  input?:boolean
   mediaType?:'image'|'video'|'audio'
   calculate?:( root?:any, args?:any, context?:any ) => any
 }

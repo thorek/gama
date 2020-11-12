@@ -2,8 +2,8 @@
 
 We think [GraphQL](https://graphql.org) is a great way to expose your business domain to any client or 3rd party system. 
 Implementing a GraphQL API is a tedious task though. You need to decide how to structure your schema, how to handle
-concepts like searching, sorting, paging, validating. How to implement resolvers that read data from and write 
-data to a database or similar, validate input, relationships etc.
+concepts like searching, sorting, paging, how to implement resolvers that read data from 
+and write data to a database or similar, validate input, relationships etc.
 
 GAMA supports this development with an oppinionated approach based on the configuration of a business domain 
 (mainly entities and its relations to each other). You can check out the simplicity and power 
@@ -20,6 +20,36 @@ You can also check out the configuration documentation with lots of examples:
 
 
 <br>
+
+
+## Terminologies
+
+We use the following terms in a dedicated meaning
+
+### Business Domain 
+
+Description of your real world domain in terms of entities, relationships and operations. Think of UML 
+class diagrams.
+
+### Domain Configuration
+
+Any configuration in JSON, typescript or YAML to describe or configure (a part) of your business domain. 
+A _Domain Configuration_ can consist of _Entity Configurations_, _Enum Configurations_, _Custom Queries_ and
+_Custom Mutations_. 
+
+### Entity Configuration
+
+A configuration in JSON, typescript or YAML to describe an **entity** of your business domain with its 
+attributes, validations, behaviour, relationships to other entites etc.
+
+### DomainDefintion
+
+You can seperate your _Domain Configuration_ (if you like) over many files or configuration objects. All your
+configurations are turned into one _Domain Definition_. From this definition a GraphQL schema and all 
+Query and Mutation Resolvers are generated. 
+
+<br>
+
 
 ## Technologies 
 
