@@ -28,8 +28,8 @@ We use the following terms in a dedicated meaning
 
 ### Business Domain 
 
-Description of your real world domain in terms of entities, relationships and operations. Think of UML 
-class diagrams.
+Description of your real world domain in terms of entities with attributes, operations and relationships. 
+Think of UML class diagrams.
 
 ### Domain Configuration
 
