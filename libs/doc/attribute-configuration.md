@@ -13,7 +13,7 @@ export type AttributeConfig = {
   default?:any
   filterType?:string|false;
   description?:string
-  validation?:object|((item:any, action:'create'|'update') => ValidationReturnType)
+  validation?:object
   input?:boolean  
   mediaType?:'image'|'video'|'audio'
   calculate?:( root?:any, args?:any, context?:any ) => any
@@ -1222,24 +1222,30 @@ input CarUpdateInput {
 ## Validation 
 
 ```typescript
-validation?:object|((item:any, action:'create'|'update') => ValidationReturnType)
-
-export type ValidationReturnType = 
-  ValidationViolation[]|string|undefined|Promise<ValidationViolation[]|string|undefined>
-
-export type ValidationViolation = {
-  attribute?:string
-  message:string
-}
+validation?:object
 ```
 
 | Value        | Shortcut  | Description                                                                              |
 | ------------ | --------- | ------------------------------------------------------------------------------------     |
 | [empty]      | (default) | no validation will be added (defaults like `required` are not influenced)                 |
 | object       |           | validation configuration for the current `Validator` instance, default uses ValidateJS   |
-| `(item:any)=>ValidationReturnType` | | Function called for validating this attribute |
 
 <br>
+
+Validations take place before saving an entity item. If validation, either any attribute-validation or 
+entity-validation returns something different then `undefined` or `[]` the validation fails and no save 
+happens. The validations create a list of `ValidationViolation` that informs the client about the failed
+validations. 
+
+Please notice that these attribite validations are only applied when a potential `required` validation did not fail
+before. This is certainly the case if triggered by a GraphQL request, since the GraphQL layer already correct
+non-null values, but also wenn used by any custom code. In other words only non-values values will be 
+validated.
+
+Any validation configuration is added as stringified JSON to the description of an attribute, thus becoming
+part of your public API documentation. 
+
+It is also provided as MetaData so any UI client (as the GAMA Admin UI) could use this for client-side validation.
 
 #### **ValidateJS**
 
@@ -1247,13 +1253,89 @@ The default `EntityValidation` uses ValidateJS for configurable validations of a
 use another validation library (by providin another `EntityValidation` implementation) you can use the syntax of 
 that library then. 
 
+For ValidateJS syntax check out their [documentation](https://validatejs.org).
+
 #### **Validation Function**
 
-For non-trivial validations you can add a callback function that is called before saving an entity and implement 
-any custom validation logic there. Any return other than `undefined` or `[]` will be treates as validation 
-violation and prevent the saving of the entity item. 
+For non-trivial validations not expressable by configuring ValidatJS validation, you can always implemenet 
+a callback function on the entity definition and implement any custom validation logic there. 
+
 
 ### Example
+
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="40%"> YAML Configuration </td> <td width="60%"> Schema Doc Viewer </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+entity: 
+  Car: 
+    attributes: 
+      brand: 
+        type: String!
+        validation: 
+          length: 
+            minimum: 2
+            maximum: 20
+      mileage: 
+        type: Int
+        validation:
+          numericality: 
+            greaterThan: 0
+            lessThanOrEqualTo: 500000    
+```
+
+</td><td>
+
+![Validation Description](./img/validation-description.png)
+
+</td></tr>
+</table>
+
+
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top">
+<td width="40%"> YAML Configuration </td> <td width="60%"> Schema Doc Viewer </td>
+</tr>
+<tr valign="top"><td>
+
+```graphql
+mutation { 
+  createCar( car: { brand: "X" mileage: 0 } ){
+    car { id brand mileage }
+    validationViolations { attribute message }
+  }
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "createCar": {
+      "car": null,
+      "validationViolations": [
+        {
+          "attribute": "brand",
+          "message": "Brand is too short (minimum is 2 characters)"
+        },
+        {
+          "attribute": "mileage",
+          "message": "Mileage must be greater than 0"
+        }
+      ]
+    }
+  }
+}
+```
+
+</td></tr>
+</table>
 
 
 

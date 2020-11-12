@@ -186,3 +186,22 @@ entity:
           this is not really evaluated anywhere
           and just informal collected
 `);
+
+
+export const validation1:DomainConfiguration = YAML.parse(`
+entity:
+  Car:
+    attributes:
+      brand:
+        type: String!
+        validation:
+          length:
+            minimum: 2
+            maximum: 20
+      mileage:
+        type: Int
+        validation:
+          numericality:
+            greaterThan: 0
+            lessThanOrEqualTo: 500000
+`);

@@ -28,8 +28,8 @@ export type AttributeConfig = {
   description?:string
   list?:boolean
   default?:any
-  filterType?:string|false;
-  validation?:object|(( item:any, action:'create'|'update') => ValidationReturnType)
+  filterType?:string|false
+  validation?:object
   input?:boolean
   mediaType?:'image'|'video'|'audio'
   calculate?:( root?:any, args?:any, context?:any ) => any

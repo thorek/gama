@@ -329,7 +329,7 @@ export class EntityBuilder extends TypeBuilder {
 
   private getDescriptionForField(attribute:TypeAttribute, purpose:AttributePurpose):string|undefined {
     if( ! attribute.validation ) return attribute.description;
-    if( ! _.includes( ['updateInput', 'createInput'], purpose )) return attribute.description;
+    if( ! _.includes( ['type', 'updateInput', 'createInput'], purpose )) return attribute.description;
     const validationConfig = JSON.stringify(attribute.validation, null, 2);
     const validationSyntax = this.entity.validation.validator.validatorSyntaxHint();
     const validation = `Validation of this field:\n \`\`\`\n${validationConfig} \n \`\`\`\nFor syntax check: ${validationSyntax}`;
