@@ -93,7 +93,7 @@ export class ConfigEntity extends Entity {
 
   protected getAssign() { return this.entityConfig.assign }
 
-  protected getValidateFn() { return this.entityConfig.validate }
+  protected getValidateFn() { if (_.isFunction(this.entityConfig.validation) ) return this.entityConfig.validation  }
 
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );

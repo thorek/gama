@@ -17,7 +17,7 @@ describe('Validations', () => {
             foo: { type: 'int' }
           },
           assocTo: ['Delta'],
-          validate:( item:any ) => {
+          validation:( item:any ) => {
             if( item.name == 'foo' && item.some == 'bar' ) return [{message: 'no foobar'}]
             return undefined;
           },
@@ -41,7 +41,7 @@ describe('Validations', () => {
           attributes: {
             name: { type: 'string' }
           },
-          validate:( item:any, action:'create'|'update' ) => {
+          validation:( item:any, action:'create'|'update' ) => {
             if( action === 'create' && item.name == 'foobar' ) return [{ attribute: 'name', message: "no foobar" } ]
           },
           seeds: {
@@ -65,20 +65,16 @@ describe('Validations', () => {
     expect( result ).toEqual( expect.arrayContaining([
       expect.objectContaining( {
         attribute: 'name',
-        message: 'Name can\'t be blank'
+        message: 'can\'t be blank'
       })
     ]));
 
     result = await alpha.validate( { name: 'x' } );
-    expect( result ).toHaveLength( 2 );
+    expect( result ).toHaveLength( 1 );
     expect( result ).toEqual( expect.arrayContaining([
       expect.objectContaining( {
-        attribute: 'name',
-        message: expect.stringContaining('Name is too short')
-      }),
-      expect.objectContaining( {
         attribute: 'some',
-        message: expect.stringContaining('Some can\'t be blank')
+        message: expect.stringContaining('can\'t be blank')
       })
     ]));
 

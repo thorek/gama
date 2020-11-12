@@ -26,15 +26,12 @@ export type AttributeConfig = {
   required?:boolean|'create'|'update'
   unique?:boolean|string
   description?:string
-  filterType?:string|false;
-  validation?:any;
-  input?:boolean
-  default?:any
-
   list?:boolean
-  sortable?:string
+  default?:any
+  filterType?:string|false;
+  validation?:object|(( item:any, action:'create'|'update') => ValidationReturnType)
+  input?:boolean
   mediaType?:'image'|'video'|'audio'
-
   calculate?:( root?:any, args?:any, context?:any ) => any
 }
 
@@ -72,7 +69,7 @@ export type EntityConfig  = {
 
   description?:string
   extendEntity?:( runtime:Runtime ) => void | Promise<void>
-  validate?:( item:any, action:'create'|'update') => ValidationReturnType
+  validation?:object|(( item:any, action:'create'|'update') => ValidationReturnType)
 }
 
 export type ValidationReturnType = ValidationViolation[]|string|undefined|Promise<ValidationViolation[]|string|undefined>

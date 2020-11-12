@@ -30,7 +30,7 @@ export type EntityConfig  = {
   description?:string
 
   extendEntity?:( context:Context ) => void | Promise<void>
-  validate?:( item:any, action:'create'|'update') => ValidationReturnType
+  validation?:( item:any, action:'create'|'update') => ValidationReturnType
 }
 ```
 
@@ -1047,7 +1047,7 @@ is called everytime before entity item is created or updated.
 
 ```typescript
 export type EntityConfig  = {  
-  validate?:( item:any, action:'create'|'update') => ValidationReturnType
+  validation?:( item:any, action:'create'|'update') => ValidationReturnType
   ...
 }
 
@@ -1087,7 +1087,8 @@ export const example3:DomainConfiguration = {
         brand: 'string!',
         mileage: 'int'
       },
-      validate: (item:any) => (item.brand !== 'Mercedes' && item.mileage > 300000 ) ? 'I wouldnt believe that' : undefined
+      validation: (item:any) => (item.brand !== 'Mercedes' && item.mileage > 300000 ) ? 
+        'I wouldnt believe that' : undefined
     }
   }
 }

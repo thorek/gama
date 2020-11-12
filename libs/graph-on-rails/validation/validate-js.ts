@@ -17,7 +17,6 @@ export class ValidateJs extends Validator {
    */
   constructor( protected readonly entity:Entity ){
     super( entity );
-    this.buildConstraints();
   }
 
   validatorSyntaxHint() { return 'validate.js <https://validatejs.org>' }
@@ -39,18 +38,6 @@ export class ValidateJs extends Validator {
       _.forEach( messages, message => errors.push( { attribute, message } ) );
     });
     return errors;
-  }
-
-  /**
-   *
-   */
-  private buildConstraints() {
-    this.constraints = {};
-    _.forEach( this.entity.attributes, (attribute, name:string) => {
-      let validation = attribute.validation;
-      if( attribute.required === true ) validation = _.set( validation || {}, 'presence', true );
-      if( validation ) this.constraints[name] = validation
-    });
   }
 
 }

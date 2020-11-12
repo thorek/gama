@@ -27,7 +27,7 @@ export const example3:DomainConfiguration = {
         brand: 'string!',
         mileage: 'int'
       },
-      validate: (item:any) => (item.brand !== 'Mercedes' && item.mileage > 300000 ) ? 'I wouldnt believe that' : undefined
+      validation: (item:any) => (item.brand !== 'Mercedes' && item.mileage > 300000 ) ? 'I wouldnt believe that' : undefined
     }
   }
 }

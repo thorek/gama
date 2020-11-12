@@ -174,3 +174,15 @@ export const filterType1:DomainConfiguration = {
     }
   }
 }
+
+export const description1:DomainConfiguration = YAML.parse(`
+entity:
+  Car:
+    attributes:
+      brand: String!
+      color:
+        type: String
+        description: >
+          this is not really evaluated anywhere
+          and just informal collected
+`);

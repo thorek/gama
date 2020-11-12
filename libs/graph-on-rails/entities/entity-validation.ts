@@ -1,4 +1,3 @@
-import { UV_FS_O_FILEMAP } from 'constants';
 import _ from 'lodash';
 
 import { AssocType } from '../core/domain-configuration';
@@ -29,10 +28,11 @@ export class EntityValidation  {
   /**
    *
    */
-  async validate( attributes:any ):Promise<ValidationViolation[]> {
-    const action = _.has( attributes, 'id') ? 'update' : 'create';
-    const validatable = await this.completeAttributes( attributes );
-    const violations:ValidationViolation[] = [];
+  async validate( item:any ):Promise<ValidationViolation[]> {
+    const action = _.has( item, 'id') ? 'update' : 'create';
+    const validatable = await this.completeAttributes( item );
+    const violations:ValidationViolation[] = this.validateRequiredAttributes( validatable );
+    if( ! _.isEmpty( violations ) ) return violations; // validations should rely on required attributes
     violations.push( ... await this.validateRequiredAssocTos( validatable ) );
     violations.push( ... await this.validateUniqe( validatable ) );
     violations.push( ... await this.validator.validate( validatable, action ) );
@@ -41,26 +41,39 @@ export class EntityValidation  {
   }
 
   /**
-   * Retrieves the attributes from the ResolverContext, if an item exist (to be updated) the
+   * Retrieves the item from the ResolverContext, if an item exist (to be updated) the
    * current values are loaded and used when no values where provided
    * TODO what happens, when the user wants to delete a string value?
-   * @returns map with attributes
+   * @returns map with item
    */
-  private async completeAttributes( attributes:any ):Promise<any> {
-    const id = _.get( attributes, 'id' );
-    if( ! id ) return attributes;
+  private async completeAttributes( item:any ):Promise<any> {
+    const id = _.get( item, 'id' );
+    if( ! id ) return item;
     const current = await this.entity.findById( id );
-    return _.defaultsDeep( _.cloneDeep(attributes), current.item );
+    return _.defaultsDeep( _.cloneDeep(item), current.item );
   }
 
   /**
    *
    */
-  private async validateRequiredAssocTos( attributes:any ):Promise<ValidationViolation[]> {
+  private validateRequiredAttributes( item:any ):ValidationViolation[] {
+    const violations:ValidationViolation[] = [];
+    _.forEach( this.entity.attributes, (attribute, name:string) => {
+      if( ! attribute.required ) return;
+      const value = _.get( item, name );
+      if( _.isNil( value )) violations.push({ attribute: name, message: 'can\'t be blank' });
+    });
+    return violations;
+  }
+
+  /**
+   *
+   */
+  private async validateRequiredAssocTos( item:any ):Promise<ValidationViolation[]> {
     const violations:ValidationViolation[] = [];
     for( const assocTo of this.entity.assocTo ){
       if( ! assocTo.required ) continue;
-      const violation = await this.validateRequiredAssocTo( assocTo, attributes );
+      const violation = await this.validateRequiredAssocTo( assocTo, item );
       if( violation ) violations.push( violation );
     }
     return violations;
@@ -69,9 +82,9 @@ export class EntityValidation  {
   /**
    *
    */
-  private async validateRequiredAssocTo( assocTo:AssocType, attributes:any ):Promise<ValidationViolation|undefined> {
+  private async validateRequiredAssocTo( assocTo:AssocType, item:any ):Promise<ValidationViolation|undefined> {
     const refEntity = this.runtime.entities[assocTo.type];
-    const foreignKey = _.get( attributes, refEntity.foreignKey );
+    const foreignKey = _.get( item, refEntity.foreignKey );
     if( ! foreignKey ) return {attribute: refEntity.foreignKey, message: 'must be provided'};
     try {
       await refEntity.findById( _.toString(foreignKey) );
@@ -84,20 +97,20 @@ export class EntityValidation  {
   /**
    *
    */
-  private async validateUniqe( attributes:any ):Promise<ValidationViolation[]> {
+  private async validateUniqe( item:any ):Promise<ValidationViolation[]> {
     const violations:ValidationViolation[] = [];
     for( const name of _.keys(this.entity.attributes) ){
       const attribute = this.entity.attributes[name];
       if( ! attribute.unique ) continue;
-      const violation = await this.validateUniqeAttribute( name, attribute, attributes );
+      const violation = await this.validateUniqeAttribute( name, attribute, item );
       if( violation ) violations.push( violation );
     }
     return violations;
   }
 
-  private async validateFn( attributes:any, action:'create'|'update' ):Promise<ValidationViolation[]>  {
+  private async validateFn( item:any, action:'create'|'update' ):Promise<ValidationViolation[]>  {
     if( ! this.entity.validatFn ) return [];
-    const violations = await Promise.resolve( this.entity.validatFn( attributes, action ) );
+    const violations = await Promise.resolve( this.entity.validatFn( item, action ) );
     if( _.isString( violations ) ) return [{message: violations}]
     return violations ? violations : [];
   }
@@ -106,30 +119,30 @@ export class EntityValidation  {
   /**
    *
    */
-  private async validateUniqeAttribute( name:string, attribute:TypeAttribute, attributes:any ):Promise<ValidationViolation|undefined> {
-    const value = _.get( attributes, name );
+  private async validateUniqeAttribute( name:string, attribute:TypeAttribute, item:any ):Promise<ValidationViolation|undefined> {
+    const value = _.get( item, name );
     if( _.isUndefined( value ) ) return;
     const attrValues = _.set({}, name, value );
     let scopeMsg = '';
     if( _.isString( attribute.unique ) ){
       const scopeEntity = this.runtime.entities[attribute.unique];
       const scope = scopeEntity ? scopeEntity.foreignKey : attribute.unique;
-      const scopeValue = _.get( attributes, scope );
+      const scopeValue = _.get( item, scope );
       _.set(attrValues, scope, scopeValue );
       scopeMsg = ` within scope '${attribute.unique}'`;
     }
     const result = await this.entity.findByAttribute( attrValues );
     const violation = {attribute: name, message: `value '${value}' must be unique` + scopeMsg }
-    return this.isUniqueResult( attributes, result ) ? undefined : violation;
+    return this.isUniqueResult( item, result ) ? undefined : violation;
   }
 
   /**
    *
    */
-  isUniqueResult( attributes:any, result:any[] ):boolean {
+  isUniqueResult( item:any, result:any[] ):boolean {
     if( _.size( result ) === 0 ) return true;
     if( _.size( result ) > 1 ) return false;
-    const currentId = _.toString( _.get( attributes, 'id' ) );
+    const currentId = _.toString( _.get( item, 'id' ) );
     return currentId === _.toString( _.get( _.first(result), 'id') );
   }
 

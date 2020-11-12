@@ -11,14 +11,11 @@ export type AttributeConfig = {
   unique?:boolean|string
   list?:boolean
   default?:any
-  description?:string
   filterType?:string|false;
-  validation?:any;
-  input?:boolean
-
-  sortable?:string
+  description?:string
+  validation?:object|((item:any, action:'create'|'update') => ValidationReturnType)
+  input?:boolean  
   mediaType?:'image'|'video'|'audio'
-
   calculate?:( root?:any, args?:any, context?:any ) => any
 }
 ```
@@ -26,24 +23,16 @@ export type AttributeConfig = {
 Except the `calculate` and `validate` callbacks you can use YAML for the configuration as well. In the following 
 examples we will use YAML and object configuration equally.  
 
-### String shortcut
+### Shortcut Notation
 
-Instead of providing a config object you can simply write a string with the type instead. 
+Instead of providing a config object you can simply just write the type instead. 
 The rest of the attribute configuration object would then be set as default. 
-You can even use all type shortcut notations (as `String!` or `Key` as described below) 
+You can even use all type shortcut notations (such as `String!` or `Key` as described below) 
 when using this. The follwing examples are equivalant:
 
 <table width="100%" style="font-size: 0.9em">
-<tr valign="top">
-<td width="50%">
-  Shortcut
-</td>
-<td width="50%">
-  Resolved
-</td>
-</tr>
-<tr valign="top">
-<td width="50%">
+<tr valign="top"><td width="50%"> Shortcut </td><td width="50%"> Similar notation </td></tr>
+<tr valign="top"><td width="50%">
 
 ```yaml
 entity:
@@ -76,19 +65,12 @@ entity:
 </tr>
 </table>
 
-You can mix shortcut and regular configuration and you can use it in YAML or code.
+You can mix shortcut and regular configuration and of course also in code. So these notations are also similar
+to each other.
 
 <table width="100%" style="font-size: 0.9em">
-<tr valign="top">
-<td width="50%">
-  Shortcut
-</td>
-<td width="50%">
-  Resolved
-</td>
-</tr>
-<tr valign="top">
-<td width="50%">
+<tr valign="top"><td width="50%"> Shortcut </td><td width="50%"> Similar notation </td></tr>
+<tr valign="top"><td width="50%">
 
 ```typescript
 {
@@ -321,10 +303,11 @@ An attribute can use any Enum type you add to the business domain configuration 
 
 ### Example
 
+in the following example you see the usage of possible type values and notations to describe a _Car_ entity.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
-<td width="40%"> YAML Configuration </td> <td width="60%"> Resulting Config as Object </td>
+<td width="35%"> YAML Configuration </td> <td width="65%"> Similar object notatation </td>
 </tr>
 <tr valign="top"><td>
 
@@ -348,6 +331,7 @@ entity:
       registration: Date
       hasHitch: Boolean
       repairProtocol: JSON
+      registrationScan: image      
 
 
 
@@ -375,7 +359,8 @@ entity:
         fuelConsumption: { type: 'Float', required: true },
         registration: { type: 'Date' },
         hasHitch: { type: 'Boolean' },
-        repairProtocol: { type: 'JSON' }
+        repairProtocol: { type: 'JSON' },
+        registrationScan: { type: 'File', mediaType: 'image' }
       }
     }
   }
@@ -414,9 +399,8 @@ Since the "required-requirement" is part of the public API you can expect any cl
 If you prefer to allow a client to send null-values in a create mutation e.g. and instead of letting the GraphQL 
 layer handle this "error" (by throwing an exception) you could instead use an attribute validation.
 
-In addition to the schema field a `{ presence: true }` validation is added to the validation of this attribute (this
-is true for the default `EntityValidator` using ValidateJS). 
-You might ask why, since the GraphQL layer would prevent any non-null value. The answer is that custom mutations
+In addition to the schema field a _required validation_ is added to the validation of this attribute. You might ask 
+why, since the GraphQL layer would prevent any non-null value anyhow. The answer is that custom mutations
 could (and should) use an entity to create or update entity items. These values are not "checked" by the 
 GraphQL schema of course. Therefore before saving an entity item, all validations - incl. this required - validation
 must be met. 
@@ -1116,11 +1100,11 @@ or color). We will set the filter for `brand` to `false`. Notice how the `brand`
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
-<td width="50%"> YAML Configuration </td> <td width="50%"> Schema (excerpt) </td>
+<td width="50%"> Object Configuration </td> <td width="50%"> Schema (excerpt) </td>
 </tr>
 <tr valign="top"><td>
 
-```yaml
+```typescript
 {
   entity: {
     Car: {
@@ -1157,8 +1141,120 @@ input CarFilter {
 ```
 
 </td></tr>
-
 </table>
+
+---
+
+## Description
+
+```typescript
+description?:string
+```
+
+You can add arbritary information / documentation to an attribute that will become part of the schema documentation.  
+In some circumstances GAMA adds some description itself (e.g. the validation information) but will leave your
+description intact. 
+
+<br>
+
+### Example
+
+<table width="100%" style="font-size: 0.8em">
+<tr valign="top">
+<td width="40%"> YAML Configuration </td> <td width="60%"> Schema (excerpt) </td>
+</tr>
+<tr valign="top"><td>
+
+```yaml
+entity:
+  Car:
+    attributes:
+      brand: String!
+      color:
+        type: String
+        description: >
+          this is not really evaluated anywhere
+          and just informally collected
+```
+
+We use the standard YAML feature of multiline text input here
+
+</td><td>
+
+```graphql
+type Car {
+  id: ID!
+  brand: String!
+  # this is not really evaluated anywhere and just informally collected
+  #
+  color: String
+  createdAt: Date
+  updatedAt: Date
+}
+
+input CarCreateInput {
+  brand: String!
+  # this is not really evaluated anywhere and just informally collected
+  #
+  color: String
+}
+
+input CarFilter {
+  id: ID
+  brand: StringFilter
+  color: StringFilter
+}
+
+input CarUpdateInput {
+  id: ID!
+  brand: String
+  # this is not really evaluated anywhere and just informally collected
+  #
+  color: String
+}
+```
+
+</td></tr>
+</table>
+
+--- 
+
+## Validation 
+
+```typescript
+validation?:object|((item:any, action:'create'|'update') => ValidationReturnType)
+
+export type ValidationReturnType = 
+  ValidationViolation[]|string|undefined|Promise<ValidationViolation[]|string|undefined>
+
+export type ValidationViolation = {
+  attribute?:string
+  message:string
+}
+```
+
+| Value        | Shortcut  | Description                                                                              |
+| ------------ | --------- | ------------------------------------------------------------------------------------     |
+| [empty]      | (default) | no validation will be added (defaults like `required` are not influenced)                 |
+| object       |           | validation configuration for the current `Validator` instance, default uses ValidateJS   |
+| `(item:any)=>ValidationReturnType` | | Function called for validating this attribute |
+
+<br>
+
+#### **ValidateJS**
+
+The default `EntityValidation` uses ValidateJS for configurable validations of attribute values. If you decide to
+use another validation library (by providin another `EntityValidation` implementation) you can use the syntax of 
+that library then. 
+
+#### **Validation Function**
+
+For non-trivial validations you can add a callback function that is called before saving an entity and implement 
+any custom validation logic there. Any return other than `undefined` or `[]` will be treates as validation 
+violation and prevent the saving of the entity item. 
+
+### Example
+
 
 
 
