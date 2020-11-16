@@ -808,5 +808,327 @@ A special feature of the seed data ist that when you use a number as key for a s
 
 After calling the `seed( truncate: true )` mutation you could play around with the driver data and see if everything works as expected.
 
-Now that we have a `Driver` entity we could add the relationship between cars and drivers.
+Now that we have a `Driver` entity we could add the relationship between cars and drivers. Let's assume you learned from the analysis of your buiness domain that a car is either assigned to none or one driver at a time. A driver however could "rent out" multiple cars at once. A very common `1 -- N` relationship. In GAMA this is modeled by a `assocTo` relation from the car to the driver. Optionally we are also interested in the reverse or `assocFrom` relationship from the driver to the car.
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top"> <td width="50%"> Domain Configuration </td> <td width="50%"> Schema (excerpt) </td> </tr>
+<tr valign="top"><td>
+
+<div style="text-align: right">./tutorial/08/car.yml</div>
+
+```yaml
+entity:
+  Car:
+    attributes:
+      brand: CarBrand!
+      licence:
+        type: String
+        required: true
+        unique: true
+      color: String!
+      mileage:
+        type: Int
+        validation:
+          numericality:
+            greaterThan: 0
+            lessThan: 1000000
+    assocTo: Driver
+    seeds:
+      - brand: Mercedes
+        licence: HH-BO 2020
+        color: red
+        mileage: 22000
+        Driver: thomas
+      - brand: BMW
+        licence: HH-TR 1979
+        color: red
+        mileage: 31000
+        Driver: max
+      - brand: BMW
+        licence: GA-MA 2020
+        color: blue
+        mileage: 25000
+      - brand: Audi
+        licence: GR-OR 2020
+        color: blue
+        mileage: 11500
+      - brand: Audi
+        licence: GR-OR 2020
+        color: blue
+```
+
+<div style="text-align: right">./tutorial/08/driver.yml</div>
+
+```yaml
+entity:
+  Driver:
+    attributes:
+      firstname: String
+      lastname:
+        type: String!
+        validation:
+          length:
+            minimum: 2
+            maximum: 50
+      licenceValid: Date!
+    assocFrom: Car
+    seeds:
+      thomas:
+        firstname: Thomas
+        lastname: Gama
+        licenceValid:
+          eval: new Date("2020-12-01")
+      max:
+        firstname: Max
+        lastname: Gor
+        licenceValid:
+          eval: new Date("2022-09-15")
+      20:
+        firstname:
+          share: 0.8
+          eval: faker.name.firstName()
+        lastname:
+          eval: faker.name.lastName()
+        licenceValid:
+          eval: faker.date.future()
+```
+
+</td><td>
+
+```graphql
+type Car {
+  id: ID!
+  brand: CarBrand!
+  licence: String!
+  color: String!
+  mileage: Int
+  createdAt: Date
+  updatedAt: Date
+}
+
+enum CarBrand {
+  AUDI
+  BMW
+  MERCEDES
+  PORSCHE
+}
+
+input CarBrandFilter {
+  is: CarBrand
+  isNot: CarBrand
+  in: [CarBrand]
+  notIn: [CarBrand]
+}
+
+input CarCreateInput {
+  brand: CarBrand!
+  licence: String!
+  color: String!
+  mileage: Int
+}
+
+input CarFilter {
+  id: ID
+  brand: CarBrandFilter
+  licence: StringFilter
+  color: StringFilter
+  mileage: IntFilter
+}
+
+enum CarSort {
+  brand_ASC
+  brand_DESC
+  licence_ASC
+  licence_DESC
+  color_ASC
+  color_DESC
+  mileage_ASC
+  mileage_DESC
+  id_ASC
+  id_DESC
+}
+
+input CarUpdateInput {
+  id: ID!
+  brand: CarBrand
+  licence: String
+  color: String
+  mileage: Int
+}
+
+scalar Date
+
+input DateFilter {
+  eq: Date
+  ne: Date
+  beforeOrEqual: Date
+  before: Date
+  afterOrEqual: Date
+  after: Date
+  isIn: [Date]
+  notIn: [Date]
+  between: [Date]
+}
+
+type Driver {
+  id: ID!
+  firstname: String
+  lastname: String!
+  licenceValid: Date!
+  createdAt: Date
+  updatedAt: Date
+}
+
+input DriverCreateInput {
+  firstname: String
+  lastname: String!
+  licenceValid: Date!
+}
+
+input DriverFilter {
+  id: ID
+  firstname: StringFilter
+  lastname: StringFilter
+  licenceValid: DateFilter
+}
+
+enum DriverSort {
+  firstname_ASC
+  firstname_DESC
+  lastname_ASC
+  lastname_DESC
+  licenceValid_ASC
+  licenceValid_DESC
+  id_ASC
+  id_DESC
+}
+
+input DriverUpdateInput {
+  id: ID!
+  firstname: String
+  lastname: String
+  licenceValid: Date
+}
+
+enum Entity {
+  Car
+  Driver
+}
+
+type entityMetaData {
+  path: String
+  typeQuery: String
+  typesQuery: String
+  deleteMutation: String
+  updateMutation: String
+  updateInput: String
+  createMutation: String
+  createInput: String
+  foreignKey: String
+  fields: [fieldMetaData]
+  assocTo: [assocMetaData]
+  assocToMany: [assocMetaData]
+  assocFrom: [assocMetaData]
+}
+
+input EntityPaging {
+  page: Int!
+  size: Int!
+}
+
+type EntityStats {
+  count: Int!
+  createdFirst: Date
+  createdLast: Date
+  updatedLast: Date
+}
+
+enum Enum {
+  CarBrand
+}
+
+type fieldMetaData {
+  name: String!
+  type: String
+  required: Boolean
+  validation: JSON
+  unique: String
+  calculated: Boolean
+  filter: String
+  mediaType: String
+}
+
+input IntFilter {
+  eq: Int
+  ne: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  isIn: [Int]
+  notIn: [Int]
+  between: [Int]
+}
+
+scalar JSON
+
+type Mutation {
+  ping(some: String): String
+  createCar(car: CarCreateInput): SaveCarMutationResult
+  updateCar(car: CarUpdateInput): SaveCarMutationResult
+  deleteCar(id: ID): [String]
+  createDriver(driver: DriverCreateInput): SaveDriverMutationResult
+  updateDriver(driver: DriverUpdateInput): SaveDriverMutationResult
+  deleteDriver(id: ID): [String]
+  seed(truncate: Boolean): [String]
+}
+
+type Query {
+  ping: String
+  metaData(path: String): [entityMetaData]
+  car(id: ID): Car
+  cars(filter: CarFilter, sort: CarSort, paging: EntityPaging): [Car]
+  carsStats(filter: CarFilter): EntityStats
+  driver(id: ID): Driver
+  drivers(
+    filter: DriverFilter
+    sort: DriverSort
+    paging: EntityPaging
+  ): [Driver]
+  driversStats(filter: DriverFilter): EntityStats
+  domainConfiguration(entity: Entity, enum: Enum): JSON
+}
+
+type SaveCarMutationResult {
+  validationViolations: [ValidationViolation]!
+  car: Car
+}
+
+type SaveDriverMutationResult {
+  validationViolations: [ValidationViolation]!
+  driver: Driver
+}
+
+input StringFilter {
+  is: String
+  isNot: String
+  in: [String]
+  notIn: [String]
+  contains: String
+  doesNotContain: String
+  beginsWith: String
+  endsWith: String
+  caseSensitive: Boolean
+}
+
+type ValidationViolation {
+  attribute: String
+  message: String!
+}
+```
+
+</td></tr>
+</table>
+
+
 

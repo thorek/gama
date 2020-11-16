@@ -1,0 +1,38 @@
+entity:
+  Car:
+    attributes:
+      brand: CarBrand!
+      licence:
+        type: String
+        required: true
+        unique: true
+      color: String!
+      mileage:
+        type: Int
+        validation:
+          numericality:
+            greaterThan: 0
+            lessThan: 1000000
+    assocTo: Driver
+    seeds:
+      - brand: Mercedes
+        licence: HH-BO 2020
+        color: red
+        mileage: 22000
+        Driver: thomas
+      - brand: BMW
+        licence: HH-TR 1979
+        color: red
+        mileage: 31000
+        Driver: max
+      - brand: BMW
+        licence: GA-MA 2020
+        color: blue
+        mileage: 25000
+      - brand: Audi
+        licence: GR-OR 2020
+        color: blue
+        mileage: 11500
+      - brand: Audi
+        licence: GR-OR 2020
+        color: blue

@@ -14,7 +14,7 @@ const domainDefinition:DomainDefinition = new DomainDefinition( domainConfigurat
 domainDefinition.add( domainConfiguration );
 const gamaConfig:GamaConfig = { domainDefinition };
 
-const tutorial = './tutorial/07';
+const tutorial = './tutorial/08';
 
 (async () => {
   const app = express();

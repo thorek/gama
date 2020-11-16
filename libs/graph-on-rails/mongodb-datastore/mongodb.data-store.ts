@@ -1,5 +1,5 @@
 // import ts from 'es6-template-strings';
-import _ from 'lodash';
+import _, { cond } from 'lodash';
 import { Collection, Db, FilterQuery, MongoClient, ObjectId } from 'mongodb';
 
 import { FilterType } from '../builder/filter-type';
@@ -10,6 +10,7 @@ import { BooleanFilterType } from './filter/boolean-filter-type';
 import { DateFilterType } from './filter/date-filter-type';
 import { EnumFilterType } from './filter/enum-filter-type';
 import { FloatFilterType } from './filter/float-filter-type';
+import { IdFilterType } from './filter/id-filter-type';
 import { IntFilterType } from './filter/int-filter-type';
 import { StringFilterType } from './filter/string-filter-type';
 
@@ -173,7 +174,8 @@ export class MongoDbDataStore extends DataStore {
       new IntFilterType(),
       new FloatFilterType(),
       new BooleanFilterType(),
-      new DateFilterType()
+      new DateFilterType(),
+      new IdFilterType()
     ]
   }
 
@@ -206,11 +208,10 @@ export class MongoDbDataStore extends DataStore {
   protected buildExpression( entity:Entity, filter:any ):FilterQuery<any> {
     const filterQuery:FilterQuery<any> = {};
     _.forEach( filter, (condition, field) => {
-      const attribute = entity.getAttribute(field);
-      const filterType = entity.runtime.filterImplementation( attribute );
-      if( ! filterType ) return;
-      const expression = filterType.getFilterExpression( condition, field );
-      if( expression ) _.set( filterQuery, field, expression );
+      const expression = FilterType.getFilterExpression( entity, condition, field );
+      if( ! expression ) return;
+      if( field === 'id' ) field = '_id';
+      _.set( filterQuery, field, expression );
     });
     return filterQuery;
   }

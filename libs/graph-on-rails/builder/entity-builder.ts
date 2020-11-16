@@ -12,7 +12,7 @@ import {
   GraphQLType,
   GraphQLUnionType,
 } from 'graphql';
-import _, { at, Dictionary } from 'lodash';
+import _, { at, Dictionary, filter } from 'lodash';
 
 import { AssocToType, AssocType } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
@@ -190,7 +190,8 @@ export class EntityBuilder extends TypeBuilder {
   //
   private addAssocToForeignKeyToInput( fields:any, ref:AssocType ):any {
     const refEntity = this.runtime.entities[ref.type];
-    _.set( fields, refEntity.foreignKey, { type: GraphQLID });
+    const filterType = this.runtime.filterTypes['IDFilter'];
+    _.set( fields, refEntity.foreignKey, { type: filterType ? this.graphx.type(filterType.name()) : GraphQLID });
     if( refEntity.isPolymorph ) _.set( fields, refEntity.typeField,
       { type: this.graphx.type( refEntity.typesEnumName ) } );
     return fields;
@@ -364,7 +365,8 @@ export class EntityBuilder extends TypeBuilder {
   protected createFilterType():void {
     const name = this.entity.filterName;
     this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
-      const fields = { id: { type: GraphQLID } };
+      const filterType = this.runtime.filterTypes['IDFilter'];
+      const fields = { id: { type: filterType ? this.graphx.type(filterType.name()) : GraphQLID } };
       _.forEach( this.attributes(), (attribute, name) => {
         if( _.isFunction( attribute.calculate ) ) return;
         const filterType = this.getFilterType(attribute);

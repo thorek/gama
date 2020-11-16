@@ -2,6 +2,7 @@ import { GraphQLInputObjectType } from 'graphql';
 import _ from 'lodash';
 
 import { Runtime } from '../core/runtime';
+import { Entity } from '../entities/entity';
 import { TypeBuilder } from './schema-builder';
 
 
@@ -20,6 +21,14 @@ export abstract class FilterType extends TypeBuilder {
   abstract graphqlTypeName():string;
 
   abstract getFilterExpression( args:any, field?:string ):any;
+
+  static getFilterExpression( entity:Entity, condition:any, field:string ){
+    const filterTypeName = entity.getFilterTypeName(field);
+    if( ! filterTypeName ) return;
+    const filterType = entity.runtime.filterTypes[filterTypeName];
+    if( ! filterType ) return;
+    return filterType.getFilterExpression( condition, field );
+  }
 
   build():void {
     const filterName = this.name();

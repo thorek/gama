@@ -130,14 +130,6 @@ export class Runtime {
     return this.config.entitySeeder(entity);
   }
 
-  filterImplementation( attribute:TypeAttribute|undefined ):FilterType|undefined {
-    if( ! attribute || attribute.filterType === false ) return undefined;
-    if( _.isString(attribute.filterType) ) return this.filterTypes[attribute.filterType];
-
-    const defaultFilterName = FilterType.getFilterName( attribute.graphqlType );
-    return this.filterTypes[ defaultFilterName ];
-  }
-
   type( name:string ):any { return this.graphx.type( name ) }
 
   entity( name:string ) {

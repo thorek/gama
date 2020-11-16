@@ -1,6 +1,7 @@
 import inflection from 'inflection';
 import _ from 'lodash';
 
+import { FilterType } from '../builder/filter-type';
 import {
   AssocFromType,
   AssocToManyType,
@@ -141,6 +142,23 @@ export abstract class Entity {
     if( attribute ) return attribute;
     const implAttributes = _.map( this.implements, impl => impl.getAttribute( name ) );
     return _.first( _.compact( implAttributes ) );
+  }
+
+  /**
+   * @name either "id", an attribute or an assocTo
+   * @returns the configured filter type or the default for the type
+   */
+  getFilterTypeName( name:string ):string|undefined {
+    if( name === 'id' ) return 'IDFilter';
+    const assocTo = _.find( this.assocTo, assocTo =>
+      _.get( this.runtime.entity(assocTo.type), 'foreignKey' ) === name );
+    if( assocTo ) return 'IDFilter';
+
+    const attribute = this.getAttribute( name );
+    if( ! attribute || attribute.filterType === false ) return undefined;
+
+    return _.isString(attribute.filterType) ?
+      attribute.filterType : FilterType.getFilterName( attribute.graphqlType );
   }
 
   /**
