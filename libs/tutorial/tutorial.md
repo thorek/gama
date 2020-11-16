@@ -1,13 +1,13 @@
 # Tutorial
 
 ### The taks
-Let's assume you are assigned with the task to develop a system for managing a vehicle fleet.  It should be able to manage the cars in the fleet,known drivers, allow to read, create, update and delete those things and assign cars to drivers or vice versa.
+Let's assume you are assigned with the task to develop a system for managing a vehicle fleet.  It should be able to manage the cars in the fleet, known drivers, allow to read, create, update and delete those things and assign cars to drivers or vice versa.
 
 The users of the vehicle fleet application will probably get a mobile application, or should be able to use it through their corporate intranet or in another way that ist still to be determined.
 
 ### API 1st
 
-Given the requirements you decide to follow an API 1st approach - meaning you want expose all data and functionality through an API.  You are aware that you don't know yet what clients or 3rd party systems would want to use this API, so [GraphQL](https://graphql.org) seems  like a great choice. Based on this API you would want to build an Admin UI application to give access to the data and functionality to an admin or manager and connect the customer UI.
+Given the requirements you decide to follow an API 1st approach - meaning you want expose all data and functionality through an API.  You are aware that you don't know yet what clients or 3rd party systems would want to use this API, so [GraphQL](https://graphql.org) seems  like a great choice. Based on this API you would allow to connect any customer UI. You also want to build an Admin UI application based on the same API to give access to the data and functionality to an admin or manager.
 
 A great task for GAMA!
 
@@ -36,13 +36,13 @@ $ npm run start
 
 You start your browser and point it to the GraphQL playground at `http://localhost:3000/graphql` and check the generated schema.
 
-[Schema](./img/chrome-schema1.png)
+![Schema](./img/chrome-schema1.png)
 
 You see a full GraphQL schema generated from this few lines of code; we will cover everything in detail later.   So far you want to check if everything works. 
 
 ## Simple Mutations
 
-You see from the schema documentation that a mutation `createCar` exists; it takes the car attributes as input at returns the newly created car and try this out.
+You see from the schema documentation that a mutation `createCar` exists; it takes the car attributes as input and returns the newly created car.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
@@ -86,7 +86,7 @@ mutation {
 </td></tr>
 </table>
 
-Great! It actually created a car item. It was assigned an `id` by the _datastore_ that we can use later when  handling this car item. The datastore is by default a local MongoDB instance. 
+Great! It actually created a car item. It was assigned an `id` by the _datastore_ that we can use later when  handling this car item. The datastore is by default a local MongoDB instance - which you can change to use other databases, like Mysql or even another API, like REST. For now we stick with the default implementation. 
 
 Let's see if we can update the 'color' attribute value to "blue". We learn from  the schema that the input to the `updateCar` mutation expects the `id`. We copy and paste this from the previously created car result.
 
@@ -256,7 +256,7 @@ Since we now add more information to the attribute's configuration we can no lon
 
 The default EntityValidation uses [ValidateJS](https://validatejs.org) for expressing attribute validation logic. Any requirement you cannot express by that can be added programmatically - which we would cover later. 
 
-Adding this to the attribute has a twofold effect - any validation is executed before the `create` or `update` mutations; the data are only written to the _datastore_ when all validation passes. And the validation configuration is added to the documenatation of your schema; also available as metdata - so any client of your API is informed about expected validations and could even use the configuration (assuming ValidateJS is available) in client-side validation.
+Adding this to the attribute has a twofold effect - any validation is executed before the `create` or `update` mutations; the data are only written to the _datastore_ when all validation passes. And the validation configuration is added to the documenatation of your schema; and is also available as metdata - so any client of your API is informed about expected validations and could even use the configuration (assuming ValidateJS is available) in client-side validation.
 
 
 ![Mileage in Doc](./img/doc-mileage.png)
@@ -325,7 +325,7 @@ entity:
             lessThan: 1000000
 ```
 
-Having an  attribute as kind of an identifier; thus being of type `String`, `required` and `unique` is quite common - therefore GAMA offers a shortcut notation for this as `type Key`. So we could have written the attribute also as `licence: Key`. 
+You may now see that `String!` was in fact a shortcut notation for ` { type: 'String', required: true } ` which we write now. Having an  attribute as a kind of an identifier; thus being of type `String`, `required` and `unique` is quite common - therefore GAMA offers a shortcut notation for this as `type Key`. So we could have written the attribute also as `licence: Key`. 
 
 Be aware these kind of validations (greater, less, unique etc) other than `required` can not be enforced by the GraphQL layer; instead it's handled by GAMA. To inform an API client about an invalid mutation call no error is thrown, but a list of so called `ValidationViolation` is returned. Clients should add this to their mutations to get any validation error. 
 
@@ -409,7 +409,7 @@ mutation {
 
 Creating, updating and deleting of cars obviously works nicely. But before we continue adding new functionality it would be great to have reliable test or example data to play around. Having to add cars, and later drivers etc. via API call or even a UI would be tedious. So let GAMA handle this and seeding data into our application. 
 
-A nice effect would also that we do not have clean up entity items in the _datastore_ that no longer fit to our current configuration, like the one car item without a licence number.
+A nice effect would also that we do not have to clean up entity items in the _datastore_ that no longer fit to our current configuration, like if we had with cars created with unwanted data before we added validations to the configuration.
 
 So let's add so-called _seed data_ to the existing configuration file; later we would probably seperate this, since we don't want that in production. 
 
@@ -495,7 +495,7 @@ Setting `truncate` to `true` means we want to truncate any data from the entitie
 
 From our entity definition besides the muations two queries were generated `car` to get a _Car item_ by its `id` and `cars` to get a list of cars, probably filterd, sorted and paginated.
 
-Let's check how to get the data (that is the _Seed_ data) from the API.
+Let's check how to get the data (that is currently the _Seed_ data) from the API.
 
 <table width="100%" style="font-size: 0.8em">
 <tr valign="top"><td width="50%"> Request </td> <td width="50%"> Response </td></tr>
@@ -564,7 +564,7 @@ query {
 </table>
 
 Let's say a user wants to see only BMW. GAMA provides us with a filter type for the `cars` query we can use to 
-filter the result on every attribute so we could write `cars(filter: { brand: { is: "BMW" } } )`. You can add filters to any attribute and GAMA will return any _items_ that matches all filter criteria. 
+filter the result on every attribute so we could write `cars(filter: { brand: { is: "BMW" } } )`. You can add filters to any attribute and GAMA will return any _items_ that matches _all_ filter criteria. 
 
 So if a client only wanted to get _red BMW or Mercedes with a mileage below 30000_ a query would look like:
 
@@ -616,7 +616,7 @@ query {
 </td></tr>
 </table>
 
-Every attribute has to values in the genereated `CarSort` enum. `xxx_ASC` for ascending sort and `xxx_DESC` for descending sorting. API clients can use this e.g.:
+Every attribute has two values in the genereated `CarSort` enum. `xxx_ASC` for ascending sort and `xxx_DESC` for descending sorting. API clients can use this e.g.:
 
 `query { cars( sort: brand_ASC ) { id  brand licence color mileage } }`
 
@@ -635,11 +635,11 @@ For any API call you want to offer to clients of your API that cannot be achieve
 
 This is probably the moment you realize that your design decsion to model the "brand" attribute of the _Car_ entity as `string` is far from ideal - there are only a number of brands in your vehicle fleet anyhow, and we want to avoid problems like spelling or case-sensitivity when searching for _cars_.
 
-We could model the possible "car brands" as an entity or - this depends on your business domain - a simple enum. Let's assume your vehicle fleet will only ever have cars from a well defined number of car brands: Audi, BMW, Mercedes and Porsche. Modeling this as an Enum will let any API client know about possible values for the "brand" attribute and also let the GrapqhQL schema ensure sure allowed values are used for managing or filtering cars.
+We could model the possible "car brands" as an entity or - this depends on your business domain - a simple enum. Let's assume your vehicle fleet will only ever have cars from a well defined number of car brands: Audi, BMW, Mercedes and Porsche. Modeling this as an Enum will let any API client know about possible values for the "brand" attribute and also let the GrapqhQL schema ensure allowed values are used for managing or filtering cars.
 
 We could add the _CarBrand_ to `car.yml` file, but we follow the best practice and put the definition in a seperate file `car-brand.yml` in the same folder. 
 
-We can now use our Enum the same way as we used the `String` type, even the `required` notation with the trailing `!` works as before. So we're going to replace `{ brand: String! }` with `{ brand: CarBrand }`. The resulting schema will reflect this.
+We can now use our Enum the same way as we used the `String` type, even the `required` notation with the trailing `!` works as before. So we're going to replace `{ brand: String! }` with `{ brand: CarBrand! }`. The resulting schema will reflect this.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top"><td width="50%"> Domain Configuration </td> <td width="50%"> Resulting schema (excerpt) </td></tr>
@@ -800,15 +800,15 @@ entity:
           eval: faker.date.future()
 ```
 
-Some new concepts are used here. E.g. you see the usage of a Scalar Type GAMA provides `Date`. You can use it as any other scalar and it serializes and deserializes a Date object via the `Date.toJSON()` method. It comes with an attribute filter and sort functionality too.
+Some new concepts are used here. E.g. you see the usage of a Scalar Type GAMA provides - `Date`. You can use it as any other scalar and it serializes and deserializes a Date object via the `Date.toJSON()` method. It comes with an attribute filter and sort functionality too.
 
-Also we see a bit more complex _Seed data_. First we no longer simply provide an array of seed data but a dictionary (or map). We can use the names of certain _seed items_ later on when we reference them from the seed data of other entities. Also we no longer just enter hard coded seed data but build them dynamically. If you state an `eval` expression, this evaluated result will be used for seed data. We can make use of the library [FakerJS](https://github.com/marak/faker.js) which offers many possibilities to generate fake or test data. 
+Also we see a bit more complex _Seed data_. First we no longer simply provide an array of seed data but a dictionary (or map). We can use the names of certain _seed items_ later on when we reference them from the seed data of other entities. Also we no longer just enter hard coded seed data but build them dynamically. If you state an `eval` expression, this evaluated result will be used for seed data. We can make use of the library [FakerJS](https://github.com/marak/faker.js) which offers many possibilities to generate fake or test data. You also can access the [Lodash](https://lodash.com) Library under the name `ld` and the `ids` of other's entities seed data via a map under the name `idsMap`. We only use `faker` for now.
 
 A special feature of the seed data ist that when you use a number as key for a seed item, this item replicated as much. In this case we well get 22 driver seeded. Since firstname is not mandatory we want to mimick real-life data and state we only want this expression evaluated ca. 80% of the time.
 
 After calling the `seed( truncate: true )` mutation you could play around with the driver data and see if everything works as expected.
 
-Now that we have a `Driver` entity we could add the relationship between cars and drivers. Let's assume you learned from the analysis of your buiness domain that a car is either assigned to none or one driver at a time. A driver however could "rent out" multiple cars at once. A very common `1 -- N` relationship. In GAMA this is modeled by a `assocTo` relation from the car to the driver. Optionally we are also interested in the reverse or `assocFrom` relationship from the driver to the car.
+Now that we have a `Driver` entity we could add the relationship between cars and drivers. Let's assume you learned from the analysis of your buiness domain that a car is either assigned to none or one driver at a time. A driver however could "rent out" multiple cars at once. A very common `1 -- N` relationship. In GAMA this is modeled by a `assocTo` relation from the car to the driver. Optionally we are also interested in the reverse or `assocFrom` relationship from the driver to the cars.
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top"> <td width="50%"> Domain Configuration </td> <td width="50%"> Schema (excerpt) </td> </tr>
@@ -896,7 +896,6 @@ entity:
 </td><td>
 
 ```graphql
-directive @specifiedBy(url: String!) on SCALAR
 type Car {
   id: ID!
   brand: CarBrand!
@@ -913,7 +912,7 @@ input CarCreateInput {
   licence: String!
   color: String!
   mileage: Int
-  driverId: IDFilter
+  driverId: ID
 }
 
 input CarFilter {
@@ -925,40 +924,13 @@ input CarFilter {
   driverId: IDFilter
 }
 
-enum CarSort {
-  brand_ASC
-  brand_DESC
-  licence_ASC
-  licence_DESC
-  color_ASC
-  color_DESC
-  mileage_ASC
-  mileage_DESC
-  id_ASC
-  id_DESC
-}
-
 input CarUpdateInput {
   id: ID!
   brand: CarBrand
   licence: String
   color: String
   mileage: Int
-  driverId: IDFilter
-}
-
-scalar Date
-
-input DateFilter {
-  eq: Date
-  ne: Date
-  beforeOrEqual: Date
-  before: Date
-  afterOrEqual: Date
-  after: Date
-  isIn: [Date]
-  notIn: [Date]
-  between: [Date]
+  driverId: ID
 }
 
 type Driver {
@@ -971,12 +943,6 @@ type Driver {
   cars: [Car]
 }
 
-input DriverCreateInput {
-  firstname: String
-  lastname: String!
-  licenceValid: Date!
-}
-
 input DriverFilter {
   id: IDFilter
   firstname: StringFilter
@@ -984,151 +950,83 @@ input DriverFilter {
   licenceValid: DateFilter
 }
 
-enum DriverSort {
-  firstname_ASC
-  firstname_DESC
-  lastname_ASC
-  lastname_DESC
-  licenceValid_ASC
-  licenceValid_DESC
-  id_ASC
-  id_DESC
-}
-
-input DriverUpdateInput {
-  id: ID!
-  firstname: String
-  lastname: String
-  licenceValid: Date
-}
-
-enum Entity {
-  Car
-  Driver
-}
-
-type entityMetaData {
-  path: String
-  typeQuery: String
-  typesQuery: String
-  deleteMutation: String
-  updateMutation: String
-  updateInput: String
-  createMutation: String
-  createInput: String
-  foreignKey: String
-  fields: [fieldMetaData]
-  assocTo: [assocMetaData]
-  assocToMany: [assocMetaData]
-  assocFrom: [assocMetaData]
-}
-
-input EntityPaging {
-  page: Int!
-  size: Int!
-}
-
-type EntityStats {
-  count: Int!
-  createdFirst: Date
-  createdLast: Date
-  updatedLast: Date
-}
-
-enum Enum {
-  CarBrand
-}
-
-type fieldMetaData {
-  name: String!
-  type: String
-  required: Boolean
-  validation: JSON
-  unique: String
-  calculated: Boolean
-  filter: String
-  mediaType: String
-}
-
 input IDFilter {
-  eq: Int
-  ne: Int
-  isIn: [Int]
-  notIn: [Int]
-  exist: Boolean!
-}
-
-input IntFilter {
-  eq: Int
-  ne: Int
-  le: Int
-  lt: Int
-  ge: Int
-  gt: Int
-  isIn: [Int]
-  notIn: [Int]
-  between: [Int]
-}
-
-scalar JSON
-
-type Mutation {
-  ping(some: String): String
-  createCar(car: CarCreateInput): SaveCarMutationResult
-  updateCar(car: CarUpdateInput): SaveCarMutationResult
-  deleteCar(id: ID): [String]
-  createDriver(driver: DriverCreateInput): SaveDriverMutationResult
-  updateDriver(driver: DriverUpdateInput): SaveDriverMutationResult
-  deleteDriver(id: ID): [String]
-  seed(truncate: Boolean): [String]
-}
-
-type Query {
-  ping: String
-  metaData(path: String): [entityMetaData]
-  car(id: ID): Car
-  cars(filter: CarFilter, sort: CarSort, paging: EntityPaging): [Car]
-  carsStats(filter: CarFilter): EntityStats
-  driver(id: ID): Driver
-  drivers(
-    filter: DriverFilter
-    sort: DriverSort
-    paging: EntityPaging
-  ): [Driver]
-  driversStats(filter: DriverFilter): EntityStats
-  domainConfiguration(entity: Entity, enum: Enum): JSON
-}
-
-type SaveCarMutationResult {
-  validationViolations: [ValidationViolation]!
-  car: Car
-}
-
-type SaveDriverMutationResult {
-  validationViolations: [ValidationViolation]!
-  driver: Driver
-}
-
-input StringFilter {
-  is: String
-  isNot: String
-  in: [String]
-  notIn: [String]
-  contains: String
-  doesNotContain: String
-  beginsWith: String
-  endsWith: String
-  caseSensitive: Boolean
-}
-
-type ValidationViolation {
-  attribute: String
-  message: String!
+  eq: ID
+  ne: ID
+  isIn: [ID]
+  notIn: [ID]
+  exist: Boolean
 }
 ```
 
 </td></tr>
 </table>
 
+By looking at the schema you might see, the relationship between these two entities is established via the `id` (think _primary key_) of `driver` being set to the `driverId` of the car (think _foreign key_). However in GraphQL a client can of course get the embedded JSON objects as it's requested, e.g. 
 
+
+<table width="100%" style="font-size: 0.9em">
+<tr valign="top"> <td width="50%"> Request </td> <td width="50%"> Response </td> </tr>
+<tr valign="top"><td>
+
+```graphql
+query { 
+  cars( filter: { driverId : { exist: true } } ) { 
+    id  
+    brand 
+    licence 
+    driver { 
+      id 
+      firstname 
+      lastname 
+    } 
+  } 
+}
+```
+
+</td><td>
+
+```json
+{
+  "data": {
+    "cars": [
+      {
+        "id": "5fb2ed7739a583c7901ee9dd",
+        "brand": "BMW",
+        "licence": "HH-TR 1979",
+        "driver": {
+          "id": "5fb2ed7739a583c7901ee9e2",
+          "firstname": "Max",
+          "lastname": "Gor"
+        }
+      },
+      {
+        "id": "5fb2ed7739a583c7901ee9dc",
+        "brand": "MERCEDES",
+        "licence": "HH-BO 2020",
+        "driver": {
+          "id": "5fb2ed7739a583c7901ee9e1",
+          "firstname": "Thomas",
+          "lastname": "Gama"
+        }
+      }
+    ]
+  }
+}
+```
+
+</td></tr>
+</table>
+
+You see the drivers are embedded in the GraphQL result as expected. We also made use of the `IDFilter` which allows us among other things to filter the _cars query_ for only cars where a driver is assigned - in other words: a `driverId` exists. Getting only cars that do not have - or are assigned to a driver we could send the following query: 
+
+```graphql
+query { 
+  cars( filter: { driverId : { exist: false } } ) { 
+    id  
+    brand 
+    licence 
+  } 
+}
+```
 
