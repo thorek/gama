@@ -14,8 +14,8 @@ export class EnumFilterType extends FilterType {
   attributes() {
     const enumType = this.graphx.type( this.enumName );
     return {
-      ne: { graphqlType: enumType},
-      eq: { graphqlType: enumType },
+      is: { graphqlType: enumType},
+      isNot: { graphqlType: enumType },
       in: { graphqlType: new GraphQLList( enumType ) },
       notIn: { graphqlType: new GraphQLList( enumType ) }
     }
@@ -29,8 +29,8 @@ export class EnumFilterType extends FilterType {
     const enumType = this.graphx.type( this.enumName );
     if( ! ( enumType instanceof GraphQLEnumType ) ) return null;
     switch( operator ){
-      case 'eq': return { $eq: operand };
-      case 'ne': return { $ne: operand };
+      case 'is': return { $eq: operand };
+      case 'isNot': return { $ne: operand };
       case 'in': return { $in: operand };
       case 'notIn': return { $nin: operand };
     }

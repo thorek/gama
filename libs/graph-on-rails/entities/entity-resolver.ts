@@ -91,11 +91,13 @@ export class EntityResolver extends EntityModule {
   /**
    *
    */
-  async deleteType( resolverCtx:ResolverContext ):Promise<void|string[]> {
+  async deleteType( resolverCtx:ResolverContext ):Promise<string[]> {
     const id = resolverCtx.args.id;
     try { await this.accessor.delete( id ) }
     catch (error){ return [ 'Error', _.toString(error)] }
-    await this.entity.fileSave.deleteFiles( id ); // silent fail?
+    try { await this.entity.fileSave.deleteFiles( id ) }
+    catch (error) { return ['Error', _.toString(error)] }
+    return [];
   }
 
   /**

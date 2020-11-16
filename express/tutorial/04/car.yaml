@@ -1,0 +1,15 @@
+entity:
+  Car:
+    attributes:
+      brand: String!
+      licence:
+        type: String
+        required: true
+        unique: true
+      color: String!
+      mileage:
+        type: Int
+        validation:
+          numericality:
+            greaterThan: 0
+            lessThan: 1000000

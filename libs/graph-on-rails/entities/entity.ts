@@ -1,7 +1,15 @@
 import inflection from 'inflection';
 import _ from 'lodash';
 
-import { AssocFromType, AssocToManyType, AssocToType, CrudAction, EntityPermissionType, ValidationReturnType } from '../core/domain-configuration';
+import {
+  AssocFromType,
+  AssocToManyType,
+  AssocToType,
+  CrudAction,
+  EntityPermissionType,
+  SeedType,
+  ValidationReturnType,
+} from '../core/domain-configuration';
 import { ResolverContext } from '../core/resolver-context';
 import { Runtime } from '../core/runtime';
 import { EntityAccessor } from './entity-accessor';
@@ -106,7 +114,7 @@ export abstract class Entity {
   protected getAssocToMany():AssocToManyType[] { return [] }
   protected getAssocFrom():AssocFromType[] { return [] }
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
-  protected getSeeds():{[name:string]:any}|any[] { return {} }
+  protected getSeeds():{[name:string]:SeedType}|SeedType[] { return [] }
   protected getPermissions():undefined|EntityPermissionType { return undefined }
   protected getDescription():string|undefined { return }
   protected getEntites():Entity[] { return [] }

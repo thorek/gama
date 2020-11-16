@@ -505,7 +505,7 @@ export class EntityBuilder extends TypeBuilder {
    */
   private getGraphQLTypeDecorated( attr:TypeAttribute, addNonNull:boolean, purpose:AttributePurpose ):GraphQLType {
     let type = this.getGraphQLType( attr, purpose );
-    if( addNonNull ) type = new GraphQLNonNull( type );
+    if( addNonNull ) type = new GraphQLNonNull( type ) ;
     if( attr.list ) type = new GraphQLList( type );
     return type;
   }

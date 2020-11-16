@@ -1,0 +1,7 @@
+entity:
+  Car:
+    attributes:
+      brand: String
+      licence: String
+      color: String
+      mileage: Int

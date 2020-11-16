@@ -2,7 +2,7 @@ import * as FakerDE from 'faker/locale/de';
 import * as FakerEN from 'faker/locale/en';
 import _ from 'lodash';
 
-import { AssocType } from '../core/domain-configuration';
+import { AssocType, SeedAttributeType, SeedType } from '../core/domain-configuration';
 import { Entity } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
@@ -27,12 +27,10 @@ export class EntitySeeder extends EntityModule {
    */
   public async seedAttributes():Promise<any> {
     const ids = {};
-    if( _.has( this.entity.seeds, 'Faker') ) {
-      await this.generateFaker( _.get(this.entity.seeds, 'Faker') );
-      _.unset( this.entity.seeds, 'Faker' );
-    }
-    await Promise.all( _.map( this.entity.seeds, (seed) => this.resolveFnProperties(seed ) ) );
-    await Promise.all( _.map( this.entity.seeds, (seed, name) => this.seedInstanceAttributes( name, seed, ids ) ) );
+    const seeds = this.getSeedsDictionary();
+
+    await Promise.all( _.map( seeds, (seed) => this.resolveAttributeValues( seed ) ) );
+    await Promise.all( _.map( seeds, (seed, name) => this.seedInstanceAttributes( name, seed, ids ) ) );
     return _.set( {}, this.entity.typeName, ids );
   }
 
@@ -40,7 +38,8 @@ export class EntitySeeder extends EntityModule {
    *
    */
   public async seedReferences( idsMap:any ):Promise<void> {
-    await Promise.all( _.map( this.entity.seeds, async (seed, name) => {
+    const seeds = this.getSeedsDictionary();
+    await Promise.all( _.map( seeds, async (seed, name) => {
 
       const assocTos = _.concat(
         this.entity.assocTo,
@@ -59,48 +58,37 @@ export class EntitySeeder extends EntityModule {
     }));
   }
 
-  /**
-   *
-   */
-  private async generateFaker( fakerSeed:any ):Promise<void> {
-    const count = fakerSeed.count || 30;
-    delete fakerSeed.count;
-    for( let i = 0; i < count; i++ ){
-      const seed = await this.generateFakeSeed( fakerSeed );
-      if( seed ) _.set( this.entity.seeds, `Fake-${i}`, seed );
-    }
+
+  private getSeedsDictionary(){
+    if( _.isArray( this.entity.seeds ) ) return _.reduce( this.entity.seeds,
+      (result, seed, index ) => _.set( result, _.toString(index), seed ), {} );
+
+    _.forEach( this.entity.seeds, (seed, name) => {
+      const count = _.toNumber( name );
+      if( _.isNaN( count ) ) return;
+      _.times( count, () =>
+        _.set( this.entity.seeds, `generated-${ _.values( this.entity.seeds).length}`, _.cloneDeep( seed ) ) );
+      _.unset( this.entity.seeds, name );
+    });
+
+    return this.entity.seeds;
   }
 
   /**
    *
    */
-  private async generateFakeSeed( fakerSeed:any ):Promise<any> {
-    const seed = {};
-    for( const key of _.keys(fakerSeed) ){
-      let value = fakerSeed[key];
-      if( ! this.entity.isAssoc( key ) ) {
-        if( value.every ) {
-          if( _.random( value.every ) !== 1 ) continue;
-          value = value.value;
-        }
-        value = await this.evalFake( value, seed )
-      };
-      _.set( seed, key, value );
-    }
-    return seed;
-  }
-
-  /**
-   *
-   */
-  private async resolveFnProperties( seed:any ){
+  private async resolveAttributeValues( seed:SeedType ){
     for( const attribute of _.keys(this.entity.attributes) ){
-      const property = _.get( seed, attribute );
-      if( _.isFunction( property ) ){
-        const value = await Promise.resolve( property() );
-        _.set( seed, attribute, value );
-      }
+      const value = _.get( seed, attribute );
+      const result = await this.resolveAttributeValue( value, seed );
+      _.set( seed, attribute, result );
     }
+  }
+
+  private async resolveAttributeValue( value:SeedAttributeType, seed:SeedType, idsMap?:any ) {
+    return  _.isFunction( value ) ? Promise.resolve( value( { seed, runtime: this.runtime, idsMap } ) ) :
+            _.has( value, 'eval' ) ? this.evalSeedValue( value, seed ) :
+            value;
   }
 
   /**
@@ -122,14 +110,15 @@ export class EntitySeeder extends EntityModule {
   /**
    *
    */
-  private async seedAssocTo( assocTo: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
+  private async seedAssocTo( assocTo: AssocType, seed:SeedType, idsMap: any, name: string ):Promise<void> {
     try {
       const refEntity = this.runtime.entities[assocTo.type];
       if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
 
-      const value = _.get( seed, refEntity.typeName );
-      const id = _.startsWith( name, 'Fake' ) ? await this.evalFake( value, seed, idsMap ) :
-        _.isString( value ) ?
+      const value:SeedAttributeType = _.get( seed, refEntity.typeName );
+      const ref = await this.resolveAttributeValue( value, seed, idsMap );
+      const id =
+        _.isString( ref ) ?
           _.get( idsMap, [refEntity.typeName, value] ) :
           _.get( idsMap, [value.type, value.id] );
 
@@ -150,13 +139,10 @@ export class EntitySeeder extends EntityModule {
       if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
 
       let value:string|string[] = _.get( seed, refEntity.typeName );
-      let refIds = undefined;
-      if( _.startsWith( name, 'Fake' ) ) {
-        refIds = await this.evalFake( value, seed, idsMap );
-      } else {
-        if( ! _.isArray(value) ) value = [value];
-        refIds = _.compact( _.map( value, refName => _.get( idsMap, [refEntity.typeName, refName] ) ) );
-      }
+      let refs = await this.resolveAttributeValue( value, seed, idsMap );
+      if( ! _.isArray(refs) ) refs = [refs];
+
+      const refIds = _.compact( _.map( refs, ref => _.get( idsMap, [refEntity.typeName, ref] ) ) );
       await this.updateAssocToMany( idsMap, name, refEntity, refIds );
     }
     catch ( error ) {
@@ -191,17 +177,30 @@ export class EntitySeeder extends EntityModule {
   /**
    *
    */
-  private async evalFake( value:any, seed:any, idsMap?:any ):Promise<any>{
+  private async evalSeedValue( value:any, _seed:any, _idsMap?:any ):Promise<any>{
+    if( this.skipShare( value ) ) return undefined;
     const locale = _.get( this.runtime.config.domainDefinition, 'locale', 'en' )
+
+    // following is in context for eval
     const faker = _.get(fakers, locale, FakerEN );
     const ld = _;
+    const seed = _seed;
+    const idsMap = _idsMap;
+
     try {
-      return _.isFunction( value ) ?
-        Promise.resolve( value( { idsMap, seed, runtime: this.runtime } ) ) :
-        ((expression:string) => eval( expression )).call( {}, value );
+      const result = ((expression:string) => eval( expression )).call( {}, value.eval );
+      return result;
     } catch (error) {
       console.error( `could not evaluate '${value}'\n`, error);
     }
+  }
+
+  /**
+   *
+   */
+  private skipShare( value:{share?:number}):boolean {
+    if( ! _.isNumber( value.share ) ) return false;
+    return _.random() > value.share;
   }
 
 }

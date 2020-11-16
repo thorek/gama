@@ -1,0 +1,30 @@
+entity:
+  Driver:
+    attributes:
+      firstname: String
+      lastname:
+        type: String!
+        validation:
+          length:
+            minimum: 2
+            maximum: 50
+      licenceValid: Date!
+    seeds:
+      thomas:
+        firstname: Thomas
+        lastname: Gama
+        licenceValid:
+          eval: new Date("2020-12-01")
+      max:
+        firstname: Max
+        lastname: Gor
+        licenceValid:
+          eval: new Date("2022-09-15")
+      20:
+        firstname:
+          share: 0.8
+          eval: faker.name.firstName()
+        lastname:
+          eval: faker.name.lastName()
+        licenceValid:
+          eval: faker.date.future()

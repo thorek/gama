@@ -40,8 +40,13 @@ export type SeedEvalContextType = {
   runtime:Runtime
 }
 
-export type SeedConfigType = {
-  [attribute:string]:any|(( evalContext:SeedEvalContextType) => any)
+export type SeedAttributeType =
+  any|
+  (( evalContext:SeedEvalContextType) => any)|
+  {eval: string, share?: number}
+
+export type SeedType = {
+  [attribute:string]:SeedAttributeType
 }
 
 export type EntityConfig  = {
@@ -58,7 +63,7 @@ export type EntityConfig  = {
   collection?:string;
   path?:string;
 
-  seeds?:{[seedId:string]:SeedConfigType}|SeedConfigType[]
+  seeds?:{[seedId:string]:SeedType}|SeedType[]
   permissions?:null|EntityPermissionType
   assign?:string
 

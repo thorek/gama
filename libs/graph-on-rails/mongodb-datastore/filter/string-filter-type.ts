@@ -27,7 +27,7 @@ export class StringFilterType extends FilterType{
   //
   //
   getFilterExpression( condition:any ):any {
-    const caseSensitive = _.get( condition, 'caseSensitive' ) === true;
+    const caseSensitive = _.get( condition, 'caseSensitive' ) !== false;
     delete condition.caseSensitive;
     const operations = _.compact( _.map( condition,
       (operand, operator) => this.getOperation( operator, operand, caseSensitive ) ) );
@@ -39,8 +39,8 @@ export class StringFilterType extends FilterType{
   private getOperation( operator:string, operand:any, caseSensitive:boolean ):any {
     const i = caseSensitive ? undefined : 'i';
     switch( operator ){
-      case 'is': return {$eq: operand};
-      case 'isNot': return {$ne: operand } ;
+      case 'is': return caseSensitive ? {$eq: operand} : { $regex : new RegExp(`(${operand})`, i) };
+      case 'isNot': return caseSensitive ? {$ne: operand } : { $not: { $regex : new RegExp(`(${operand})`, i) }};
       case 'in': return { $in: operand };
       case 'notIn': return { $nin: operand };
       case 'contains': return { $regex : new RegExp(`.*(${operand}).*`, i) };
