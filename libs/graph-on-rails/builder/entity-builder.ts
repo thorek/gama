@@ -163,12 +163,12 @@ export class EntityBuilder extends TypeBuilder {
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToReferenceToType( fields, ref ), {} ));
     this.graphx.type(this.entity.createInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
-    this.graphx.type(this.entity.createInput).extendFields(
+    this.graphx.type(this.entity.createInput).extendFields( // embedded input
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToInputToInput( fields, ref ), {} ));
     this.graphx.type(this.entity.updateInput).extendFields(
       () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
-    this.graphx.type(this.entity.filterName).extendFields( // re-use input for filter intentionally
-      () => _.reduce( assocTo, (fields, ref) => this.addAssocToForeignKeyToInput( fields, ref ), {} ));
+    this.graphx.type(this.entity.filterName).extendFields(
+      () => _.reduce( assocTo, (fields, ref) => this.addAssocToToFilter( fields, ref ), {} ));
   }
 
   //
@@ -189,6 +189,16 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private addAssocToForeignKeyToInput( fields:any, ref:AssocType ):any {
+    const refEntity = this.runtime.entities[ref.type];
+    _.set( fields, refEntity.foreignKey, { type: GraphQLID });
+    if( refEntity.isPolymorph ) _.set( fields, refEntity.typeField,
+      { type: this.graphx.type( refEntity.typesEnumName ) } );
+    return fields;
+  }
+
+    //
+  //
+  private addAssocToToFilter( fields:any, ref:AssocType ):any {
     const refEntity = this.runtime.entities[ref.type];
     const filterType = this.runtime.filterTypes['IDFilter'];
     _.set( fields, refEntity.foreignKey, { type: filterType ? this.graphx.type(filterType.name()) : GraphQLID });

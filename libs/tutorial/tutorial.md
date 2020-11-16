@@ -896,6 +896,7 @@ entity:
 </td><td>
 
 ```graphql
+directive @specifiedBy(url: String!) on SCALAR
 type Car {
   id: ID!
   brand: CarBrand!
@@ -904,20 +905,7 @@ type Car {
   mileage: Int
   createdAt: Date
   updatedAt: Date
-}
-
-enum CarBrand {
-  AUDI
-  BMW
-  MERCEDES
-  PORSCHE
-}
-
-input CarBrandFilter {
-  is: CarBrand
-  isNot: CarBrand
-  in: [CarBrand]
-  notIn: [CarBrand]
+  driver: Driver
 }
 
 input CarCreateInput {
@@ -925,14 +913,16 @@ input CarCreateInput {
   licence: String!
   color: String!
   mileage: Int
+  driverId: IDFilter
 }
 
 input CarFilter {
-  id: ID
+  id: IDFilter
   brand: CarBrandFilter
   licence: StringFilter
   color: StringFilter
   mileage: IntFilter
+  driverId: IDFilter
 }
 
 enum CarSort {
@@ -954,6 +944,7 @@ input CarUpdateInput {
   licence: String
   color: String
   mileage: Int
+  driverId: IDFilter
 }
 
 scalar Date
@@ -977,6 +968,7 @@ type Driver {
   licenceValid: Date!
   createdAt: Date
   updatedAt: Date
+  cars: [Car]
 }
 
 input DriverCreateInput {
@@ -986,7 +978,7 @@ input DriverCreateInput {
 }
 
 input DriverFilter {
-  id: ID
+  id: IDFilter
   firstname: StringFilter
   lastname: StringFilter
   licenceValid: DateFilter
@@ -1056,6 +1048,14 @@ type fieldMetaData {
   calculated: Boolean
   filter: String
   mediaType: String
+}
+
+input IDFilter {
+  eq: Int
+  ne: Int
+  isIn: [Int]
+  notIn: [Int]
+  exist: Boolean!
 }
 
 input IntFilter {
