@@ -1,5 +1,5 @@
 import { GraphQLInt } from 'graphql';
-import _ from 'lodash';
+import _, { cond } from 'lodash';
 import { Db, ObjectId } from 'mongodb';
 
 import { FilterType } from '../../builder/filter-type';
@@ -27,6 +27,12 @@ export class AssocFromFilterType extends FilterType{
     if( ! refEntity ) return;
     const coll = this.db.collection( refEntity.collection );
 
+    let notIn = false;
+    if( condition.max === 0 ){
+      condition.max = undefined;
+      condition.min = 1;
+      notIn = true;
+    }
     const sum:any = {};
     if( condition.min ) sum['$gte'] = condition.min;
     if( condition.max ) sum['$lte'] = condition.max;
@@ -40,6 +46,7 @@ export class AssocFromFilterType extends FilterType{
 
     let refIds = await coll.aggregate(agg).toArray();
     refIds = _.map( refIds, refId => new ObjectId( refId._id ) );
-    _.set( expression, '_id', { '$in': refIds} );
+    const e = notIn ? { '$nin': refIds} : { '$in': refIds};
+    _.set( expression, '_id', e );
   }
 }
