@@ -196,7 +196,7 @@ export class EntityBuilder extends TypeBuilder {
     return fields;
   }
 
-    //
+  //
   //
   private addAssocToToFilter( fields:any, ref:AssocType ):any {
     const refEntity = this.runtime.entities[ref.type];
@@ -256,6 +256,21 @@ export class EntityBuilder extends TypeBuilder {
     const assocFrom = _.filter( entity.assocFrom, assocFrom => this.checkReference( 'assocFrom', assocFrom ) );
     this.graphx.type(this.entity.typeName).extendFields(
       () => _.reduce( assocFrom, (fields, ref) => this.addAssocFromReferenceToType( fields, ref ), {} ));
+    this.graphx.type(this.entity.filterName).extendFields(
+      () => _.reduce( assocFrom, (fields, ref) => this.addAssocFromToFilter( fields, ref ), {} ));
+
+  }
+
+  //
+  //
+  private addAssocFromToFilter( fields:any, ref:AssocType ):any {
+    const refEntity = this.runtime.entities[ref.type];
+    const filterType = this.runtime.filterTypes['AssocFromFilter'];
+    if( ! filterType ) return fields;
+    _.set( fields, refEntity.plural, { type: this.graphx.type(filterType.name() ) });
+    // if( refEntity.isPolymorph ) _.set( fields, refEntity.typeField,
+    //   { type: this.graphx.type( refEntity.typesEnumName ) } );
+    return fields;
   }
 
   //

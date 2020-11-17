@@ -1,11 +1,12 @@
 // import ts from 'es6-template-strings';
-import _, { cond } from 'lodash';
+import _ from 'lodash';
 import { Collection, Db, FilterQuery, MongoClient, ObjectId } from 'mongodb';
 
 import { FilterType } from '../builder/filter-type';
 import { DataStore, Paging, Sort } from '../core/data-store';
 import { ResolverContext } from '../core/resolver-context';
 import { Entity } from '../entities/entity';
+import { AssocFromFilterType } from './filter/assoc-from-filter-type';
 import { BooleanFilterType } from './filter/boolean-filter-type';
 import { DateFilterType } from './filter/date-filter-type';
 import { EnumFilterType } from './filter/enum-filter-type';
@@ -76,14 +77,14 @@ export class MongoDbDataStore extends DataStore {
    *
    */
   async findByFilter( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]> {
-    const expression = this.buildExpression( entity, filter );
+    const expression = await this.buildExpression( entity, filter );
     return this.findByExpression( entity, expression, sort, paging );
   }
 
   async aggregateFind( entities:Entity[], filter:any, sort?:Sort, paging?:Paging ):Promise<any[]>{
     if( entities.length === 0 ) return [];
 
-    const expression = this.buildExpression( _.first(entities) as Entity, filter );
+    const expression = await this.buildExpression( _.first(entities) as Entity, filter );
     const lookups:any[] = _.map( entities, entity => ({
       $lookup: {
         from: entity.typesQuery,
@@ -175,7 +176,8 @@ export class MongoDbDataStore extends DataStore {
       new FloatFilterType(),
       new BooleanFilterType(),
       new DateFilterType(),
-      new IdFilterType()
+      new IdFilterType(),
+      new AssocFromFilterType( this.db )
     ]
   }
 
@@ -205,14 +207,12 @@ export class MongoDbDataStore extends DataStore {
   /**
    *
    */
-  protected buildExpression( entity:Entity, filter:any ):FilterQuery<any> {
+  protected async buildExpression( entity:Entity, filter:any ):Promise<FilterQuery<any>> {
     const filterQuery:FilterQuery<any> = {};
-    _.forEach( filter, (condition, field) => {
-      const expression = FilterType.getFilterExpression( entity, condition, field );
-      if( ! expression ) return;
-      if( field === 'id' ) field = '_id';
-      _.set( filterQuery, field, expression );
-    });
+    for( const field of _.keys(filter) ){
+      const condition = filter[field];
+      await FilterType.setFilterExpression( filterQuery, entity, condition, field );
+    }
     return filterQuery;
   }
 

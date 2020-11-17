@@ -1,12 +1,12 @@
 import { GraphQLBoolean } from 'graphql';
 import _ from 'lodash';
 
-import { FilterType } from '../../builder/filter-type';
+import { AttributeFilterType } from './attribute-filter-type';
 
 /**
  *
  */
-export class BooleanFilterType extends FilterType {
+export class BooleanFilterType extends AttributeFilterType {
 
   graphqlTypeName() { return GraphQLBoolean.name }
 
@@ -15,7 +15,7 @@ export class BooleanFilterType extends FilterType {
     isNot: { graphqlType: GraphQLBoolean, description: 'is not' }
   }}
 
-  getFilterExpression( condition:any, field:string ):any {
+  getFilterExpression( condition:any ){
     const operator = _.toString( _.first( _.keys( condition ) ) );
     const operand = condition[operator];
     switch( operator ){

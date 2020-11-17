@@ -1,12 +1,11 @@
 import { GraphQLBoolean, GraphQLList, GraphQLString } from 'graphql';
 import _ from 'lodash';
-
-import { FilterType } from '../../builder/filter-type';
+import { AttributeFilterType } from './attribute-filter-type';
 
 /**
  *
  */
-export class StringFilterType extends FilterType{
+export class StringFilterType extends AttributeFilterType {
 
   graphqlTypeName() { return GraphQLString.name }
 

@@ -145,14 +145,19 @@ export abstract class Entity {
   }
 
   /**
-   * @name either "id", an attribute or an assocTo
+   * @name either "id", attribute, assocTo or assocFrom
    * @returns the configured filter type or the default for the type
    */
   getFilterTypeName( name:string ):string|undefined {
     if( name === 'id' ) return 'IDFilter';
+
     const assocTo = _.find( this.assocTo, assocTo =>
       _.get( this.runtime.entity(assocTo.type), 'foreignKey' ) === name );
     if( assocTo ) return 'IDFilter';
+
+    const assocFrom = _.find( this.assocFrom, assocFrom =>
+      _.get( this.runtime.entity(assocFrom.type), 'plural' ) === name );
+    if( assocFrom ) return 'AssocFromFilter';
 
     const attribute = this.getAttribute( name );
     if( ! attribute || attribute.filterType === false ) return undefined;

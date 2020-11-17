@@ -20,14 +20,14 @@ export abstract class FilterType extends TypeBuilder {
 
   abstract graphqlTypeName():string;
 
-  abstract getFilterExpression( args:any, field?:string ):any;
+  abstract async setFilterExpression( expression:any, args:any, field?:string, entity?:Entity ):Promise<void>;
 
-  static getFilterExpression( entity:Entity, condition:any, field:string ){
+  static async setFilterExpression( expression:any, entity:Entity, condition:any, field:string ){
     const filterTypeName = entity.getFilterTypeName(field);
     if( ! filterTypeName ) return;
     const filterType = entity.runtime.filterTypes[filterTypeName];
     if( ! filterType ) return;
-    return filterType.getFilterExpression( condition, field );
+    return filterType.setFilterExpression( expression, condition, field, entity );
   }
 
   build():void {

@@ -1,12 +1,11 @@
 import { GraphQLFloat, GraphQLList } from 'graphql';
 import _ from 'lodash';
-
-import { FilterType } from '../../builder/filter-type';
+import { AttributeFilterType } from './attribute-filter-type';
 
 /**
  *
  */
-export class FloatFilterType extends FilterType{
+export class FloatFilterType extends AttributeFilterType {
 
   graphqlTypeName() { return GraphQLFloat.name }
 

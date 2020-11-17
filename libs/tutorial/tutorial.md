@@ -848,6 +848,7 @@ entity:
         licence: GA-MA 2020
         color: blue
         mileage: 25000
+        driver: thomas
       - brand: Audi
         licence: GR-OR 2020
         color: blue
@@ -962,7 +963,9 @@ input IDFilter {
 </td></tr>
 </table>
 
-By looking at the schema you might see, the relationship between these two entities is established via the `id` (think _primary key_) of `driver` being set to the `driverId` of the car (think _foreign key_). However in GraphQL a client can of course get the embedded JSON objects as it's requested, e.g. 
+Notice how we simply added the relationships to the _Entity_ definitions and also how we used the name or key of the driver seed data ("thomas" and "max") to assign certain seed _Car items_ to certain _Driver items_.
+
+By looking at the schema you might see, the relationship between these two entities is established via the `id` of `driver` (think _primary key_) being set to the `driverId` of the car (think _foreign key_). However in GraphQL a client can of course get the embedded JSON objects as it's requested, e.g. 
 
 
 <table width="100%" style="font-size: 0.9em">
@@ -991,21 +994,31 @@ query {
   "data": {
     "cars": [
       {
-        "id": "5fb2ed7739a583c7901ee9dd",
+        "id": "5fb38ab03fa363db9656484d",
+        "brand": "BMW",
+        "licence": "GA-MA 2020",
+        "driver": {
+          "id": "5fb38ab03fa363db96564850",
+          "firstname": "Thomas",
+          "lastname": "Gama"
+        }
+      },
+      {
+        "id": "5fb38ab03fa363db9656484c",
         "brand": "BMW",
         "licence": "HH-TR 1979",
         "driver": {
-          "id": "5fb2ed7739a583c7901ee9e2",
+          "id": "5fb38ab03fa363db96564851",
           "firstname": "Max",
           "lastname": "Gor"
         }
       },
       {
-        "id": "5fb2ed7739a583c7901ee9dc",
+        "id": "5fb38ab03fa363db9656484b",
         "brand": "MERCEDES",
         "licence": "HH-BO 2020",
         "driver": {
-          "id": "5fb2ed7739a583c7901ee9e1",
+          "id": "5fb38ab03fa363db96564850",
           "firstname": "Thomas",
           "lastname": "Gama"
         }
@@ -1029,4 +1042,5 @@ query {
   } 
 }
 ```
+
 

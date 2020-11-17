@@ -1,13 +1,12 @@
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull } from 'graphql';
 import _ from 'lodash';
 import { ObjectID } from 'mongodb';
-
-import { FilterType } from '../../builder/filter-type';
+import { AttributeFilterType } from './attribute-filter-type';
 
 /**
  *
  */
-export class IdFilterType extends FilterType{
+export class IdFilterType extends AttributeFilterType {
 
   graphqlTypeName() { return GraphQLID.name }
 
@@ -18,6 +17,13 @@ export class IdFilterType extends FilterType{
     notIn: { graphqlType: new GraphQLList(GraphQLID), description: 'ID is not in list' },
     exist: { graphqlType: GraphQLBoolean }
   }}
+
+  setFilterExpression( expression:any, condition:any, field:string ):any {
+    const e = this.getFilterExpression( condition );
+    if( ! e ) return;
+    if( field === 'id' ) field = '_id';
+    _.set( expression, field, e );
+  } 
 
   getFilterExpression( condition:any ):any {
     return _.merge( {}, ... _.compact( _.map( condition, (operand, operator) => this.getOperation( operator, operand ) ) ) );

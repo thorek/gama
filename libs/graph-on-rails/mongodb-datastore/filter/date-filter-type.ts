@@ -1,12 +1,11 @@
 import { GraphQLList } from 'graphql';
 import _ from 'lodash';
-
-import { FilterType } from '../../builder/filter-type';
+import { AttributeFilterType } from './attribute-filter-type';
 
 /**
  *
  */
-export class DateFilterType extends FilterType{
+export class DateFilterType extends AttributeFilterType {
 
   graphqlTypeName() { return 'Date' }
 
@@ -28,7 +27,7 @@ export class DateFilterType extends FilterType{
     };
   }
 
-  getFilterExpression( condition:any, field:string ):any {
+  getFilterExpression(condition:any, field:string ):any {
     const operator = _.toString( _.first( _.keys( condition ) ) );
     const operand = condition[operator];
     console.log( operand, operand instanceof Date );

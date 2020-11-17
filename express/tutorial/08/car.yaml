@@ -29,6 +29,7 @@ entity:
         licence: GA-MA 2020
         color: blue
         mileage: 25000
+        Driver: thomas
       - brand: Audi
         licence: GR-OR 2020
         color: blue
