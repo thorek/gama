@@ -28,11 +28,14 @@ export class AssocFromFilterType extends FilterType{
     const coll = this.db.collection( refEntity.collection );
 
     let notIn = false;
-    if( condition.max === 0 ){
-      condition.max = undefined;
-      condition.min = 1;
+
+    if( condition.min === undefined || condition.min <= 0 || condition.max === 0 ){
+      // lets reverse the logic
       notIn = true;
+      condition.min = condition.max + 1;
+      condition.max = undefined;
     }
+
     const sum:any = {};
     if( condition.min ) sum['$gte'] = condition.min;
     if( condition.max ) sum['$lte'] = condition.max;
