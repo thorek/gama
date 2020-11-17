@@ -2,19 +2,14 @@ import { ApolloServerExpressConfig } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
-import { DomainDefinition, GamaConfig, GamaServer } from 'graph-on-rails';
+import { GamaConfig, GamaServer } from 'graph-on-rails';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import path from 'path';
 
-import { domainConfiguration } from './domain-configuration';
+import { domainDefinition } from './tutorial/09/domain-definition';
 
-const domainConfigurationFolder = './domain-configuration';
-const domainDefinition:DomainDefinition = new DomainDefinition( domainConfigurationFolder );
-domainDefinition.add( domainConfiguration );
 const gamaConfig:GamaConfig = { domainDefinition };
-
-const tutorial = './tutorial/08';
 
 (async () => {
   const app = express();
@@ -26,7 +21,7 @@ const tutorial = './tutorial/08';
 
   const apolloConfig:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
 
-  const server = await GamaServer.create( apolloConfig, tutorial );
+  const server = await GamaServer.create( apolloConfig, gamaConfig );
   server.applyMiddleware({ app, path: '/graphql' });
 
   const httpServer = createServer( app );

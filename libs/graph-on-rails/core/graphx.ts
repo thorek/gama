@@ -123,15 +123,16 @@ export class GraphX {
       }
     }
 
-    let scalar:any = scalarTypes[name];
-    if( ! scalar ) return undefined;
+    let type:any = scalarTypes[name];
+    if( ! type ) type = this.rawTypes[name];
+    if( ! type ) return undefined;
 
     if( list ){
-      if( listItemNonNull ) scalar = new GraphQLNonNull( scalar );
-      scalar = new GraphQLList( scalar );
+      if( listItemNonNull ) type = new GraphQLNonNull( type );
+      type = new GraphQLList( type );
     }
 
-    return nonNull ? new GraphQLNonNull( scalar ) : scalar;
+    return nonNull ? new GraphQLNonNull( type ) : type;
   }
 
   /**

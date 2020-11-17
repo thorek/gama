@@ -13,7 +13,7 @@ A great task for GAMA!
 
 Analyzing the business domain teaches your, you have two entities: _Car_ and _Driver_. So you start by simply describing the first entity _Car_ with some basic attributes you might think are helpful. You enter this configuration in a YAML file called `car.yaml` and put it in the `./domain-configuration` folder of your GAMA application.
 
-<div style="text-align: right">./tutorial/01/car.yml</div>
+<div style="text-align: right">./tutorial/01/domain-configuration/car.yaml</div>
 
 ```yaml
 entity: 
@@ -139,7 +139,7 @@ You also may realize the schema does not ensure any of the attribute values bein
 
 You express this business requirement - a car must have a licence number, brand and a color (let's assume the mileage is optional for now) by adding a trailing `!` to the mandatory attributes (which in fact is a just a shortcut notation): 
 
-<div style="text-align: right">./tutorial/02/car.yml</div>
+<div style="text-align: right">./tutorial/02/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -235,7 +235,7 @@ mutation {
 
 So far we ensured our API handles expected or mandatory values correctly. But what about the "mileage" attribute? Obviously it wouldnt make sense to allow negative or very high values here. We should inform a client in out API documentation about it and also validate any input to match these requirements. We can add this to the "mileage" attribute definition.
 
-<div style="text-align: right">./tutorial/03/car.yml</div>
+<div style="text-align: right">./tutorial/03/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -305,7 +305,7 @@ query {
 
 While we're at it let's look at the `licence` attribute. We declared it as `required` which makes sense, but a client could create two cars with the same value, which would not make sense and could have unwanted effects. So we want to define this attribute as `unique`. 
 
-<div style="text-align: right">./tutorial/04/car.yml</div>
+<div style="text-align: right">./tutorial/04/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -413,7 +413,7 @@ A nice effect would also that we do not have to clean up entity items in the _da
 
 So let's add so-called _seed data_ to the existing configuration file; later we would probably seperate this, since we don't want that in production. 
 
-<div style="text-align: right">./tutorial/05/car.yml</div>
+<div style="text-align: right">./tutorial/05/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -645,7 +645,7 @@ We can now use our Enum the same way as we used the `String` type, even the `req
 <tr valign="top"><td width="50%"> Domain Configuration </td> <td width="50%"> Resulting schema (excerpt) </td></tr>
 <tr valign="top"><td>
 
-<div style="text-align: right">./tutorial/06/car-brand.yml</div>
+<div style="text-align: right">./tutorial/06/domain-configuration/car-brand.yaml</div>
 
 ```yaml
 enum:
@@ -656,7 +656,7 @@ enum:
     - Porsche
 ```
 
-<div style="text-align: right">./tutorial/06/car.yml</div>
+<div style="text-align: right">./tutorial/06/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -765,7 +765,7 @@ Since we used only existing `String` values for the `CarBrand` enum values we wi
 
 We're okay with our _Car entity_ so far and ready configure our 2nd business entity _Driver_. This should now be an easy task now, even with validations and _seed data_.
 
-<div style="text-align: right">./tutorial/07/driver.yml</div>
+<div style="text-align: right">./tutorial/07/domain-configuration/driver.yaml</div>
 
 ```yaml
 entity:
@@ -814,7 +814,7 @@ Now that we have a `Driver` entity we could add the relationship between cars an
 <tr valign="top"> <td width="50%"> Domain Configuration </td> <td width="50%"> Schema (excerpt) </td> </tr>
 <tr valign="top"><td>
 
-<div style="text-align: right">./tutorial/08/car.yml</div>
+<div style="text-align: right">./tutorial/08/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -858,7 +858,7 @@ entity:
         color: blue
 ```
 
-<div style="text-align: right">./tutorial/08/driver.yml</div>
+<div style="text-align: right">./tutorial/08/domain-configuration/driver.yaml</div>
 
 ```yaml
 entity:
@@ -1043,4 +1043,45 @@ query {
 }
 ```
 
+On the other hand a client could want to get all drivers who have currently no car assigned. Luckily GAMA provides every `assocFrom` relation with a filter to achieve exactly that. 
 
+```graqphql
+query { 
+  drivers( filter: { cars: { max: 0 } } ) {  id firstname lastname licenceValid } 
+}
+```
+
+## Custom Query and Mutation
+
+So fare you are happy with your API. Every known business requirement is covered. Thanks to GAMA you spent just a couple of minutes to achieve that and feel you should add some of the following functionaliy in the rest of the time: Although a client could get a list of _unassigned cars_ by simple using a filtered query you want to have a dedicated query `unassigned_cars` for that. Also the assignment of a driver to a car is possible by using the `updateCar` mutation - but you think it would be nice to have a dedicated `assignDriverToCar` for that. 
+
+GAMA creates a lot of types, queries and mutations by convention but does not know of course about these requirements, so you have to add this as a _custom query and mutation_.
+
+Let's start with the query. We still want to use the existing configuration (in YAML) and only add the new functionalaty to the _domain definition_. Currently in your `./domainDefinition.ts` you have something like the following. 
+
+<div style="font-size: 0.9em">
+
+<div style="text-align: right">./tutorial/09/domain-definition.ts</div>
+
+```typescript
+import { DomainConfiguration, DomainDefinition } from "graph-on-rails";
+
+// load all definition in yaml files here
+const domainConfigurationFolder = `${__dirname}/domain-configuration`;
+
+// you can add object based configuration here
+const domainConfiguration:DomainConfiguration = {};
+
+const domainDefinition:DomainDefinition = new DomainDefinition( domainConfigurationFolder );
+domainDefinition.add( domainConfiguration );
+
+export {domainDefinition};
+```
+
+</div>
+
+The `domainDefinition` is currently parsing the contents of the folder `./domain-configuration` and adds a configuration object of the type `DomainConfiguration`. The content of the latter is currently empty - but we will add our custom query and mutation here shortly. You can organize this differently but for now the default structure is suitable for our needs.
+
+```typescript
+
+```
