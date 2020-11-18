@@ -1,5 +1,5 @@
+import { Runtime, ValidationViolation } from 'graph-on-rails';
 import _ from 'lodash';
-import { Runtime, ValidationViolation, GraphQLTypes } from "graph-on-rails";
 
 export const assignCarMutation = ( rt:Runtime ) => ({
   type: returnType( rt ) && 'AssignCarReturnType',

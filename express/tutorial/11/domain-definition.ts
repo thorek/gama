@@ -1,4 +1,7 @@
 import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
+import { assignCarMutation } from './query-mutations/assign-car.mutation';
+import { unassignCarMutation } from './query-mutations/unassign-car.mutation';
+
 
 // load all definition in yaml files here
 const domainConfigurationFolder = `${__dirname}/domain-configuration`;
@@ -6,7 +9,7 @@ const domainConfigurationFolder = `${__dirname}/domain-configuration`;
 // you can add object based configuration here
 const domainConfiguration:DomainConfiguration = {
   query: {
-    unassignedCars: (rt:Runtime) => ({
+    unassigned_cars: (rt:Runtime) => ({
       type: '[Car]',
       args: {
         sort: { type: 'CarSort' },
@@ -17,6 +20,10 @@ const domainConfiguration:DomainConfiguration = {
         return rt.entity( 'Car' ).resolver.resolveTypes( { root, args, context } )
       }
     })
+  },
+  mutation: {
+    assignCar: assignCarMutation,
+    unassignCar: unassignCarMutation
   }
 }
 

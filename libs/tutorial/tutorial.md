@@ -1051,6 +1051,48 @@ query {
 }
 ```
 
+## Custom Validation 
+
+We can now assign a driver to a car by simply updating the `driverId` of a car to the `id` of a driver. But, let's assume there is one business requirement left - a driver should only be allowed to "rent out" a car (in other words to be assigned to car item) when the driver licence of that driver is at least 3 more month valid at the date of the assignment. 
+
+This is not a simple validation - first: at which attribute should we configure this validation, it also not happening every time a car or driver is saved - only when a driver is assigned to a car. Luckily this is easy achievable via a _Custom validation_.
+
+We add our validation to the car entity - since it should prevent assigning a car to a driver with an unsufficient driver's licence - and that is always an update of the car entity item. 
+
+We still want to use all the existing configuration (in YAML) and only add the new functionalaty to the _domain definition_. Currently in your `./domainDefinition.ts` you have something like the following. 
+
+<div style="font-size: 0.9em">
+
+<div style="text-align: right">./tutorial/09/domain-definition.ts</div>
+
+```typescript
+import { DomainConfiguration, DomainDefinition } from "graph-on-rails";
+
+// load all definition in yaml files here
+const domainConfigurationFolder = `${__dirname}/domain-configuration`;
+
+// you can add object based configuration here
+const domainConfiguration:DomainConfiguration = {};
+
+const domainDefinition:DomainDefinition = new DomainDefinition( domainConfigurationFolder );
+domainDefinition.add( domainConfiguration );
+
+export {domainDefinition};
+```
+
+</div>
+
+The `domainDefinition` is currently parsing the contents of the folder `./domain-configuration` and adds a configuration object of the type `DomainConfiguration`. The content of the latter is currently empty - but we will add our custom validations, queries and mutations here. You can organize this differently but for now the default structure is suitable for our needs.
+
+We add the required validation to the `domain-definition`
+
+```typescript
+
+```
+
+
+
+
 ## Custom Query and Mutation
 
 So fare you are happy with your API. Every known business requirement is covered. Thanks to GAMA you spent just a couple of minutes to achieve that and feel you should add some of the following functionaliy in the rest of the time: Although a client could get a list of _unassigned cars_ by simple using a filtered query you want to have a dedicated query `unassigned_cars` for that. Also the assignment of a driver to a car is possible by using the `updateCar` mutation - but you think it would be nice to have a dedicated `assignDriverToCar` for that. 
@@ -1061,7 +1103,7 @@ Let's start with the query. We still want to use the existing configuration (in 
 
 <div style="font-size: 0.9em">
 
-<div style="text-align: right">./tutorial/09/domain-definition.ts</div>
+<div style="text-align: right">./tutorial/10/domain-definition.ts</div>
 
 ```typescript
 import { DomainConfiguration, DomainDefinition } from "graph-on-rails";
@@ -1085,11 +1127,11 @@ The `domainDefinition` is currently parsing the contents of the folder `./domain
 ```typescript
 const domainConfiguration:DomainConfiguration = {
   query: {
-    unassigned_cars: (rt:Runtime) => ({
-      type: rt.type('[Car]'),
-      args: { 
-        sort: { type: rt.type('CarSort') },
-        paging: { type: rt.type('EntityPaging') }
+    unassignedCars: (rt:Runtime) => ({
+      type: '[Car]',
+      args: {
+        sort: { type: 'CarSort' },
+        paging: { type: 'EntityPaging' }
       },
       resolve: async ( root:any, args:any, context:any ) => {
         args.filter = { driverId: { exist: false } };
@@ -1106,5 +1148,106 @@ A _custom query_ configuration is always a function that returns an object of ty
 
 In the _resolver_ we obtain a reference to a certain _entity_ `Car` and use its `resolveTypes` function to return a list of cars, since we added our custom filter to `args` we can use the default resolver without further effort, for it this looks just as a client would have requested this filter regularely.
 
-Let's add the custom mutation which again is nearly identical to the standard `updateCar` but will take to explicit `args`, performs the save to the datastore and return the update (or assigned) car and driver.
+Let's add the custom mutation which again is nearly identical to the standard `updateCar` but will take to explicit `args`, performs the save to the datastore and return the update (or assigned) car.
 
+We could add the add also directly to the `domainConfiguration` object but this would become confusing over time, so we follow the recommended structure and create a folder `query-muations` next to `domain-configuration`. Our custom queries and mutations will live there. For the `assignCar` mutation we create the following file. Please see the inline comments about how this could be implemented.
+
+<div style="text-align: right">./tutorial/11/query-mutations/assign-cars.mutation.ts</div>
+<div style="font-size:0.8em">
+
+```typescript
+// usage of lodash is optional
+import _ from 'lodash';
+
+// we import some basic types from the graph-on-rails library
+import { Runtime, ValidationViolation } from "graph-on-rails";
+
+// this is the definition of our mutation, we will later assign it to our "domain-definition"
+// it's a function that returns the config for the mutation
+export const assignCarMutation = ( rt:Runtime ) => ({
+  type: returnType( rt ) && 'AssignCarReturnType',      // define custom type for return type and use it rightaway 
+  args: {
+    carId: { type: 'ID!' },                             // two arg paramaters, carId and
+    driverId: { type: 'ID!' }                           // driverId - both required
+  },
+  resolve: (root:any, args:any ) => resolver( rt, args ) // delegate resolve function to our function
+});
+
+// this creates a GraphQLObjectType with the given fields
+// see how we use the GAMA type (ValidationViolation) and one of our configured types (Car)
+// this is the return type of the mutation - meaning in our resolver we have to proivde an object 
+// with the properties "car" and "validationValidations" - bot could be null
+const returnType = (rt:Runtime) => rt.type('AssignCarReturnType', {
+  fields: () => ({
+    car: { type: 'Car' },
+    validationViolations: { type: '[ValidationViolation]' }
+  })
+});
+
+// the actual resolver that is called when our mutation is requested
+const resolver = async ( rt:Runtime, args:any ) => {
+
+  // we want to collect violations 
+  let validationViolations:ValidationViolation[] = [];
+
+  // obtain an instance of a car EntityItem 
+  const car = await getCar( rt, args.carId, validationViolations );
+
+  // obtain an instance of a driver EntityItem 
+  const driver = await getDriver( rt, args.driverId, validationViolations );
+  
+  // if either car or driver is null or there is any other ValidationValidation we do not proceed
+  // but return the validationValidations rightaway
+  if( ! car || ! driver || ! _.isEmpty( validationViolations ) ) return { validationViolations };
+
+  // this is the assignment - notice that car is an instance of EntityItem  
+  // the actual attribut values are in car.item
+  car.item.driverId = driver.id
+  
+  // should there are any validationValidations with the current item it would throw an error when saving -
+  // we don't want that - thats why we validate first
+  validationViolations = await car.validate();
+
+  // only if all validations passes we actually save our car item
+  // since we already validated the entity item in the previous step, we can skip validations here
+  if( _.isEmpty( validationViolations ) ) await car.save( true );
+  
+  // and return the car (item!) and possible validationValidations
+  return { car: car.item, validationViolations };
+}
+
+// the implementation to get a car entity item - with validation
+const getCar = async (rt:Runtime, id:any, validationViolations:ValidationViolation[] ) => {
+  
+  // the runtime gives us access to the car entity - which allows us to find car entity item(s)
+  // we could have used findById( id ) - but that method would throw an error if no such id exists
+  const car = await rt.entity('Car').findOneByAttribute( { id } );
+
+  // if a car with the given ID couldn't be found - add a message to validationValidations
+  _.isUndefined( car ) && validationViolations.push( 
+    { attribute: 'carId', message: `cannot be found` }  );
+
+  // if the car already has a driver assigen (a non-null driverId) we also add a validation message
+  _.get( car, 'item.driverId' ) && validationViolations.push(
+    { attribute: 'carId', message: `has already a driver assigned` }  );
+
+  // and return the (possible undefined) car entity item
+  return car;
+}
+
+// the implementation to get a driver entity item - with validation
+const getDriver = async (rt:Runtime, id:any, validationViolations:ValidationViolation[] ) => {
+  
+  // find a driver entity item via its entity
+  const driver = await rt.entity('Driver').findOneByAttribute( { id } );
+  
+  // if a driver with the given ID couldn't be found - add a message to validationValidations
+  _.isUndefined( driver ) && validationViolations.push(
+    {attribute: 'driverId', message: `cannot be found` }  );
+
+  // and return the (possible undefined) driver entity item
+  return driver;
+}
+```
+
+</div>
