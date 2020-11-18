@@ -1,11 +1,23 @@
 import { ValidationViolation } from '../entities/entity-validation';
+import { ResolverContext } from './resolver-context';
 import { Runtime } from './runtime';
 
 export type DomainConfiguration = {
   entity?:{[name:string]:EntityConfig},
   enum?:{[name:string]:EnumConfig},
   query?:{[name:string]:QueryConfigFn},
-  mutation?:{[name:string]:MutationConfigFn}
+  mutation?:{[name:string]:MutationConfigFn},
+}
+
+export type EntityHooksType = {
+  preSave?: ( ctx:ResolverContext ) => void
+  afterSave?: ( ctx:ResolverContext, resolved:any ) => void
+  preTypeQuery?: ( ctx:ResolverContext ) => void
+  afterTypeQuery?: ( ctx:ResolverContext, resolved:any ) => void
+  preTypesQuery?: ( ctx:ResolverContext ) => void
+  afterTypesQuery?: ( ctx:ResolverContext, resolved:any ) => void
+  preDelete?: ( ctx:ResolverContext ) => void
+  afterDelete?: ( ctx:ResolverContext, resolved:any ) => void
 }
 
 type QueryMutationArgConfig = { type: string|object }
@@ -73,10 +85,13 @@ export type EntityConfig  = {
 
   description?:string
   extendEntity?:( runtime:Runtime ) => void | Promise<void>
-  validation?:object|(( item:any, action:'create'|'update') => ValidationReturnType)
+  validation?:( item:any, runtime:Runtime ) => ValidationReturnType
+  hooks?:EntityHooksType
 }
 
-export type ValidationReturnType = ValidationViolation[]|string|undefined|Promise<ValidationViolation[]|string|undefined>
+export type ValidationReturnType =
+  ValidationViolation|ValidationViolation[]|string|undefined|
+  Promise<ValidationViolation|ValidationViolation[]|string|undefined>
 
 export type EnumConfig = _.Dictionary<any>|(string[])
 

@@ -7,6 +7,7 @@ import {
   AssocToManyType,
   AssocToType,
   CrudAction,
+  EntityHooksType,
   EntityPermissionType,
   SeedType,
   ValidationReturnType,
@@ -98,6 +99,7 @@ export abstract class Entity {
   get path() { return this.getPath() }
   get assign() { return this.getAssign() }
   get validatFn() { return this.getValidateFn() }
+  get hooks() { return this.getHooks() }
 
   protected abstract getName():string;
   protected getTypeName() { return inflection.camelize( this.name ) }
@@ -132,7 +134,8 @@ export abstract class Entity {
   protected getDeleteMutation():string { return `delete${this.typeName}` }
   protected getPath() { return inflection.underscore( this.plural ) }
   protected getAssign():string|undefined { return undefined }
-  protected getValidateFn():(( item:any, action:'create'|'update')=>ValidationReturnType)|undefined { return undefined }
+  protected getValidateFn():((item:any, runtime:Runtime ) => ValidationReturnType) | undefined { return undefined }
+  protected getHooks():EntityHooksType|undefined { return undefined }
 
   /**
    *

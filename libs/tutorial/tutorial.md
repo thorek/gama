@@ -810,6 +810,18 @@ After calling the `seed( truncate: true )` mutation you could play around with t
 
 Now that we have a `Driver` entity we could add the relationship between cars and drivers. Let's assume you learned from the analysis of your buiness domain that a car is either assigned to none or one driver at a time. A driver however could "rent out" multiple cars at once. A very common `1 -- N` relationship. In GAMA this is modeled by a `assocTo` relation from the car to the driver. Optionally we are also interested in the reverse or `assocFrom` relationship from the driver to the cars.
 
+```
+              +-------------------+                    +--------------------+
+              | Car               |                    | Driver             |
+              +-------------------+                    +--------------------+
+              | licence:Key       |                    | firstname:String   |
+              | brand:CarBrand!   |--*--------------1--| lastname:String!   |
+              | color:String!     |                    | licenceValid:Date! |
+              | mileage:Int       |                    |                    |
+              |                   |                    |                    |
+              +-------------------+                    +--------------------+        
+```
+
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top"> <td width="50%"> Domain Configuration </td> <td width="50%"> Schema (excerpt) </td> </tr>
 <tr valign="top"><td>
@@ -1051,11 +1063,14 @@ query {
 }
 ```
 
+Of course this is very simple approach - if you assign a new driver to a car, you loose all previous assignments. Probably important information - e.g. in case of an accident. So we might have added another entity - the assignment (or rent) itself. But you are now well equipped to implement such a thing on your own.
+
+
 ## Custom Validation 
 
-We can now assign a driver to a car by simply updating the `driverId` of a car to the `id` of a driver. But, let's assume there is one business requirement left - a driver should only be allowed to "rent out" a car (in other words to be assigned to car item) when the driver licence of that driver is at least 3 more month valid at the date of the assignment. 
+For now we can assign a driver to a car by simply updating the `driverId` of a car to the `id` of a driver. But, let's assume there is one business requirement left - a driver should only be allowed to "rent out" a car (in other words to be assigned to a car item) when the driver's licence of that driver is at least 3 more months valid at the date of the assignment. 
 
-This is not a simple validation - first: at which attribute should we configure this validation, it also not happening every time a car or driver is saved - only when a driver is assigned to a car. Luckily this is easy achievable via a _Custom validation_.
+This is not a simple validation - first: at which attribute should we configure this validation - this is more the kind of validation that takes the whole entity item (even other entity items) into account. Luckily this is easy achievable via a _Custom validation_.
 
 We add our validation to the car entity - since it should prevent assigning a car to a driver with an unsufficient driver's licence - and that is always an update of the car entity item. 
 
@@ -1086,16 +1101,36 @@ The `domainDefinition` is currently parsing the contents of the folder `./domain
 
 We add the required validation to the `domain-definition`
 
-```typescript
+<div style="font-size:0.89em">
 
+```typescript
+const domainConfiguration:DomainConfiguration = {
+  entity: {
+    Car: {
+      validation: async (item:any, rt:Runtime ) => {
+        const driver = await rt.entity('Driver').findOneByAttribute( { id: item.driverId } );
+        if( ! driver ) return;
+        const ms30days = 30 * 24 * 60 * 60 * 1000;
+        if( driver.item.licenceValid - Date.now() > ms30days ) return;
+        return { 
+          attribute: 'driverId', 
+          message: "Sorry, driver's licence must be at least 30 days valid" };
+      }
+    }
+  }
+}
 ```
 
+</div>
 
+You see we use the same domain configuration type here as in our yaml files. At the end every definition from every configuration file and configuration object is merged together. We could have configured the whole entity (its attributes, associations, seeds etc.) also in this configuration object. On the other hand, since we now add functions we can no longer put this is YAML but have to add it in this way.
+
+The implementation is obiously no longer oppionated, you can implement this kind of logic as you see fit. Here, we first obtain an entity item for the `driverId` with the usage of some of the GAMA helper classes here. This is of course optional. You might smile about the very trivial validation implementation - we simply calculate the number of milliseconds for 30 days, subtract the `licenceValid` of the driver from the current date and simply check if its more than that. You would probbly use a library like [Moment.js](https://momentjs.com) or similar. For now it's seems sufficient enough to know the driver has a licence expiring within 30 days and return a respective `ValidationViolation`. As always if anything else but `undefined` or `[]` is returned it prevents the assignment of this driver to a car. 
 
 
 ## Custom Query and Mutation
 
-So fare you are happy with your API. Every known business requirement is covered. Thanks to GAMA you spent just a couple of minutes to achieve that and feel you should add some of the following functionaliy in the rest of the time: Although a client could get a list of _unassigned cars_ by simple using a filtered query you want to have a dedicated query `unassigned_cars` for that. Also the assignment of a driver to a car is possible by using the `updateCar` mutation - but you think it would be nice to have a dedicated `assignDriverToCar` for that. 
+So fare you are happy with your API. Every known business requirement is covered. Thanks to GAMA you spent just a couple of minutes to achieve that and feel you should add some of the following functionaliy in the rest of the time: Although a client could get a list of _unassigned cars_ by simple using a filtered query you want to have a dedicated query `unassignedCars` for that. Also the assignment of a driver to a car is possible by using the `updateCar` mutation - but you think it would be nice to have a dedicated `assignDriverToCar` for that. 
 
 GAMA creates a lot of types, queries and mutations by convention but does not know of course about these requirements, so you have to add this as a _custom query and mutation_.
 

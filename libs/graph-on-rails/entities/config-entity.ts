@@ -95,6 +95,8 @@ export class ConfigEntity extends Entity {
 
   protected getValidateFn() { if (_.isFunction(this.entityConfig.validation) ) return this.entityConfig.validation  }
 
+  protected getHooks() { return this.entityConfig.hooks }
+
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );
     this.resolveKey( attrConfig );

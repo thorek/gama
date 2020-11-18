@@ -36,7 +36,7 @@ export class EntityValidation  {
     violations.push( ... await this.validateRequiredAssocTos( validatable ) );
     violations.push( ... await this.validateUniqe( validatable ) );
     violations.push( ... await this.validator.validate( validatable, action ) );
-    violations.push( ... await this.validateFn( validatable, action ) );
+    violations.push( ... await this.validateFn( validatable ) );
     return violations;
   }
 
@@ -108,11 +108,12 @@ export class EntityValidation  {
     return violations;
   }
 
-  private async validateFn( item:any, action:'create'|'update' ):Promise<ValidationViolation[]>  {
+  private async validateFn( item:any ):Promise<ValidationViolation[]>  {
     if( ! this.entity.validatFn ) return [];
-    const violations = await Promise.resolve( this.entity.validatFn( item, action ) );
-    if( _.isString( violations ) ) return [{message: violations}]
-    return violations ? violations : [];
+    const violations = await Promise.resolve( this.entity.validatFn( item, this.runtime ) );
+    if( _.isString( violations ) ) return [{message: violations}];
+    if( _.isArray( violations ) ) return violations;
+    return violations ? [violations] : [];
   }
 
 

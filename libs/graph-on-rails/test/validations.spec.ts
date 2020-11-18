@@ -41,8 +41,8 @@ describe('Validations', () => {
           attributes: {
             name: { type: 'string' }
           },
-          validation:( item:any, action:'create'|'update' ) => {
-            if( action === 'create' && item.name == 'foobar' ) return [{ attribute: 'name', message: "no foobar" } ]
+          validation:( item:any ) => {
+            if( item.id == null && item.name == 'foobar' ) return [{ attribute: 'name', message: "no foobar" } ]
           },
           seeds: {
             delta1: { name: 'delta1' },
