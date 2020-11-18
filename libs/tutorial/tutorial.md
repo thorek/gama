@@ -656,6 +656,8 @@ enum:
     - Porsche
 ```
 
+---
+
 <div style="text-align: right">./tutorial/06/domain-configuration/car.yaml</div>
 
 ```yaml
