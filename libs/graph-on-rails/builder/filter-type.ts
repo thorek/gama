@@ -1,6 +1,6 @@
-import { GraphQLInputObjectType } from 'graphql';
 import _ from 'lodash';
 
+import { GraphQLTypes } from '../core/graphx';
 import { Runtime } from '../core/runtime';
 import { Entity } from '../entities/entity';
 import { TypeBuilder } from './schema-builder';
@@ -33,8 +33,7 @@ export abstract class FilterType extends TypeBuilder {
   build():void {
     const filterName = this.name();
     this.graphx.type( filterName, {
-      name: filterName,
-      from: GraphQLInputObjectType,
+      from: GraphQLTypes.GraphQLInputObjectType,
       fields: () => this.getFilterAttributes()
     });
   }

@@ -7,7 +7,7 @@ import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import path from 'path';
 
-import { domainDefinition } from './tutorial/09/domain-definition';
+import { domainDefinition } from './tutorial/10/domain-definition';
 
 const gamaConfig:GamaConfig = { domainDefinition };
 

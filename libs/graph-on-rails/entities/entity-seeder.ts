@@ -6,6 +6,7 @@ import { AssocType, SeedAttributeType, SeedType } from '../core/domain-configura
 import { Entity } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
+import { ValidationViolation } from './entity-validation';
 
 const fakers = {de: FakerDE, en: FakerEN};
 
@@ -58,6 +59,22 @@ export class EntitySeeder extends EntityModule {
     }));
   }
 
+  public async deleteInvalidItems( idsMap:any, validationViolations:string[] ):Promise<void> {
+    for( const entityName of _.keys(idsMap ) ){
+      const entity = this.runtime.entity( entityName );
+      const entityMap = idsMap[entityName];
+      for( const seedName of _.keys( entityMap ) ){
+        const id = entityMap[seedName];
+        const ei = await entity.findById( id );
+        const violations = await entity.validate( ei.item );
+        if( _.isEmpty( violations ) ) continue;
+
+        const result = _(violations).map( violation => `${violation.attribute} : ${violation.message} ` ).join(' , ');
+        validationViolations.push( `${entityName}:${seedName} - ${result}` );
+        await entity.accessor.delete( id );
+      }
+    }
+  }
 
   private getSeedsDictionary(){
     if( _.isArray( this.entity.seeds ) ) return _.reduce( this.entity.seeds,
@@ -81,7 +98,7 @@ export class EntitySeeder extends EntityModule {
     for( const attribute of _.keys(this.entity.attributes) ){
       const value = _.get( seed, attribute );
       const result = await this.resolveAttributeValue( value, seed );
-      _.set( seed, attribute, result );
+      if( ! _.isUndefined( result ) ) _.set( seed, attribute, result );
     }
   }
 

@@ -1,0 +1,6 @@
+enum:
+  CarBrand:
+    - Audi
+    - BMW
+    - Mercedes
+    - Porsche

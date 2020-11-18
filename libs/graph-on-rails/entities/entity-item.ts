@@ -81,6 +81,10 @@ export class EntityItem {
     return item;
   }
 
+  validate():Promise<ValidationViolation[]>{
+    return this.entity.validate( this.item );
+  }
+
   /**
    *
    */

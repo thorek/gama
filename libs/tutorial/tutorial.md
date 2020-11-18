@@ -1083,5 +1083,28 @@ export {domainDefinition};
 The `domainDefinition` is currently parsing the contents of the folder `./domain-configuration` and adds a configuration object of the type `DomainConfiguration`. The content of the latter is currently empty - but we will add our custom query and mutation here shortly. You can organize this differently but for now the default structure is suitable for our needs.
 
 ```typescript
-
+const domainConfiguration:DomainConfiguration = {
+  query: {
+    unassigned_cars: (rt:Runtime) => ({
+      type: rt.type('[Car]'),
+      args: { 
+        sort: { type: rt.type('CarSort') },
+        paging: { type: rt.type('EntityPaging') }
+      },
+      resolve: async ( root:any, args:any, context:any ) => {
+        args.filter = { driverId: { exist: false } };
+        return rt.entity( 'Car' ).resolver.resolveTypes( { root, args, context } )
+      }
+    })
+  }
+}
 ```
+
+This is admittely a very simple example - but is shows how you would add any functionality and still use most of the features GAMA offers out-of-the-box.
+
+A _custom query_ configuration is always a function that returns an object of type `QueryConfig`. Inside that function you have access to an instance of the GAMA `runtime` which includes all entities, enums, filter, types and more. In this example we define the return type of our query as a _list of car items_ and allow two args (sort and paging). It is basically the same query as the standard `cars` query but instead of offering the API's client to create a filter itself we set the filter criteria in the _custom query_. 
+
+In the _resolver_ we obtain a reference to a certain _entity_ `Car` and use its `resolveTypes` function to return a list of cars, since we added our custom filter to `args` we can use the default resolver without further effort, for it this looks just as a client would have requested this filter regularely.
+
+Let's add the custom mutation which again is nearly identical to the standard `updateCar` but will take to explicit `args`, performs the save to the datastore and return the update (or assigned) car and driver.
+

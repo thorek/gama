@@ -1,7 +1,7 @@
-import { GraphQLEnumType } from 'graphql';
 import _, { Dictionary } from 'lodash';
 
 import { EnumConfig } from '../core/domain-configuration';
+import { GraphQLTypes } from '../core/graphx';
 import { TypeBuilder } from './schema-builder';
 
 export abstract class EnumBuilder extends TypeBuilder {
@@ -12,7 +12,7 @@ export abstract class EnumBuilder extends TypeBuilder {
     const name = this.name();
     const values = {};
     _.forEach( this.enum(), (value,key) => _.set( values, key, { value }));
-    this.graphx.type( name, { name, values, from: GraphQLEnumType	} );
+    this.graphx.type( name, { values, from: GraphQLTypes.GraphQLEnumType	} );
     this.runtime.enums.push( name );
   }
 

@@ -1,20 +1,17 @@
 import { GraphQLUpload } from 'apollo-server-express';
 import {
-  GraphQLEnumType,
   GraphQLID,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLString,
   GraphQLType,
-  GraphQLUnionType,
 } from 'graphql';
-import _, { at, Dictionary, filter } from 'lodash';
+import _, { Dictionary, filter } from 'lodash';
 
 import { AssocToType, AssocType } from '../core/domain-configuration';
+import { GraphQLTypes } from '../core/graphx';
 import { Runtime } from '../core/runtime';
 import { Entity } from '../entities/entity';
 import { TypeAttribute } from '../entities/type-attribute';
@@ -52,10 +49,10 @@ export class EntityBuilder extends TypeBuilder {
   //
   public build():void {
     if( this.entity.isUnion ) return;
-    const from = this.entity.isInterface ? GraphQLInterfaceType : GraphQLObjectType;
+    const from = this.entity.isInterface ? GraphQLTypes.GraphQLInterfaceType : GraphQLTypes.GraphQLObjectType;
     const name = this.entity.typeName;
     this.graphx.type( name, {
-      from, name,
+      from,
       fields: () => {
         const fields = { id: { type: new GraphQLNonNull(GraphQLID) } };
         return _.merge( fields, this.getAttributeFields( 'type' ) );
@@ -84,8 +81,7 @@ export class EntityBuilder extends TypeBuilder {
     if( ! this.entity.isUnion ) return;
     const name = this.entity.typeName;
     this.graphx.type( name, {
-      from: GraphQLUnionType,
-      name,
+      from: GraphQLTypes.GraphQLUnionType,
       types: () => _.compact( _.map( this.getSpecificEntities( this.entity),
         entity => this.graphx.type( entity.typeName) ) ),
       description: this.entity.description
@@ -105,7 +101,7 @@ export class EntityBuilder extends TypeBuilder {
     const values = _.reduce( entities, (values, entity) =>
       _.set( values, entity.name, {value: entity.name } ), {} );
     const name = this.entity.typesEnumName;
-    this.graphx.type( name, { name, values, from: GraphQLEnumType });
+    this.graphx.type( name, { name, values, from: GraphQLTypes.GraphQLEnumType });
   }
 
   //
@@ -305,7 +301,7 @@ export class EntityBuilder extends TypeBuilder {
    */
   protected createCreateInputType():void {
     const name = this.entity.createInput;
-    this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
+    this.graphx.type( name, { from: GraphQLTypes.GraphQLInputObjectType, fields: () => {
       let fields = this.getAttributeFields( 'createInput' );
       // the following is to prevent strange effects with a type definition w/o fields, which could happen under
       // some error cases, but we dont want the schema creation to fails
@@ -319,7 +315,7 @@ export class EntityBuilder extends TypeBuilder {
    */
   protected createUpdateInputType():void {
     const name = this.entity.updateInput;
-    this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
+    this.graphx.type( name, { from: GraphQLTypes.GraphQLInputObjectType, fields: () => {
       const fields = { id: { type: new GraphQLNonNull(GraphQLID) }};
       return _.merge( fields, this.getAttributeFields( 'updateInput' ) );
     }});
@@ -389,7 +385,7 @@ export class EntityBuilder extends TypeBuilder {
    */
   protected createFilterType():void {
     const name = this.entity.filterName;
-    this.graphx.type( name, { name, from: GraphQLInputObjectType, fields: () => {
+    this.graphx.type( name, { from: GraphQLTypes.GraphQLInputObjectType, fields: () => {
       const filterType = this.runtime.filterTypes['IDFilter'];
       const fields = { id: { type: filterType ? this.graphx.type(filterType.name()) : GraphQLID } };
       _.forEach( this.attributes(), (attribute, name) => {
@@ -411,7 +407,7 @@ export class EntityBuilder extends TypeBuilder {
       flatten().compact().
       concat( ['id_ASC', 'id_DESC']).
       reduce( (values, item) => _.set( values, item, {value: item} ), {} );
-    this.graphx.type( name, { name, values, from: GraphQLEnumType });
+    this.graphx.type( name, { values, from: GraphQLTypes.GraphQLEnumType });
   }
 
   /**

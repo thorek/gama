@@ -1,6 +1,6 @@
 // import ts from 'es6-template-strings';
-import _ from 'lodash';
-import { Collection, Db, FilterQuery, MongoClient, ObjectId } from 'mongodb';
+import _, { unset } from 'lodash';
+import { Collection, Db, FilterQuery, MongoClient, ObjectID, ObjectId } from 'mongodb';
 
 import { FilterType } from '../builder/filter-type';
 import { DataStore, Paging, Sort } from '../core/data-store';
@@ -70,6 +70,11 @@ export class MongoDbDataStore extends DataStore {
    *
    */
   async findByAttribute( entity:Entity, attrValue:{[name:string]:any}, sort?:Sort ):Promise<any[]> {
+    const id = _.get(attrValue, 'id' );
+    if( id  ) {
+      _.unset( attrValue, 'id' );
+      _.set( attrValue, '_id', new ObjectID(id) );
+    }
     return this.findByExpression( entity, attrValue, sort );
   }
 

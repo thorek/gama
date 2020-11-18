@@ -16,7 +16,7 @@ import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
 import { DomainConfiguration } from './domain-configuration';
 import { DomainDefinition } from './domain-definition';
-import { GraphX } from './graphx';
+import { GraphQLTypeDefinition, GraphX } from './graphx';
 import { SchemaFactory } from './schema-factory';
 import { Seeder } from './seeder';
 
@@ -130,7 +130,7 @@ export class Runtime {
     return this.config.entitySeeder(entity);
   }
 
-  type( name:string ):any { return this.graphx.type( name ) }
+  type( name:string, definition?:GraphQLTypeDefinition ):any { return this.graphx.type( name, definition ) }
 
   entity( name:string ) {
     if( this.entities[name] ) return this.entities[name];

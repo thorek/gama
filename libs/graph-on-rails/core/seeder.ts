@@ -1,7 +1,8 @@
-import _ from 'lodash';
 import * as faker from 'faker';
+import _ from 'lodash';
 
 import { Entity } from '../entities/entity';
+import { ValidationViolation } from '../entities/entity-validation';
 import { Runtime } from './runtime';
 
 export class Seeder {
@@ -29,13 +30,16 @@ export class Seeder {
     const entities = _.filter( this.entities, entity => ( entity instanceof Entity ) ) as Entity[];
     if( truncate ) await this.truncate( entities, result );
     const idsMap = {};
+    const validationViolations:string[] = [];
     await Promise.all( _.map( entities, async entity => _.merge( idsMap, await entity.seeder.seedAttributes() ) ) );
     await Promise.all( _.map( entities, async entity => _.merge( idsMap, await entity.seeder.seedReferences( idsMap ) ) ) );
+    await Promise.all( _.map( entities, async entity => await entity.seeder.deleteInvalidItems( idsMap, validationViolations ) ) );
 
     _.forEach( idsMap, (entityIdsMap,entityName) => {
       const count = _.size( _.values( entityIdsMap ) );
       if( count ) result.push( `Seeded ${count} ${entityName} ${ count > 1 ? 'items' : 'item'}` );
     })
+    result.push( ... validationViolations );
     return result;
   }
 

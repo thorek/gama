@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { QueryMutationConfig, MutationConfigFn } from '../core/domain-configuration';
+import { QueryMutationConfig } from '../core/domain-configuration';
 import { SchemaBuilder } from './schema-builder';
 
 export abstract class MutationBuilder extends SchemaBuilder {
@@ -19,12 +19,13 @@ export abstract class MutationBuilder extends SchemaBuilder {
 }
 
 export class MutationConfigBuilder extends MutationBuilder {
-  static create( name:string, config:MutationConfigFn ):MutationConfigBuilder {
+
+  static create( name:string, config:QueryMutationConfig ):MutationConfigBuilder {
     return new MutationConfigBuilder( name, config );
   }
 
   name() { return this._name }
-  mutation():QueryMutationConfig { return this.config( this.runtime ) }
+  mutation():QueryMutationConfig { return this.config }
 
-  constructor( protected readonly _name:string, protected readonly config:MutationConfigFn ){ super() }
+  constructor( protected readonly _name:string, protected readonly config:QueryMutationConfig ){ super() }
 }

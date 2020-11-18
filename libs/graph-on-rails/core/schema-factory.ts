@@ -99,16 +99,18 @@ export class SchemaFactory {
     }
   }
 
-  private createQueryBuilder( name:string, config:QueryConfigFn ):undefined|QueryBuilder{
+  private createQueryBuilder( name:string, configFn:QueryConfigFn ):undefined|QueryBuilder{
     try {
+      const config = configFn( this.runtime );
       return QueryConfigBuilder.create( name, config );
     } catch (error) {
       console.log( `Error building query [${name}]`, error );
     }
   }
 
-  private createMutationBuilder( name:string, config:MutationConfigFn ):undefined|MutationBuilder{
+  private createMutationBuilder( name:string, configFn:MutationConfigFn ):undefined|MutationBuilder{
     try {
+      const config = configFn( this.runtime );
       return MutationConfigBuilder.create( name, config );
     } catch (error) {
       console.log( `Error building mutation [${name}]`, error );

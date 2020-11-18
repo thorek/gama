@@ -1,18 +1,8 @@
+import { GraphQLBoolean, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString, Kind } from 'graphql';
 import _ from 'lodash';
-import {
-  GraphQLBoolean,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInt,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
-  GraphQLString,
-  Kind,
-} from 'graphql';
 
 import { DomainDefinition } from './domain-definition';
-
+import { GraphQLTypes } from './graphx';
 import { Runtime } from './runtime';
 
 
@@ -25,16 +15,14 @@ export class GamaSchemaTypes {
   async createTypes(){
 
     this.graphx.type( 'Date', {
-      name: 'Date',
-      from: GraphQLScalarType,
+      from: GraphQLTypes.GraphQLScalarType,
       parseValue: (value:any) => new Date(value),
       parseLiteral: (ast:any) => ast.kind === Kind.STRING ? new Date(ast.value) : null,
       serialize: (value:any) => value instanceof Date ? value.toJSON() : `[${value}]`
     });
 
     this.graphx.type( 'JSON', {
-      name: 'JSON',
-      from: GraphQLScalarType,
+      from: GraphQLTypes.GraphQLScalarType,
       parseValue: (value:any) => value,
       serialize: (value:any) => value
     });
@@ -50,7 +38,7 @@ export class GamaSchemaTypes {
     this.graphx.type('EntityPaging', {
       name: 'EntityPaging',
       description: 'use this to get a certain fraction of a (large) result set',
-      from: GraphQLInputObjectType,
+      from: GraphQLTypes.GraphQLInputObjectType,
       fields: () => ({
         page: { type: GraphQLNonNull( GraphQLInt ), description: 'page of set, starts with 0' },
         size: { type: new GraphQLNonNull( GraphQLInt ), description: 'number of items in page, 0 means no limit' }
@@ -87,15 +75,13 @@ export class GamaSchemaTypes {
       }));
 
       if( ! _.isEmpty( this.runtime.entities) ) this.graphx.type('Entity', {
-        name: 'Entity',
-        from: GraphQLEnumType,
+        from: GraphQLTypes.GraphQLEnumType,
         values: _.reduce( this.runtime.entities,
           (value,  entity) => _.set( value, entity.name, { value: entity.name } ), {} )
       });
 
       if( ! _.isEmpty( this.runtime.enums) ) this.graphx.type('Enum', {
-        name: 'Enum',
-        from: GraphQLEnumType,
+        from: GraphQLTypes.GraphQLEnumType,
         values: _.reduce( this.runtime.enums,
           (values, enumName) => _.set( values, enumName, { value: enumName } ), {} )
       });
