@@ -13,7 +13,18 @@ const domainConfiguration:DomainConfiguration = {
         const ms30days = 30 * 24 * 60 * 60 * 1000;
         if( driver.item.licenceValid - Date.now() > ms30days ) return;
         return { attribute: 'driverId', message: "Sorry, driver's licence must be at least 30 days valid" };
+      },
+      hooks: {
+        preTypeQuery: () => console.log( 'preType' ),
+        afterTypeQuery: (result:any) => { console.log( "afterTypeQuery"); return result },
+        preTypesQuery: () => console.log( 'preTypes' ),
+        afterTypesQuery: (result:any) => { console.log( "afterTypesQuery"); return result },
+        preSave: () => console.log( 'preSave' ),
+        afterSave: (result:any) => { console.log( "afterSave"); return result },
+        preDelete: () => console.log( 'preDelete' ),
+        afterDelete: (result:any) => { console.log( "afterDelete"); return result },
       }
+
     }
   }
 }

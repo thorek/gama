@@ -252,7 +252,7 @@ entity:
             lessThan: 1000000
 ```
 
-Since we now add more information to the attribute's configuration we can no longer use the type shortcut notation and have to write the full [Attribute Configuration](./attribute-configuration.md) for the "mileage".
+Since we now add more information to the attribute's configuration we can no longer use the type shortcut notation and have to write the full [Attribute Configuration](../attribute-configuration.md) for the "mileage".
 
 The default EntityValidation uses [ValidateJS](https://validatejs.org) for expressing attribute validation logic. Any requirement you cannot express by that can be added programmatically - which we would cover later. 
 

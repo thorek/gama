@@ -9,7 +9,7 @@ GAMA supports this development with an oppinionated approach based on the config
 (mainly entities and its relations to each other). 
 
 We believe - as Alan Kay puts it - "Simple things should be simple, complex things should be possible". Let's see
-the simplicity and power of a business-domain-configuration-based API creation by looking at an simple example. Or you can jump directly to a little more in-depth [tutorial](../tutorial/tutorial.md).
+the simplicity and power of a business-domain-configuration-based API creation by looking at an simple example. Or you can jump directly to a little more in-depth [tutorial](./tutorial/tutorial.md).
 
 ## Example
 

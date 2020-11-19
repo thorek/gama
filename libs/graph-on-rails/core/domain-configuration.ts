@@ -10,14 +10,14 @@ export type DomainConfiguration = {
 }
 
 export type EntityHooksType = {
-  preSave?: ( ctx:ResolverContext ) => void
-  afterSave?: ( ctx:ResolverContext, resolved:any ) => void
-  preTypeQuery?: ( ctx:ResolverContext ) => void
-  afterTypeQuery?: ( ctx:ResolverContext, resolved:any ) => void
-  preTypesQuery?: ( ctx:ResolverContext ) => void
-  afterTypesQuery?: ( ctx:ResolverContext, resolved:any ) => void
-  preDelete?: ( ctx:ResolverContext ) => void
-  afterDelete?: ( ctx:ResolverContext, resolved:any ) => void
+  preSave?: ( ctx:ResolverContext ) => void|undefined|object
+  afterSave?: ( resolved:any, ctx:ResolverContext ) => object
+  preTypeQuery?: ( ctx:ResolverContext ) => void|undefined|object
+  afterTypeQuery?: ( resolved:any, ctx:ResolverContext ) => object
+  preTypesQuery?: ( ctx:ResolverContext ) => void|undefined|object
+  afterTypesQuery?: ( resolved:any, ctx:ResolverContext ) => object
+  preDelete?: ( ctx:ResolverContext ) => void|undefined|object
+  afterDelete?: ( resolved:any, ctx:ResolverContext ) => object
 }
 
 type QueryMutationArgConfig = { type: string|object }
