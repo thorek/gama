@@ -1,3 +1,8 @@
+<style>
+  table { width: 100%; }
+  .tutorial-file { text-align: right; background-color: white; }
+</style>
+
 # Tutorial
 
 ### The taks
@@ -13,7 +18,7 @@ A great task for GAMA!
 
 Analyzing the business domain teaches your, you have two entities: _Car_ and _Driver_. So you start by simply describing the first entity _Car_ with some basic attributes you might think are helpful. You enter this configuration in a YAML file called `car.yaml` and put it in the `./domain-configuration` folder of your GAMA application.
 
-<div style="text-align:right">./tutorial/01/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/01/domain-configuration/car.yaml</div>
 
 ```yaml
 entity: 
@@ -44,7 +49,7 @@ You see a full GraphQL schema generated from this few lines of code; we will cov
 
 You see from the schema documentation that a mutation `createCar` exists; it takes the car attributes as input and returns the newly created car.
 
-<table width="100%" style="font-size: 0.9em">
+<table style="font-size: 0.9em">
 <tr valign="top">
 <td width="50%"> Request </td> <td width="50%"> Response </td>
 </tr>
@@ -139,7 +144,7 @@ You also may realize the schema does not ensure any of the attribute values bein
 
 You express this business requirement - a car must have a licence number, brand and a color (let's assume the mileage is optional for now) by adding a trailing `!` to the mandatory attributes (which in fact is a just a shortcut notation): 
 
-<div style="text-align: right">./tutorial/02/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/02/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -235,7 +240,7 @@ mutation {
 
 So far we ensured our API handles expected or mandatory values correctly. But what about the "mileage" attribute? Obviously it wouldnt make sense to allow negative or very high values here. We should inform a client in out API documentation about it and also validate any input to match these requirements. We can add this to the "mileage" attribute definition.
 
-<div style="text-align: right">./tutorial/03/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/03/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -305,7 +310,7 @@ query {
 
 While we're at it let's look at the `licence` attribute. We declared it as `required` which makes sense, but a client could create two cars with the same value, which would not make sense and could have unwanted effects. So we want to define this attribute as `unique`. 
 
-<div style="text-align: right">./tutorial/04/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/04/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -413,7 +418,7 @@ A nice effect would also that we do not have to clean up entity items in the _da
 
 So let's add so-called _seed data_ to the existing configuration file; later we would probably seperate this, since we don't want that in production. 
 
-<div style="text-align: right">./tutorial/05/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/05/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -645,7 +650,7 @@ We can now use our Enum the same way as we used the `String` type, even the `req
 <tr valign="top"><td width="50%"> Domain Configuration </td> <td width="50%"> Resulting schema (excerpt) </td></tr>
 <tr valign="top"><td>
 
-<div style="background-color:white;text-align: right">./tutorial/06/domain-configuration/car-brand.yaml</div>
+<div class="tutorial-file">./tutorial/06/domain-configuration/car-brand.yaml</div>
 
 ```yaml
 enum:
@@ -656,7 +661,7 @@ enum:
     - Porsche
 ```
 
-<div style="background-color:white;text-align: right">./tutorial/06/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/06/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -765,7 +770,7 @@ Since we used only existing `String` values for the `CarBrand` enum values we wi
 
 We're okay with our _Car entity_ so far and ready configure our 2nd business entity _Driver_. This should now be an easy task now, even with validations and _seed data_.
 
-<div style="text-align: right">./tutorial/07/domain-configuration/driver.yaml</div>
+<div class="tutorial-file">./tutorial/07/domain-configuration/driver.yaml</div>
 
 ```yaml
 entity:
@@ -826,7 +831,7 @@ Now that we have a `Driver` entity we could add the relationship between cars an
 <tr valign="top"> <td width="50%"> Domain Configuration </td> <td width="50%"> Schema (excerpt) </td> </tr>
 <tr valign="top"><td>
 
-<div style="text-align: right">./tutorial/08/domain-configuration/car.yaml</div>
+<div class="tutorial-file">./tutorial/08/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
@@ -870,7 +875,7 @@ entity:
         color: blue
 ```
 
-<div style="text-align: right">./tutorial/08/domain-configuration/driver.yaml</div>
+<div class="tutorial-file">./tutorial/08/domain-configuration/driver.yaml</div>
 
 ```yaml
 entity:
@@ -1076,9 +1081,9 @@ We add our validation to the car entity - since it should prevent assigning a ca
 
 We still want to use all the existing configuration (in YAML) and only add the new functionalaty to the _domain definition_. Currently in your `./domainDefinition.ts` you have something like the following. 
 
-<div style="font-size: 0.9em">
 
-<div style="text-align: right">./tutorial/09/domain-definition.ts</div>
+<div class="tutorial-file">./tutorial/09/domain-definition.ts</div>
+<div style="font-size: 0.9em">
 
 ```typescript
 import { DomainConfiguration, DomainDefinition } from "graph-on-rails";
@@ -1136,9 +1141,9 @@ GAMA creates a lot of types, queries and mutations by convention but does not kn
 
 Let's start with the query. We still want to use the existing configuration (in YAML) and only add the new functionalaty to the _domain definition_. Currently in your `./domainDefinition.ts` you have something like the following. 
 
-<div style="font-size: 0.9em">
 
-<div style="text-align: right">./tutorial/10/domain-definition.ts</div>
+<div class="tutorial-file">./tutorial/10/domain-definition.ts</div>
+<div style="font-size: 0.9em">
 
 ```typescript
 import { DomainConfiguration, DomainDefinition } from "graph-on-rails";
@@ -1187,7 +1192,7 @@ Let's add the custom mutation which again is nearly identical to the standard `u
 
 We could add the add also directly to the `domainConfiguration` object but this would become confusing over time, so we follow the recommended structure and create a folder `query-muations` next to `domain-configuration`. Our custom queries and mutations will live there. For the `assignCar` mutation we create the following file. Please see the inline comments about how this could be implemented.
 
-<div style="text-align: right">./tutorial/11/query-mutations/assign-cars.mutation.ts</div>
+<div class="tutorial-file">./tutorial/11/query-mutations/assign-cars.mutation.ts</div>
 <div style="font-size:0.8em">
 
 ```typescript
