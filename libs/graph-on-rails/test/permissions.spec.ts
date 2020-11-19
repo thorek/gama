@@ -1,41 +1,67 @@
+import { DomainConfiguration } from 'core/domain-configuration';
 import { Runtime } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
-const domainConfiguration = {};
+const domainConfiguration:DomainConfiguration = {
+  entity: {
+    Fleet: {
+      attributes: {
+        name: 'Key'
+      },
+      seeds: {
+        fleet1: { name: 'Fleet 1' },
+        fleet2: { name: 'Fleet 2' },
+        fleet3: { name: 'Fleet 3' },
+        fleet4: { name: 'Fleet 4' },
+        fleet5: { name: 'Fleet 5' }
+      }
+    },
+    Car: {
+      attributes: {
+        licence: 'Key',
+        brand: 'String!'
+      },
+      assocTo: 'Fleet',
+      seeds: {
+        50: {
+          licence: { eval: 'faker.phone.phoneNumberFormat()' },
+          brand: { sample: ["Mercedes", "BMW", "Porsche", "Audi"] },
+          Fleet: { sample: 'Fleet' }
+        }
+      }
+    },
+    Accessory: {
+      attributes: {
+        name: 'Key'
+      },
+      assocTo: 'Car',
+      seeds: {
+        300: {
+          name: { eval: 'faker.commerce.product() + ld.random(10000)' },
+          Car: { sample: 'Car' }
+        }
+      }
+    }
+  }
+};
 
 
 describe('Permissions', () => {
 
   let runtime!:Runtime;
 
-
   const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
   beforeAll( async () => {
-    runtime = await Runtime.create({ name: 'test:seeder', domainDefinition: domainConfiguration });
-    await Seeder.create( runtime ).seed( true );
-  })
+    runtime = await Runtime.create({ name: 'test:permissions', domainDefinition: domainConfiguration });
+    const messages = await Seeder.create( runtime ).seed( true );
+    console.log( messages );
+  }, 20000 );
 
   //
   //
-  it('should', async ()=> {
-    // const alpha = runtime.entities['Alpha'];
-    // const beta = runtime.entities['Beta'];
-
-    // const alpha1 = await alpha.findOneByAttribute( {name: 'alpha1'} );
-    // const alpha2 = await alpha.findOneByAttribute( {name: 'alpha2'} );
-    // const alpha3 = await alpha.findOneByAttribute( {name: 'alpha3'} );
-    // const alpha4 = await alpha.findOneByAttribute( {name: 'alpha4'} );
-    // const beta1 = await beta.findOneByAttribute( {name: 'beta1'} );
-    // const beta2 = await beta.findOneByAttribute( {name: 'beta2'} );
-
-    // expect( alpha1?.item.number ).toEqual( 23 );
-    // expect( alpha2?.item.number ).toEqual( 42 );
-    // expect( alpha3?.item.number ).toEqual( 0 );
-    // expect( alpha4?.item.number ).toBeNull()
-
-    // expect( beta1?.item.af ).toEqual('sin');
-    // expect( beta2?.item.af ).toEqual('tan');
+  it('should', ()=> {
+    expect( 1 ).toBeTruthy();
   });
 
 

@@ -53,6 +53,23 @@ describe('Seeder', () => {
               delta2: { name: 'delta2', Alpha: ['alpha2'] },
               delta3: { name: 'delta3' }
             }
+          },
+          Gamma: {
+            attributes: {
+              product: 'String',
+              tags: '[String]'
+            },
+            assocTo: ['Delta', 'Beta'],
+            assocToMany: 'Alpha',
+            seeds: {
+              10: {
+                product: { eval: 'faker.commerce.productName()' },
+                tags: { sample: ['foo', 'bar', 'baz', 'foobar', 'foobaz'], random: 3 },
+                Delta: 'delta1',
+                Beta: { sample: 'Beta' },
+                Alpha: { sample: 'Alpha', size: 1, random: 3}
+              }
+            }
           }
         }
       }

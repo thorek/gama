@@ -2,11 +2,10 @@ import * as FakerDE from 'faker/locale/de';
 import * as FakerEN from 'faker/locale/en';
 import _ from 'lodash';
 
-import { AssocType, SeedAttributeType, SeedType } from '../core/domain-configuration';
+import { AssocToManyType, AssocToType, AssocType, SeedAttributeType, SeedType } from '../core/domain-configuration';
 import { Entity } from './entity';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
-import { ValidationViolation } from './entity-validation';
 
 const fakers = {de: FakerDE, en: FakerEN};
 
@@ -64,14 +63,20 @@ export class EntitySeeder extends EntityModule {
       const entity = this.runtime.entity( entityName );
       const entityMap = idsMap[entityName];
       for( const seedName of _.keys( entityMap ) ){
-        const id = entityMap[seedName];
-        const ei = await entity.findById( id );
-        const violations = await entity.validate( ei.item );
-        if( _.isEmpty( violations ) ) continue;
+        try{
+          const id = entityMap[seedName];
+          let ei = await entity.findOneByAttribute( {id} );
+          if( ! ei ) continue;
+          const violations = await entity.validate( ei.item );
+          if( _.isEmpty( violations ) ) continue;
 
-        const result = _(violations).map( violation => `${violation.attribute} : ${violation.message} ` ).join(' , ');
-        validationViolations.push( `${entityName}:${seedName} - ${result}` );
-        await entity.accessor.delete( id );
+          await entity.accessor.delete( ei.id ); // this id seems not to exist - parallel problem somewhere - scary
+          const result = _(violations).map( violation => `${violation.attribute} : ${violation.message} ` ).join(' , ');
+          validationViolations.push( `${entityName}:${seedName} - ${result}` );
+          _.unset( entityMap, seedName );
+        } catch( error ){
+          // console.error( `While deleting '${entityName}:${seedName}'`, error );
+        }
       }
     }
   }
@@ -97,14 +102,15 @@ export class EntitySeeder extends EntityModule {
   private async resolveAttributeValues( seed:SeedType ){
     for( const attribute of _.keys(this.entity.attributes) ){
       const value = _.get( seed, attribute );
-      const result = await this.resolveAttributeValue( value, seed );
+      const result = await this.resolveSeedValue( value, seed );
       if( ! _.isUndefined( result ) ) _.set( seed, attribute, result );
     }
   }
 
-  private async resolveAttributeValue( value:SeedAttributeType, seed:SeedType, idsMap?:any ) {
+  private async resolveSeedValue( value:SeedAttributeType, seed:SeedType, idsMap?:any ) {
     return  _.isFunction( value ) ? Promise.resolve( value( { seed, runtime: this.runtime, idsMap } ) ) :
-            _.has( value, 'eval' ) ? this.evalSeedValue( value, seed ) :
+            _.has( value, 'eval' ) ? this.evalSeedValue( value, seed, idsMap ) :
+            _.has( value, 'sample' ) ? this.getSample( value, seed, idsMap ) :
             value;
   }
 
@@ -128,68 +134,73 @@ export class EntitySeeder extends EntityModule {
    *
    */
   private async seedAssocTo( assocTo: AssocType, seed:SeedType, idsMap: any, name: string ):Promise<void> {
+    const value:SeedAttributeType = _.get( seed, assocTo.type );
+    if ( ! value ) return;
     try {
-      const refEntity = this.runtime.entities[assocTo.type];
-      if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
-
-      const value:SeedAttributeType = _.get( seed, refEntity.typeName );
-      const ref = await this.resolveAttributeValue( value, seed, idsMap );
-      const id =
-        _.isString( ref ) ?
-          _.get( idsMap, [refEntity.typeName, value] ) :
-          _.get( idsMap, [value.type, value.id] );
-
-      const refType = _.get( value, 'type' );
-      if ( id ) await this.updateAssocTo( idsMap, name, refEntity, id, refType );
+      let ref = await this.resolveSeedValue( value, seed, idsMap );
+      if( _.isString( ref ) ) ref = { type: assocTo.type, ref }
+      _.set( ref, 'id', _.get(idsMap, [ref.type, ref.ref] ) );
+      if( ! ref.id ) return this.deleteForUnavailableRequiredAssocTo( assocTo, seed, name, idsMap );
+      await this.updateAssocTo( idsMap, name, assocTo.type, ref.id, ref.type );
     }
     catch ( error ) {
       console.error( `Entity '${this.entity.typeName}' could not seed a reference`, assocTo, name, error );
     }
   }
 
+
+  private async deleteForUnavailableRequiredAssocTo( assocTo:AssocToType, seed:any, name:string, idsMap:any ){
+    if( ! assocTo.required ) return;
+    const id = _.get( idsMap, [this.entity.typeName, name] );
+    if( ! id ) return;
+    // validationViolations.push( `${entityName}:${seedName} - ${result}` );
+    console.warn( `must delete '${this.entity.name}':${name} - because a required assocTo is missing`  );
+    await this.entity.accessor.delete( id );
+  }
+
   /**
    *
    */
-  private async seedAssocToMany( assocToMany: AssocType, seed: any, idsMap: any, name: string ):Promise<void> {
+  private async seedAssocToMany( assocToMany: AssocToManyType, seed: any, idsMap: any, name: string ):Promise<void> {
+    let value:SeedAttributeType = _.get( seed, assocToMany.type );
+    if ( ! value ) return;
+
+    if( _.isString( value ) ) {
+      value = { ref: [value] }
+    } else if( _.has( value, 'sample' ) ){
+      if( ! _.isNumber( value.size ) && ! _.isNumber(value.random) ) value.size = 1;
+      value = await this.resolveSeedValue( value, seed, idsMap );
+    }
+
+    if( _.isArray( value ) ) value = { type: assocToMany.type, ref: value };
+
+    const ids = _.compact( _.map( value.ref, ref => _.get(idsMap, [value.type, ref] ) ));
+
     try {
-      const refEntity = this.runtime.entities[assocToMany.type];
-      if ( ! refEntity || ! _.has( seed, refEntity.typeName ) ) return;
-
-      let value:string|string[] = _.get( seed, refEntity.typeName );
-      let refs = await this.resolveAttributeValue( value, seed, idsMap );
-      if( ! _.isArray(refs) ) refs = [refs];
-
-      const refIds = _.compact( _.map( refs, ref => _.get( idsMap, [refEntity.typeName, ref] ) ) );
-      await this.updateAssocToMany( idsMap, name, refEntity, refIds );
+      await this.updateAssocTo( idsMap, name, assocToMany.type, ids );
     }
     catch ( error ) {
       console.error( `Entity '${this.entity.typeName}' could not seed a reference`, assocToMany, name, error );
     }
   }
 
-  /**
-   *
-   */
-  private async updateAssocTo( idsMap: any, name: string, refEntity: Entity, refId: string, refType?: string ) {
+  private async updateAssocTo( idsMap: any, name: string, assocToType:string, refId: string|string[], refType?: string  ) {
     const id = _.get( idsMap, [this.entity.typeName, name] );
     if( ! id ) return console.warn(
-      `[${this.entity.name}] cannot update assocTo, no id for '${refEntity.name}'.${name}`);
-    const enit = await this.entity.findById( id );
-    _.set( enit.item, refEntity.foreignKey, _.toString(refId) );
-    if( refType ) _.set( enit.item, refEntity.typeField, refType );
+      `[${this.entity.name}] cannot update assocTo, no id for '${this.entity.name}'.${name}`);
+    const enit = await this.entity.findOneByAttribute( {id} );
+    if( ! enit ) return;
+    const refEntity = this.runtime.entity( assocToType );
+    if( _.isArray( refId ) ){
+      const refIds = _.map( refId, refId => _.toString( refId ) );
+      _.set( enit.item, refEntity.foreignKeys, refIds );
+    } else {
+      _.set( enit.item, refEntity.foreignKey, _.toString(refId) );
+    }
+    if( refType && refType !== assocToType ) _.set( enit.item, refEntity.typeField, refType );
     await enit.save( true );
   }
 
-  /**
-   *
-   */
-  private async updateAssocToMany( idsMap:any, name:string, refEntity:Entity, refIds:any[] ) {
-    refIds = _.map( refIds, refId => _.toString( refId ) );
-    const id = _.get( idsMap, [this.entity.typeName, name] );
-    const enit = await this.entity.findById( id );
-    _.set( enit.item, refEntity.foreignKeys, refIds );
-    await enit.save( true );
-  }
 
   /**
    *
@@ -208,8 +219,28 @@ export class EntitySeeder extends EntityModule {
       const result = ((expression:string) => eval( expression )).call( {}, value.eval );
       return result;
     } catch (error) {
-      console.error( `could not evaluate '${value}'\n`, error);
+      console.error( `could not evaluate '${value.eval}'\n`, error);
     }
+  }
+
+  private async getSample( value:any, _seed:any, idsMap?:any ):Promise<any>{
+    if( this.skipShare( value ) ) return undefined;
+
+    let sampleSize = false;
+    let size:number = 0;
+
+    if( _.isNumber( value.size ) || _.isNumber( value.random ) ){
+      sampleSize = true;
+      size = _.isNumber( value.size ) ? value.size : 0;
+      size += ( _.isNumber( value.random ) ? _.random( value.random ) : 0 );
+    }
+
+    if( _.isArray( value.sample) ) return sampleSize ?
+      _.sampleSize( value.sample, size ) : _.sample( value.sample );
+
+    const src = _.keys( idsMap[ value.sample ] );
+    const ref = sampleSize ? _.sampleSize( src, size ) : _.sample( src );
+    return { type: value.sample, ref };
   }
 
   /**
