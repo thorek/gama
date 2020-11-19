@@ -13,7 +13,7 @@ A great task for GAMA!
 
 Analyzing the business domain teaches your, you have two entities: _Car_ and _Driver_. So you start by simply describing the first entity _Car_ with some basic attributes you might think are helpful. You enter this configuration in a YAML file called `car.yaml` and put it in the `./domain-configuration` folder of your GAMA application.
 
-<div style="text-align: right">./tutorial/01/domain-configuration/car.yaml</div>
+<div style="text-align:right">./tutorial/01/domain-configuration/car.yaml</div>
 
 ```yaml
 entity: 
@@ -645,7 +645,7 @@ We can now use our Enum the same way as we used the `String` type, even the `req
 <tr valign="top"><td width="50%"> Domain Configuration </td> <td width="50%"> Resulting schema (excerpt) </td></tr>
 <tr valign="top"><td>
 
-<div style="text-align: right">./tutorial/06/domain-configuration/car-brand.yaml</div>
+<div style="background-color:white;text-align: right">./tutorial/06/domain-configuration/car-brand.yaml</div>
 
 ```yaml
 enum:
@@ -656,9 +656,7 @@ enum:
     - Porsche
 ```
 
----
-
-<div style="text-align: right">./tutorial/06/domain-configuration/car.yaml</div>
+<div style="background-color:white;text-align: right">./tutorial/06/domain-configuration/car.yaml</div>
 
 ```yaml
 entity:
