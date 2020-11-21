@@ -6,13 +6,11 @@ import {
   AssocFromType,
   AssocToManyType,
   AssocToType,
-  CrudAction,
   EntityHooksType,
-  EntityPermissionType,
+  EntityPermissionsType,
   SeedType,
   ValidationReturnType,
 } from '../core/domain-configuration';
-import { ResolverContext } from '../core/resolver-context';
 import { Runtime } from '../core/runtime';
 import { EntityAccessor } from './entity-accessor';
 import { EntityFileSave } from './entity-file-save';
@@ -80,7 +78,6 @@ export abstract class Entity {
   get collection() { return this.getCollection() }
   get enum() { return this.getEnum() }
   get seeds() { return this.getSeeds() }
-  get permissions() { return this.getPermissions() }
   get description() { return this.getDescription() }
   get entities() { return this.getEntites() }
   get typeField() { return this.getTypeField() }
@@ -97,9 +94,9 @@ export abstract class Entity {
   get typeQuery():string { return this.getTypeQuery() }
   get statsQuery():string { return this.getStatsQuery() }
   get path() { return this.getPath() }
-  get assign() { return this.getAssign() }
   get validatFn() { return this.getValidateFn() }
   get hooks() { return this.getHooks() }
+  get permissions() { return this.getPermissions() }
 
   protected abstract getName():string;
   protected getTypeName() { return inflection.camelize( this.name ) }
@@ -118,7 +115,6 @@ export abstract class Entity {
   protected getAssocFrom():AssocFromType[] { return [] }
   protected getEnum():{[name:string]:{[key:string]:string}} { return {} }
   protected getSeeds():{[name:string]:SeedType}|SeedType[] { return [] }
-  protected getPermissions():undefined|EntityPermissionType { return undefined }
   protected getDescription():string|undefined { return }
   protected getEntites():Entity[] { return [] }
   protected getIsInterface():boolean { return false }
@@ -133,9 +129,9 @@ export abstract class Entity {
   protected getStatsQuery():string { return `${this.typesQuery}Stats` }
   protected getDeleteMutation():string { return `delete${this.typeName}` }
   protected getPath() { return inflection.underscore( this.plural ) }
-  protected getAssign():string|undefined { return undefined }
   protected getValidateFn():((item:any, runtime:Runtime ) => ValidationReturnType) | undefined { return undefined }
   protected getHooks():EntityHooksType|undefined { return undefined }
+  protected getPermissions():string|EntityPermissionsType|undefined { return undefined }
 
   /**
    *
@@ -203,15 +199,6 @@ export abstract class Entity {
     const name = _.isString( attribute.graphqlType ) ?
       attribute.graphqlType : _.get( attribute.graphqlType, 'name' );
     return _.toLower(name) === 'file';
-  }
-
-
-  /**
-   *
-   */
-  async getPermittedIds( action:CrudAction, resolverCtx:ResolverContext ):Promise<boolean|number[]> {
-    if( ! this.entityPermissions ) throw new Error( 'no EntityPermission provider' );
-    return this.entityPermissions.getPermittedIds( action, resolverCtx );
   }
 
   /**

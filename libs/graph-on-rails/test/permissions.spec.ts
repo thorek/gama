@@ -1,4 +1,5 @@
-import { DomainConfiguration } from 'core/domain-configuration';
+import { DomainConfiguration, PrincipalType } from 'core/domain-configuration';
+import { ResolverContext } from 'core/resolver-context';
 import { Runtime } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
@@ -28,6 +29,21 @@ const domainConfiguration:DomainConfiguration = {
           brand: { sample: ["Mercedes", "BMW", "Porsche", "Audi"] },
           Fleet: { sample: 'Fleet' }
         }
+      },
+      permissions: {
+        user: true,
+        roleA: ['222', '3333'],
+        assistant: {
+          r: true,
+          d: false,
+          uc: () => {
+            return ["9", "8", "4"];
+          }
+        },
+        manager: {
+          cru: true,
+          d: false
+        }
       }
     },
     Accessory: {
@@ -40,7 +56,8 @@ const domainConfiguration:DomainConfiguration = {
           name: { eval: 'faker.commerce.product() + ld.random(10000)' },
           Car: { sample: 'Car' }
         }
-      }
+      },
+      permissions: 'Car'
     }
   }
 };

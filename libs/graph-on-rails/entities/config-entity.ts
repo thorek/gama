@@ -1,7 +1,7 @@
 import inflection from 'inflection';
 import _ from 'lodash';
 
-import { AssocFromType, AttributeConfig, EntityConfig } from '../core/domain-configuration';
+import { AssocFromType, AttributeConfig, EntityConfig, EntityPermissionsType } from '../core/domain-configuration';
 import { Entity } from './entity';
 import { TypeAttribute } from './type-attribute';
 import { scalarTypes } from '../core/graphx'
@@ -74,8 +74,6 @@ export class ConfigEntity extends Entity {
 
   protected getSeeds() { return this.entityConfig.seeds || super.getSeeds() }
 
-  protected getPermissions() { return this.entityConfig.permissions || super.getPermissions() }
-
   protected getDescription():string|undefined { return this.entityConfig.description || super.getDescription() }
 
   protected getEntites():Entity[] {
@@ -91,11 +89,11 @@ export class ConfigEntity extends Entity {
 
   protected getIsInterface():boolean { return this.entityConfig.interface === true }
 
-  protected getAssign() { return this.entityConfig.assign }
-
   protected getValidateFn() { if (_.isFunction(this.entityConfig.validation) ) return this.entityConfig.validation  }
 
   protected getHooks() { return this.entityConfig.hooks }
+
+  protected getPermissions():string|EntityPermissionsType|undefined { return this.entityConfig.permissions }
 
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );

@@ -64,6 +64,21 @@ export class GamaSchemaTypes {
       })
     });
 
+    this.graphx.type( 'EntityEnum', {
+      from: GraphQLTypes.GraphQLEnumType,
+      fields: () => _.reduce( this.runtime.entities, (values, entity) =>
+        _.set( values, _.toUpper( entity.typeName ), { value: entity.typeName} ), {} )
+    });
+
+    this.graphx.type('EntityRole', {
+      fields: () => ({
+        entity: { type: 'EntityEnum!' },
+        role: { type: 'String!' },
+        ids: { type: '[String!]' }
+      })
+    });
+
+
     if(this.runtime.config.stage === 'development') {
 
       this.runtime.type('mutation').extendFields( () => ({

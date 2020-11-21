@@ -76,8 +76,7 @@ export type EntityConfig  = {
   path?:string;
 
   seeds?:{[seedId:string]:SeedType}|SeedType[]
-  permissions?:null|EntityPermissionType
-  assign?:string
+  permissions?:string|EntityPermissionsType
 
   union?:string[]
   interface?:boolean
@@ -88,6 +87,23 @@ export type EntityConfig  = {
   validation?:( item:any, runtime:Runtime ) => ValidationReturnType
   hooks?:EntityHooksType
 }
+
+export type EntityPermissionsType = {
+  [role:string]:PermissionRights|PermissionRightsFn|ActionPermissionRights
+}
+
+export type ActionPermissionRights = {
+  [actions:string]: PermissionRights|PermissionRightsFn
+}
+export type PermissionRights = boolean|string[]
+export type PermissionRightsFn = ( resolverCtx:ResolverContext, runtime:Runtime ) => PermissionRights
+
+export type PrincipalType = {
+  roles?:PrincipalRolesType|PrincipalRolesTypeFn
+}
+
+export type PrincipalRolesType = undefined|boolean|string|string[]
+export type PrincipalRolesTypeFn = ( runtime:Runtime, resolverContext:ResolverContext ) => PrincipalRolesType
 
 export type ValidationReturnType =
   ValidationViolation|ValidationViolation[]|string|undefined|
@@ -113,19 +129,4 @@ export type AssocToManyType = AssocToType & {
   scope?:string
 }
 
-export type CrudAction = 'read' | 'create' | 'update' | 'delete';
-
-// export type EntityPermissionActionType =
-//   boolean|
-//   string|
-//   {[condition:string]:object} |
-//   {[query:string]:object} |
-//   {[from:string]:string}
-
-export type EntityPermissionRoleType =
-  boolean|
-  {[action in CrudAction|'*']?:boolean}
-
-export type EntityPermissionType =
-  {[role:string]:EntityPermissionRoleType}
 

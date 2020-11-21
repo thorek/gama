@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { AssocType } from '../core/domain-configuration';
 import { Validator } from '../validation/validator';
 import { Entity } from './entity';
-import { NotFoundError } from './entity-accessor';
 import { TypeAttribute } from './type-attribute';
 
 //
@@ -86,12 +85,8 @@ export class EntityValidation  {
     const refEntity = this.runtime.entities[assocTo.type];
     const foreignKey = _.get( item, refEntity.foreignKey );
     if( ! foreignKey ) return {attribute: refEntity.foreignKey, message: 'must be provided'};
-    try {
-      await refEntity.findById( _.toString(foreignKey) );
-    } catch (error) {
-      if( error instanceof NotFoundError ) return { attribute: refEntity.foreignKey, message: 'must refer to existing item' };
-      return { attribute: refEntity.foreignKey, message: _.toString(error) };
-    }
+    const refItem = await refEntity.findOneByAttribute( { id: _.toString(foreignKey) } );
+    if( ! refItem ) return { attribute: refEntity.foreignKey, message: 'must refer to existing item' };
   }
 
   /**

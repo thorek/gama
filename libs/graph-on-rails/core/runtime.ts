@@ -1,10 +1,9 @@
-import { TypeAttribute } from '../entities/type-attribute';
-import { GraphQLSchema, GraphQLType } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import _ from 'lodash';
 
 import { FilterType } from '../builder/filter-type';
 import { MetaDataBuilder } from '../builder/meta-data-builder';
-import { SchemaBuilder, TypeBuilder } from '../builder/schema-builder';
+import { SchemaBuilder } from '../builder/schema-builder';
 import { Entity } from '../entities/entity';
 import { EntityFileSave } from '../entities/entity-file-save';
 import { EntityPermissions } from '../entities/entity-permissions';
@@ -28,8 +27,6 @@ export type GamaConfig = {
   entityPermissions?:(entity:Entity) => EntityPermissions
   entityFileSave?:(entity:Entity) => EntityFileSave
   entitySeeder?:(entity:Entity) => EntitySeeder
-  contextUser?:string
-  contextRoles?:string
   schemaBuilder?:SchemaBuilder[]
   metaDataBuilder?:SchemaBuilder
   domainDefinition:DomainDefinition|DomainConfiguration|string|string[]
@@ -46,9 +43,6 @@ export class Runtime {
   readonly entities:{[name:string]:Entity} = {};
   readonly enums:string[] = [];
   readonly filterTypes:{[name:string]:FilterType} = {};
-
-  readonly contextUser = this.config.contextUser;
-  readonly contextRoles = this.config.contextRoles;
 
   private constructor( public readonly config:GamaConfig ){ }
 
@@ -72,8 +66,6 @@ export class Runtime {
       entityFileSave: ( entity:Entity ) => new EntityFileSave( entity ),
       entitySeeder: ( entity:Entity ) => new EntitySeeder( entity ),
       metaDataBuilder: new MetaDataBuilder(),
-      contextUser: 'user',
-      contextRoles: 'roles',
       uploadRootDir: 'uploads ',
       stage: 'development',
       domainDefinition: {}

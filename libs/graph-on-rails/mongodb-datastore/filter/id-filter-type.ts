@@ -1,6 +1,7 @@
-import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLBoolean, GraphQLID, GraphQLList } from 'graphql';
 import _ from 'lodash';
 import { ObjectID } from 'mongodb';
+
 import { AttributeFilterType } from './attribute-filter-type';
 
 /**

@@ -16,8 +16,8 @@ export class SimpleLogin {
     domainDefinition.add( login.getConfiguration() );
     config.context = (context:{req:express.Request }) => {
       const token:string|undefined = context.req.headers.authorization;
-      const user = login.getUser( token );
-      return { user };
+      const principal = login.getUser( token );
+      return { principal };
     }
   }
 

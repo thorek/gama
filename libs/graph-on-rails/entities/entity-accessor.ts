@@ -9,17 +9,6 @@ import { ValidationViolation } from './entity-validation';
 
 //
 //
-export class NotFoundError extends Error {
-
-  constructor(message?:string) {
-    super(message);
-    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
-    this.name = NotFoundError.name; // stack traces display correctly now
-  }
-}
-
-//
-//
 export class EntityAccessor extends EntityModule {
 
   protected deleter = new EntityDeleter(this.entity);
@@ -31,7 +20,7 @@ export class EntityAccessor extends EntityModule {
   async findById( id:any ):Promise<EntityItem> {
     if( ! id ) throw new Error( `[${this.entity.name}].findById - no id provided` );
     const item = await this.dataStore.findById( this.entity, id );
-    if( ! item ) throw new NotFoundError( `[${this.entity.name}] with id '${id}' does not exist`);
+    if( ! item ) throw new Error( `[${this.entity.name}] with id '${id}' does not exist`);
     return EntityItem.create( this.entity, item );
   }
 

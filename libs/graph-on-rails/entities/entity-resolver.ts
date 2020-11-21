@@ -7,6 +7,14 @@ import { FileInfo } from './entity-file-save';
 import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
 
+export enum CRUD  {
+  CREATE = 'c',
+  READ = 'r',
+  UPDATE= 'u',
+  DELETE = 'd'
+}
+
+
 //
 //
 export class EntityResolver extends EntityModule {
@@ -24,7 +32,6 @@ export class EntityResolver extends EntityModule {
 
   async resolveTypes( resolverCtx:ResolverContext ):Promise<any[]> {
     const impl = async (resolverCtx:ResolverContext) => {
-      await this.entity.entityPermissions.addPermissionToFilter( resolverCtx );
       const filter = _.get( resolverCtx.args, 'filter');
       const sort = this.getSort( _.get( resolverCtx.args, 'sort') );
       const paging = _.get( resolverCtx.args, 'paging');
@@ -83,7 +90,6 @@ export class EntityResolver extends EntityModule {
   }
 
   async resolveStats( resolverCtx:ResolverContext ):Promise<any> {
-    await this.entity.entityPermissions.addPermissionToFilter( resolverCtx );
     const filter = _.get( resolverCtx.args, 'filter');
     const enits = await this.accessor.findByFilter( filter );
     const createdFirst = _.get( _.minBy( enits, enit => enit.item['createdAt'] ), 'item.createdAt' );
