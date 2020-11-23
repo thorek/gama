@@ -50,7 +50,7 @@ export class SchemaFactory {
     if( this._builders ) return this._builders;
     this._builders = _.compact([
       this.config.metaDataBuilder,
-      ... this.runtime.dataStore.getScalarFilterTypes(),
+      ... this.runtime.dataStore.getDataStoreFilterTypes(),
       ... this.getConfigTypeBuilder(),
       ... this.getCustomBuilders()
     ]);

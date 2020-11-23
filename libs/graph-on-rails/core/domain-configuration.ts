@@ -89,14 +89,14 @@ export type EntityConfig  = {
 }
 
 export type EntityPermissionsType = {
-  [role:string]:PermissionRights|PermissionRightsFn|ActionPermissionRights
+  [role:string]:PermissionRights|ActionPermissionRights
 }
 
 export type ActionPermissionRights = {
-  [actions:string]: PermissionRights|PermissionRightsFn
+  [actions:string]: PermissionRights
 }
-export type PermissionRights = boolean|string[]
-export type PermissionRightsFn = ( resolverCtx:ResolverContext, runtime:Runtime ) => PermissionRights
+export type PermissionRights = boolean|PermissionFilterFn
+export type PermissionFilterFn = (principal:PrincipalType, resolverCtx:ResolverContext, runtime:Runtime) => any
 
 export type PrincipalType = {
   roles?:PrincipalRolesType|PrincipalRolesTypeFn

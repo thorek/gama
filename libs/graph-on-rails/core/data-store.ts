@@ -12,6 +12,10 @@ export type Paging = {
   size:number
 }
 
+export enum JOIN {
+  AND,
+  OR
+}
 
 /**
  *
@@ -42,24 +46,9 @@ export abstract class DataStore {
 
   abstract truncate( entity:Entity ):Promise<boolean>;
 
-  abstract getScalarFilterTypes():FilterType[];
+  abstract getDataStoreFilterTypes():FilterType[];
 
   abstract getEnumFilterType( name: string ):FilterType;
 
-
-  /**
-   * @deprecated
-   */
-  abstract addPermittedIds( expression:any, ids:any[]|boolean ):Promise<any>;
-
-  /**
-   * @deprecated
-   */
-  abstract getPermittedIds( entity:Entity, expression:object, resolverCtx:ResolverContext ):Promise<number[]>;
-
-  /**
-   * @deprecated
-   */
-  abstract getPermittedIdsForForeignKeys( entity:Entity, assocTo:string, foreignKeys:number[] ):Promise<number[]>;
-
+  abstract joinFilter( filter:any[], join:JOIN ):any;
 }

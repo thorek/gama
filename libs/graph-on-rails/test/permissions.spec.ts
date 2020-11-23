@@ -1,5 +1,6 @@
-import { DomainConfiguration, PrincipalType } from 'core/domain-configuration';
-import { ResolverContext } from 'core/resolver-context';
+import _ from 'lodash';
+
+import { DomainConfiguration } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
@@ -12,37 +13,33 @@ const domainConfiguration:DomainConfiguration = {
       seeds: {
         fleet1: { name: 'Fleet 1' },
         fleet2: { name: 'Fleet 2' },
-        fleet3: { name: 'Fleet 3' },
-        fleet4: { name: 'Fleet 4' },
-        fleet5: { name: 'Fleet 5' }
+        fleet3: { name: 'Fleet 3' }
       }
     },
     Car: {
       attributes: {
         licence: 'Key',
-        brand: 'String!'
+        brand: 'String!',
+        color: 'String'
       },
       assocTo: 'Fleet',
       seeds: {
-        50: {
+        30: {
           licence: { eval: 'faker.phone.phoneNumberFormat()' },
           brand: { sample: ["Mercedes", "BMW", "Porsche", "Audi"] },
+          color: { sample: ['red','green', 'blue', 'black', 'white'] },
           Fleet: { sample: 'Fleet' }
         }
       },
       permissions: {
-        user: true,
-        roleA: ['222', '3333'],
+        roleA: true,
+        user: () => _.set( {}, 'color', {$in: ['red','blue']}),
         assistant: {
           r: true,
-          d: false,
-          uc: () => {
-            return ["9", "8", "4"];
-          }
+          d: false
         },
         manager: {
-          cru: true,
-          d: false
+          cru: true
         }
       }
     },
@@ -52,7 +49,7 @@ const domainConfiguration:DomainConfiguration = {
       },
       assocTo: 'Car',
       seeds: {
-        300: {
+        100: {
           name: { eval: 'faker.commerce.product() + ld.random(10000)' },
           Car: { sample: 'Car' }
         }
@@ -77,9 +74,26 @@ describe('Permissions', () => {
 
   //
   //
-  it('should', ()=> {
-    expect( 1 ).toBeTruthy();
-  });
+  it('should react to super and looser user', async ()=> {
 
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const car = runtime.entity('Car');
+    if( ! car ) return;
+    const superUser = _.defaults( { context: { principal: { roles: true } } }, resolverCtx  );
+    await car.entityPermissions.ensureTypesRead( superUser );
+    expect( resolverCtx.args.filter ).toBeUndefined();
+    await car.entityPermissions.ensureTypeRead( superUser );
+    expect( resolverCtx.args.filter ).toBeUndefined();
+
+    const rolesFalse = _.defaults( { context: { principal: { roles: false } } }, resolverCtx  );
+    await car.entityPermissions.ensureTypesRead( rolesFalse );
+    expect( resolverCtx.args.filter ).toEqual( { id: null } );
+    await expect( car.entityPermissions.ensureTypeRead( rolesFalse ) ).rejects.toBeTruthy();
+
+    const noRoles = _.defaults( { context: { principal: { roles: false } } }, resolverCtx  );
+    await car.entityPermissions.ensureTypesRead( noRoles );
+    expect( resolverCtx.args.filter ).toEqual( { id: null } );
+    await expect( car.entityPermissions.ensureTypeRead( noRoles ) ).rejects.toBeTruthy();
+  });
 
 })
