@@ -95,8 +95,8 @@ export type EntityPermissionsType = {
 export type ActionPermissionRights = {
   [actions:string]: PermissionRights
 }
-export type PermissionRights = boolean|PermissionFilterFn
-export type PermissionFilterFn = (principal:PrincipalType, resolverCtx:ResolverContext, runtime:Runtime) => any
+export type PermissionRights = boolean|PermissionExpressionFn
+export type PermissionExpressionFn = (principal:PrincipalType, resolverCtx:ResolverContext, runtime:Runtime) => any
 
 export type PrincipalType = {
   roles?:PrincipalRolesType|PrincipalRolesTypeFn

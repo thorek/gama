@@ -55,7 +55,7 @@ export class MongoDbDataStore extends DataStore {
     return this.findByExpression( entity, attrValue, sort );
   }
 
-  async findByFilter( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]> {
+  async findByFilter( entity:Entity, filter:any|any[], sort?:Sort, paging?:Paging ):Promise<any[]> {
     const expression = await this.buildExpression( entity, filter );
     return this.findByExpression( entity, expression, sort, paging );
   }
@@ -140,12 +140,6 @@ export class MongoDbDataStore extends DataStore {
     ]
   }
 
-  async joinFilter( filter:any[], join:JOIN ) {
-    return _.size( filter ) === 1 ? _.first( filter ) :
-      join === JOIN.AND ? { $and: filter } :
-      join === JOIN.OR ? { $or: filter } : {};
-  }
-
   protected getObjectId( id:any, entity:Entity ):ObjectId {
     if( ! id ) throw new Error(`cannot resolve type '${entity.name}' without id`);
     try {
@@ -163,13 +157,15 @@ export class MongoDbDataStore extends DataStore {
     return _.map( items, item => this.buildOutItem( item ) );
   }
 
-  protected async buildExpression( entity:Entity, filter:any ):Promise<FilterQuery<any>> {
+  protected async buildExpression( entity:Entity, filter:any|any[] ):Promise<FilterQuery<any>> {
+    if( _.isArray( filter ) ) return filter.length === 1 ?
+      this.buildExpression( entity, filter[0] ) :
+      { $and: await Promise.all( _.map( filter, f => this.buildExpression( entity, f ) ) ) };
+    if( _.has( filter, 'expression' ) ) return _.get( filter, 'expression' );
     const filterQuery:FilterQuery<any> = {};
-    for( const field of _.keys(filter) ){
+    for( let field of _.keys(filter) ){
       const condition = filter[field];
-      if( _.isObject(condition) ){ await FilterType.setFilterExpression( filterQuery, entity, condition, field ) }
-      else if ( _.isArray( condition ) ) { _.set( filterQuery, field, { $in: condition } ) }
-      else { _.set( filterQuery, field, condition ) }
+      await FilterType.setFilterExpression( filterQuery, entity, condition, field );
     }
     return filterQuery;
   }

@@ -33,10 +33,12 @@ export abstract class DataStore {
   /**
    *
    * @param entity the entity
-   * @param filter the filter as it would be build from the filter types of this datasource
+   * @param filter the filter as it would be build from the filter types of this datasource,
+   *                if array: and joined
+   *                filter of { expression: any } is not evaluated by FilterTypes but handled as is
    * @returns all items matching the filter
    */
-  abstract findByFilter( entity:Entity, filter:any, sort?:Sort, paging?:Paging ):Promise<any[]>;
+  abstract findByFilter( entity:Entity, filter:any|any[], sort?:Sort, paging?:Paging ):Promise<any[]>;
 
   abstract create( entity:Entity, attrs: any ):Promise<any>;
 
@@ -50,5 +52,4 @@ export abstract class DataStore {
 
   abstract getEnumFilterType( name: string ):FilterType;
 
-  abstract joinFilter( filter:any[], join:JOIN ):any;
 }

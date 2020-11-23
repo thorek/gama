@@ -20,9 +20,11 @@ export class IdFilterType extends AttributeFilterType {
   }}
 
   setFilterExpression( expression:any, condition:any, field:string ):any {
+    if( field === 'id' ) field = '_id';
+    if( _.isArray( condition ) ) return _.set( expression, field, { $in: _.map(condition, id => new ObjectID( id ) ) } );
+    if( _.isString( condition) ) return _.set( expression, field, { $eq: new ObjectID( condition ) } );
     const e = this.getFilterExpression( condition );
     if( ! e ) return;
-    if( field === 'id' ) field = '_id';
     _.set( expression, field, e );
   } 
 
