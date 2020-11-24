@@ -1,3 +1,4 @@
+import { ResolverContext } from 'core/resolver-context';
 import _ from 'lodash';
 
 import { DomainConfiguration } from '../core/domain-configuration';
@@ -36,7 +37,7 @@ const domainConfiguration:DomainConfiguration = {
           color: 'blue',
           Fleet: { sample: 'Fleet' }
         },
-        30: {
+        3: {
           licence: { eval: 'faker.phone.phoneNumberFormat()' },
           brand: { sample: ["Mercedes", "BMW", "Porsche", "Audi"] },
           color: { sample: ['red','green', 'blue', 'black', 'white'] },
@@ -45,7 +46,10 @@ const domainConfiguration:DomainConfiguration = {
       },
       permissions: {
         roleA: true,
-        user: ( principal:any ) => _.set( {}, 'color', { $in: principal.colors } ),
+        user: ( principal:any ) => ({color: { $in: principal.colors }}),
+        userWithBlue: () => ({color: { $eq: 'blue' }}),
+        userC: (principal:any, ctx:ResolverContext, runtime:Runtime) =>
+          runtime.dataStore.buildExpressionFromFilter( runtime.entity('Car'), { color: { in: principal.colors}} ),
         assistant: {
           r: true,
           d: false
@@ -61,7 +65,15 @@ const domainConfiguration:DomainConfiguration = {
       },
       assocTo: 'Car',
       seeds: {
-        100: {
+        aForRedBmw: {
+          name: 'aForRedBwm',
+          Car: 'redBmw'
+        },
+        aForBlueAudi: {
+          name: 'aForBlueAudi',
+          Car: 'aForBlueAudi'
+        },
+        1: {
           name: { eval: 'faker.commerce.product() + ld.random(10000)' },
           Car: { sample: 'Car' }
         }
@@ -154,12 +166,39 @@ describe('Permissions', () => {
 
     const user = _.defaults( { context: { principal: { roles: 'user', colors: ['red', 'green'] } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( user );
-    expect( user.args.filter ).toMatchObject( [{ expression: { color: { $in: ['red', 'green' ] } } }] );
+    expect( user.args.filter ).toMatchObject( { expression: { color: { $in: ['red', 'green' ] } } } );
 
     const userWithAllowedId = _.defaults( { args: { id: redBmw?.id } }, user );
     await expect( car.entityPermissions.ensureTypeRead( userWithAllowedId ) ).resolves.not.toThrowError();
 
     const userWithUnallowedId = _.defaults( { args: { id: blueAudi?.id } }, user );
     await expect( car.entityPermissions.ensureTypeRead( userWithUnallowedId ) ).rejects.toBeTruthy();
+  })
+
+  it( 'should or-join multiple permission expressions', async () => {
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const car = runtime.entity('Car');
+    if( ! car ) return;
+
+    const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
+    const blueAudi = await car.findOneByAttribute( {licence: 'blueAudi'} );
+
+    const user = _.defaults( { context: { principal: { roles: ['user','userWithBlue'], colors: ['red', 'green'] } } }, resolverCtx  );
+    await car.entityPermissions.ensureTypesRead( user );
+    expect( user.args.filter ).toMatchObject(
+      { expression: { $or: [{ color: { $in: ['red', 'green' ] } }, { color: { $eq: 'blue'}}]} } );
+
+    const userWithBlueId = _.defaults( { args: { id: blueAudi?.id } }, user );
+    await expect( car.entityPermissions.ensureTypeRead( userWithBlueId ) ).resolves.not.toThrowError();
+  })
+
+  it('should be able to use filter syntax', async () => {
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const car = runtime.entity('Car');
+    if( ! car ) return;
+
+    const user = _.defaults( { context: { principal: { roles: 'userC', colors: ['red', 'green'] } } }, resolverCtx  );
+    await car.entityPermissions.ensureTypesRead( user );
+    expect( user.args.filter ).toMatchObject( { expression: { color: { $in: ['red', 'green' ] } } } );
   })
 })

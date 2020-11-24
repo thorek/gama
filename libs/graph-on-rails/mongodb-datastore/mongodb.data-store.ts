@@ -56,14 +56,14 @@ export class MongoDbDataStore extends DataStore {
   }
 
   async findByFilter( entity:Entity, filter:any|any[], sort?:Sort, paging?:Paging ):Promise<any[]> {
-    const expression = await this.buildExpression( entity, filter );
+    const expression = await this.buildExpressionFromFilter( entity, filter );
     return this.findByExpression( entity, expression, sort, paging );
   }
 
   async aggregateFind( entities:Entity[], filter:any, sort?:Sort, paging?:Paging ):Promise<any[]>{
     if( entities.length === 0 ) return [];
 
-    const expression = await this.buildExpression( _.first(entities) as Entity, filter );
+    const expression = await this.buildExpressionFromFilter( _.first(entities) as Entity, filter );
     const lookups:any[] = _.map( entities, entity => ({
       $lookup: {
         from: entity.typesQuery,
@@ -140,6 +140,21 @@ export class MongoDbDataStore extends DataStore {
     ]
   }
 
+  async buildExpressionFromFilter( entity:Entity, filter:any ):Promise<FilterQuery<any>> {
+    const filterQuery:FilterQuery<any> = _.has( filter, 'expression' ) ? filter.expression : {};
+    for( let field of _.keys(filter) ){
+      const condition = filter[field];
+      await FilterType.setFilterExpression( filterQuery, entity, condition, field );
+    }
+    return filterQuery;
+  }
+
+  joinExpressions( expressions:any[], join:'and'|'or' = 'and' ):FilterQuery<any> {
+    if( _.size( expressions )  <=1 ) return _.first(expressions);
+    return _.set({}, join === 'and' ? '$and' : '$or', expressions );
+  }
+
+
   protected getObjectId( id:any, entity:Entity ):ObjectId {
     if( ! id ) throw new Error(`cannot resolve type '${entity.name}' without id`);
     try {
@@ -155,19 +170,6 @@ export class MongoDbDataStore extends DataStore {
     const sl = this.getSkipLimit( paging );
     const items = await collection.find( expression ).sort( sortStage ).skip( sl.skip ).limit( sl.limit ).toArray();
     return _.map( items, item => this.buildOutItem( item ) );
-  }
-
-  protected async buildExpression( entity:Entity, filter:any|any[] ):Promise<FilterQuery<any>> {
-    if( _.isArray( filter ) ) return filter.length === 1 ?
-      this.buildExpression( entity, filter[0] ) :
-      { $and: await Promise.all( _.map( filter, f => this.buildExpression( entity, f ) ) ) };
-    if( _.has( filter, 'expression' ) ) return _.get( filter, 'expression' );
-    const filterQuery:FilterQuery<any> = {};
-    for( let field of _.keys(filter) ){
-      const condition = filter[field];
-      await FilterType.setFilterExpression( filterQuery, entity, condition, field );
-    }
-    return filterQuery;
   }
 
   protected getCollection( entity:Entity ):Collection {

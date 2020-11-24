@@ -52,4 +52,8 @@ export abstract class DataStore {
 
   abstract getEnumFilterType( name: string ):FilterType;
 
+  abstract buildExpressionFromFilter( entity:Entity, filter:any ):Promise<any>;
+
+  abstract joinExpressions( expressions:any[], join:'and'|'or' ):any;
+
 }

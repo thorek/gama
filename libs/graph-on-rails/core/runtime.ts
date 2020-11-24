@@ -6,7 +6,7 @@ import { MetaDataBuilder } from '../builder/meta-data-builder';
 import { SchemaBuilder } from '../builder/schema-builder';
 import { Entity } from '../entities/entity';
 import { EntityFileSave } from '../entities/entity-file-save';
-import { EntityPermissions } from '../entities/entity-permissions';
+import { DefaultEntityPermissions, EntityPermissions } from '../entities/entity-permissions';
 import { EntityResolver } from '../entities/entity-resolver';
 import { EntitySeeder } from '../entities/entity-seeder';
 import { MongoDbDataStore } from '../mongodb-datastore/mongodb.data-store';
@@ -62,7 +62,7 @@ export class Runtime {
       dataStore: ( name?:string ) => MongoDbDataStore.create({ url: 'mongodb://localhost:27017', dbName: name || 'GAMA' }),
       validator: ( entity:Entity ) => new ValidateJs( entity ),
       entityResolver: ( entity:Entity ) => new EntityResolver( entity ),
-      entityPermissions: ( entity:Entity ) => new EntityPermissions( entity ),
+      entityPermissions: ( entity:Entity ) => new DefaultEntityPermissions( entity ),
       entityFileSave: ( entity:Entity ) => new EntityFileSave( entity ),
       entitySeeder: ( entity:Entity ) => new EntitySeeder( entity ),
       metaDataBuilder: new MetaDataBuilder(),

@@ -1,15 +1,28 @@
 import _ from 'lodash';
 
-import { PermissionExpressionFn, PrincipalType } from '../core/domain-configuration';
+import { PermissionExpression, PermissionExpressionFn, PrincipalType } from '../core/domain-configuration';
 import { ResolverContext } from '../core/resolver-context';
 import { EntityModule } from './entity-module';
 import { CRUD } from './entity-resolver';
 
+export interface EntityPermissions  {
 
-export class EntityPermissions extends EntityModule {
+  ensureTypeRead( resolverCtx:ResolverContext ):Promise<void>
 
-  get dataStore() { return this.runtime.dataStore } 
+  ensureUpdate( resolverCtx:ResolverContext ):Promise<void>
 
+  ensureDelete( resolverCtx:ResolverContext ):Promise<void>
+
+  ensureCreate( resolverCtx:ResolverContext ):Promise<void>
+
+  ensureTypesRead( resolverCtx:ResolverContext ):Promise<void>
+
+  getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>
+}
+
+export class DefaultEntityPermissions extends EntityModule implements EntityPermissions {
+
+  get dataStore() { return this.runtime.dataStore }
 
   async ensureTypeRead( resolverCtx:ResolverContext ) {
     const id = _.get( resolverCtx.args, 'id' );
@@ -36,10 +49,20 @@ export class EntityPermissions extends EntityModule {
     if( permissions === true ) return;
     if( ! permissions || _.isEmpty( permissions ) ) return _.set( resolverCtx.args, 'filter', { id: null } );
 
-    const filter = _.get( resolverCtx.args, 'filter' );
-    const permissionFilter = this.buildPermissionsFilter( resolverCtx, permissions );
-    permissionFilter.push( ... filter );
-    _.set( resolverCtx.args, 'filter', permissionFilter );
+    const filter = _.get( resolverCtx.args, 'filter', {} );
+    const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
+    _.set( filter, 'expression', expression );
+    _.set( resolverCtx.args, 'filter', filter );
+  }
+
+  async getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>{
+    const permissions = await this.getPermissions( action, resolverCtx );
+    if( _.isBoolean( permissions ) ) return permissions;
+    if( _.isEmpty( permissions ) ) return false;
+
+    const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
+    const permittedItems = await this.dataStore.findByFilter( this.entity, { expression } );
+    return _.map( permittedItems, item => item.id );
   }
 
   private async ensurePermittedId( id:string, action:CRUD, resolverCtx:ResolverContext ) {
@@ -47,33 +70,32 @@ export class EntityPermissions extends EntityModule {
     if( permissions === true ) return;
     if( ! permissions || _.isEmpty( permissions ) ) throw new Error(`action not permitted`);
 
-    const permissionFilter = this.buildPermissionsFilter( resolverCtx, permissions );
-    permissionFilter.push( { id } );
-    const permittedItems = await this.dataStore.findByFilter(this.entity, permissionFilter );
+    const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
+    const filter = { expression, id };
+    const permittedItems = await this.dataStore.findByFilter(this.entity, filter );
     if( _.size( permittedItems ) === 0 ) throw new Error(`action not permitted for id '${id}'`)
   }
 
-  private async getPermissions( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|PermissionExpressionFn[]> {
+  private async getPermissions( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|PermissionExpression[]> {
     if( _.isUndefined( this.entity.permissions ) ) return true;
-
-    const principal = this.getPrincipal( resolverCtx );
-    if( ! principal || ! _.has( principal, 'roles' ) ) return false;
+    if( ! this.getPrincipalRoles( resolverCtx ) ) return false;
 
     return _.isString( this.entity.permissions ) ?
       this.getPermissionsFromDelegate(this.entity.permissions, action, resolverCtx ) :
       this.getPermissionFromEntityDefinition( action, resolverCtx );
   }
 
-  private getPermissionFromEntityDefinition( action:CRUD, resolverCtx:ResolverContext ):boolean|PermissionExpressionFn[] {
+  private getPermissionFromEntityDefinition( action:CRUD, resolverCtx:ResolverContext ):boolean|PermissionExpression[] {
     if( ! this.entity.permissions || _.isString( this.entity.permissions) ) return false; // type ensure
     const principalRoles = this.getPrincipalRoles( resolverCtx );
     if( _.isBoolean(principalRoles) ) return principalRoles;
 
-    const filter:PermissionExpressionFn[] = [];
+    const filter:PermissionExpression[] = [];
     if( _.find( this.entity.permissions, (roleDefinition, roleName ) => {
       if( ! _.includes( principalRoles, roleName ) ) return false;
       if( _.isBoolean( roleDefinition ) ) return roleDefinition;
       if( _.isFunction( roleDefinition ) ) return filter.push( roleDefinition ) && false;
+      if( _.isString( roleDefinition ) ) return filter.push( roleDefinition ) && false;
 
       if( _.find( roleDefinition, (actionDefinition, actions) => {
         if( ! _.includes( _.toLower( actions ), action ) ) return false;
@@ -95,16 +117,6 @@ export class EntityPermissions extends EntityModule {
     return [() => _.set({}, 'id', delegatePermissionIds )];
   }
 
-  private async getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>{
-    const permissions = this.getPermissionFromEntityDefinition( action, resolverCtx );
-    if( _.isBoolean( permissions ) ) return permissions;
-    if( _.isEmpty( permissions ) ) return false;
-
-    const filter = this.buildPermissionsFilter( resolverCtx, permissions );
-    const permittedItems = await this.dataStore.findByFilter( this.entity, filter );
-    return _.map( permittedItems, item => item.id );
-  }
-
   private getPrincipalRoles( resolverCtx:ResolverContext ):string[]|boolean{
     const principal = this.getPrincipal( resolverCtx );
     if( ! principal ) return false;
@@ -116,14 +128,16 @@ export class EntityPermissions extends EntityModule {
 
   private getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
     const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
-    return principal;
+    return _.isFunction( principal ) ? principal( this.runtime, resolverCtx ) : principal;
   }
 
-  private buildPermissionsFilter( resolverCtx: ResolverContext, permissions: PermissionExpressionFn[] ) {
+  private async buildPermissionsExpression( resolverCtx: ResolverContext, permissions: PermissionExpression[] ):Promise<any> {
     const principal = this.getPrincipal( resolverCtx ) as PrincipalType;
-    const permissionFilter = _.map( permissions, permission =>
-      _.set({}, 'expression', permission( principal, resolverCtx, this.runtime ) ) );
-    return permissionFilter;
+    const expressions = await Promise.all( _.map( permissions, permission =>
+      _.isString( permission ) ?
+        this.runtime.dataStore.buildExpressionFromFilter( this.entity, { id: permission } ) :
+        Promise.resolve( permission( principal, resolverCtx, this.runtime ) ) ) );
+    return this.runtime.dataStore.joinExpressions( expressions, 'or' );
   }
 
 }
