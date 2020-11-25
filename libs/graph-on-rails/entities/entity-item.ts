@@ -19,7 +19,6 @@ export class EntityItem {
   static async create( entity:Entity, item:any ):Promise<EntityItem>{
     item = _.merge({}, item ); // this is because the Apollo resolver refuse to resolve the orginal item instance
     const entityItem = new EntityItem( entity, item );
-    await entityItem.defineVirtualAttributes();
     return entityItem;
   }
 
@@ -112,18 +111,6 @@ export class EntityItem {
         }).compact().flatten().value()
       )));
     })));
-  }
-
-
-  //
-  //
-  private async defineVirtualAttributes(){
-    for( const name of _.keys( this.entity.attributes ) ){
-      const attribute = this.entity.attributes[name];
-      if( ! _.isFunction(attribute.calculate) ) continue;
-      const value = await Promise.resolve( attribute.calculate(this.item) );
-      Object.defineProperty( this.item, name, { value } )
-    }
   }
 
   //

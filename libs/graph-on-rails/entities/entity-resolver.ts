@@ -20,29 +20,35 @@ export enum CRUD  {
 export class EntityResolver extends EntityModule {
 
   get accessor() { return this.entity.accessor }
+  get hooks() { return this.entity.hooks }
+  get permissions() { return this.entity.entityPermissions }
 
   async resolveType( resolverCtx:ResolverContext ):Promise<any> {
     const impl = async (resolverCtx:ResolverContext) => {
       const id = _.get( resolverCtx.args, 'id' );
+      this.permissions.ensureTypeRead( id, resolverCtx );
       const enit = await this.accessor.findById( id );
-      return enit.item;
+      return this.applyAttributeResolver( enit.item, resolverCtx );
     };
-    return this.decorateHooks( impl, resolverCtx, this.entity.hooks?.preTypeQuery, this.entity.hooks?.afterTypeQuery );
+    return this.callWithHooks( impl, resolverCtx, this.hooks?.preTypeQuery, this.hooks?.afterTypeQuery );
   }
 
   async resolveTypes( resolverCtx:ResolverContext ):Promise<any[]> {
     const impl = async (resolverCtx:ResolverContext) => {
+      await this.permissions.ensureTypesRead( resolverCtx );
       const filter = _.get( resolverCtx.args, 'filter');
       const sort = this.getSort( _.get( resolverCtx.args, 'sort') );
       const paging = _.get( resolverCtx.args, 'paging');
       const enits = await this.accessor.findByFilter( filter, sort, paging );
-      return _.map( enits, enit => enit.item );
+      return await Promise.all(
+        _.map( enits, enit => this.applyAttributeResolver( enit.item, resolverCtx ) ) );
     };
-    return this.decorateHooks( impl, resolverCtx, this.entity.hooks?.preTypesQuery, this.entity.hooks?.afterTypesQuery );
+    return this.callWithHooks( impl, resolverCtx, this.entity.hooks?.preTypesQuery, this.entity.hooks?.afterTypesQuery );
   }
 
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
     const impl = async (resolverCtx:ResolverContext) => {
+      await this.permissions.ensureSave( resolverCtx );
       const attributes = _.get( resolverCtx.args, this.entity.singular );
       const fileInfos = await this.setFileValuesAndGetFileInfos( resolverCtx.args, attributes );
       const result = await this.accessor.save( attributes );
@@ -52,22 +58,24 @@ export class EntityResolver extends EntityModule {
       }
       return { validationViolations: result };
     };
-    return this.decorateHooks( impl, resolverCtx, this.entity.hooks?.preSave, this.entity.hooks?.afterSave );
+    return this.callWithHooks( impl, resolverCtx, this.entity.hooks?.preSave, this.entity.hooks?.afterSave );
   }
 
   async deleteType( resolverCtx:ResolverContext ):Promise<string[]> {
     const impl = async (resolverCtx:ResolverContext) => {
+      await this.permissions.ensureDelete( resolverCtx );
       const id = resolverCtx.args.id;
       try { await this.accessor.delete( id ) } catch (error){ return [ 'Error', _.toString(error)] }
       try { await this.entity.fileSave.deleteFiles( id ) } catch (error) { return ['Error', _.toString(error)] }
       return [];
     };
-    return this.decorateHooks( impl, resolverCtx, this.entity.hooks?.preSave, this.entity.hooks?.afterSave );
+    return this.callWithHooks( impl, resolverCtx, this.entity.hooks?.preSave, this.entity.hooks?.afterSave );
   }
 
   async resolveAssocToType( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
     const id = _.get( resolverCtx.root, refEntity.foreignKey );
     if( _.isNil(id) ) return null;
+    await refEntity.entityPermissions.ensureTypeRead( id, resolverCtx );
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocTo( refEntity, resolverCtx, id );
     const enit = await refEntity.findById( id );
     return enit.item;
@@ -76,6 +84,7 @@ export class EntityResolver extends EntityModule {
   async resolveAssocToManyTypes( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocToMany( refEntity, resolverCtx );
     const ids = _.map( _.get( resolverCtx.root, refEntity.foreignKeys ), id => _.toString(id) );
+    await refEntity.entityPermissions.ensureTypeRead( ids, resolverCtx );
     const enits = await refEntity.findByIds( ids );
     return _.map( enits, enit => enit.item );
   }
@@ -84,12 +93,15 @@ export class EntityResolver extends EntityModule {
     const id = _.toString(resolverCtx.root.id);
     const fieldName = refEntity.isAssocToMany( this.entity ) ? this.entity.foreignKeys : this.entity.foreignKey;
     const attr = _.set({}, fieldName, id );
+
+    // das geht nicht.. wir müssen hier die permissions noch reinbringen
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocFromTypes( refEntity, attr );
     const enits = await refEntity.findByAttribute( attr );
     return _.map( enits, enit => enit.item );
   }
 
   async resolveStats( resolverCtx:ResolverContext ):Promise<any> {
+    await this.permissions.ensureTypesRead( resolverCtx );
     const filter = _.get( resolverCtx.args, 'filter');
     const enits = await this.accessor.findByFilter( filter );
     const createdFirst = _.get( _.minBy( enits, enit => enit.item['createdAt'] ), 'item.createdAt' );
@@ -98,13 +110,12 @@ export class EntityResolver extends EntityModule {
     return { count: _.size( enits ), createdFirst, createdLast, updatedLast };
   }
 
-  private async decorateHooks( impl:Function, resolverCtx:ResolverContext, preHook?:Function, afterHook?:Function ){
+  private async callWithHooks( impl:Function, resolverCtx:ResolverContext, preHook?:Function, afterHook?:Function ){
     let result = _.isFunction( preHook ) ? preHook( resolverCtx ): undefined;
     if( _.isObject(result) ) return result;
     result = impl( resolverCtx );
     return _.isFunction( afterHook ) ? afterHook( result, resolverCtx ): result;
   }
-
 
   private getSort( sortString: string ):Sort|undefined {
     if( ! sortString ) return undefined;
@@ -174,5 +185,18 @@ export class EntityResolver extends EntityModule {
   private async saveFiles( id:string, fileInfos:FileInfo[]  ):Promise<void> {
     for( const fileInfo of fileInfos ) await this.entity.fileSave.saveFile( id, fileInfo );
   }
+
+    //
+  //
+  private async applyAttributeResolver( item:any, resolverCtx:ResolverContext  ):Promise<any>{
+    for( const name of _.keys( this.entity.attributes ) ){
+      const attribute = this.entity.attributes[name];
+      if( ! _.isFunction(attribute.resolve) ) continue;
+      const value = await Promise.resolve( attribute.resolve( item, resolverCtx, this.runtime ) );
+      Object.defineProperty( item, name, { value } )
+    }
+    return item;
+  }
+
 
 }

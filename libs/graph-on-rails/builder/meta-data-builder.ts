@@ -86,7 +86,7 @@ export class MetaDataBuilder extends SchemaBuilder {
   protected resolveFields( root:any ):any[]{
     const entity = root as Entity;
     return _.map( entity.attributes, (attribute, name) => ({
-      name, type: attribute.graphqlType, required: attribute.required, calculated: _.isFunction(attribute.calculate),
+      name, type: attribute.graphqlType, required: attribute.required, calculated: _.isFunction(attribute.resolve),
       unique: _.toString(attribute.unique), filter: attribute.filterType, mediaType: attribute.mediaType,
       validation: attribute.validation }));
   }

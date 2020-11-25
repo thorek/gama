@@ -85,6 +85,9 @@ const domainConfiguration:DomainConfiguration = {
         name: 'String'
       },
       seeds: {
+        foo: {
+          name: 'foo'
+        },
         10: {
           name: {
             eval: 'faker.lorem.word'
@@ -111,85 +114,95 @@ describe('Permissions', () => {
   it('should allow super user', async ()=> {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) return;
+    if( ! car ) throw new Error();
+    const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
+    if( ! redBmw ) throw new Error();
 
     const superUser = _.defaults( { context: { principal: { roles: true } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( superUser );
     expect( resolverCtx.args.filter ).toBeUndefined();
-    await car.entityPermissions.ensureTypeRead( superUser );
+    await car.entityPermissions.ensureTypeRead( redBmw.id, superUser );
   });
 
   it('should prohibit looser user', async ()=> {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) return;
+    if( ! car ) throw new Error();
+    const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
+    if( ! redBmw ) throw new Error();
 
     const rolesFalse = _.defaults( { context: { principal: { roles: false } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( rolesFalse );
     expect( resolverCtx.args.filter ).toEqual( { id: null } );
-    await expect( car.entityPermissions.ensureTypeRead( rolesFalse ) ).rejects.toBeTruthy();
+    await expect( car.entityPermissions.ensureTypeRead( redBmw.id, rolesFalse ) ).rejects.toBeTruthy();
 
     const noRoles = _.defaults( { context: { principal: { roles: false } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( noRoles );
     expect( resolverCtx.args.filter ).toEqual( { id: null } );
-    await expect( car.entityPermissions.ensureTypeRead( noRoles ) ).rejects.toBeTruthy();
+    await expect( car.entityPermissions.ensureTypeRead( redBmw.id, noRoles ) ).rejects.toBeTruthy();
   });
 
   it('should allow everyone if no permissions definition at entity exists', async () =>{
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const some = runtime.entity('Some');
-    if( ! some ) return;
+    if( ! some ) throw new Error();
+    const foo = await some.findOneByAttribute( {name: 'foo'} );
+    if( ! foo ) throw new Error();
 
     await some.entityPermissions.ensureTypesRead( resolverCtx );
     expect( resolverCtx.args.filter ).toBeUndefined();
-    await some.entityPermissions.ensureTypeRead( resolverCtx );
+    await some.entityPermissions.ensureTypeRead( foo.id, resolverCtx );
   })
 
   it( 'should set no permssion filter if at least one role allows action', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) return;
+    if( ! car ) throw new Error();
+    const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
+    if( ! redBmw ) throw new Error();
 
     const superUser = _.defaults( { context: { principal: { roles: ['roleA','user'] } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( superUser );
     expect( resolverCtx.args.filter ).toBeUndefined();
-    await car.entityPermissions.ensureTypeRead( superUser );
+    await car.entityPermissions.ensureTypeRead( redBmw.id, superUser );
   })
 
   it('should add a filter when the role defined by role and principal', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) return;
-
+    if( ! car ) throw new Error();
     const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
+    if( ! redBmw ) throw new Error();
+
     const blueAudi = await car.findOneByAttribute( {licence: 'blueAudi'} );
+    if( ! blueAudi ) throw new Error();
 
     const user = _.defaults( { context: { principal: { roles: 'user', colors: ['red', 'green'] } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( user );
     expect( user.args.filter ).toMatchObject( { expression: { color: { $in: ['red', 'green' ] } } } );
 
-    const userWithAllowedId = _.defaults( { args: { id: redBmw?.id } }, user );
-    await expect( car.entityPermissions.ensureTypeRead( userWithAllowedId ) ).resolves.not.toThrowError();
+    const userWithAllowedId = _.defaults( { args: { id: redBmw.id } }, user );
+    await expect( car.entityPermissions.ensureTypeRead( redBmw.id, userWithAllowedId ) ).resolves.not.toThrowError();
 
-    const userWithUnallowedId = _.defaults( { args: { id: blueAudi?.id } }, user );
-    await expect( car.entityPermissions.ensureTypeRead( userWithUnallowedId ) ).rejects.toBeTruthy();
+    const userWithUnallowedId = _.defaults( { args: { id: blueAudi.id } }, user );
+    await expect( car.entityPermissions.ensureTypeRead( blueAudi.id, userWithUnallowedId ) ).rejects.toBeTruthy();
   })
 
   it( 'should or-join multiple permission expressions', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) return;
+    if( ! car ) throw new Error();
 
-    const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
     const blueAudi = await car.findOneByAttribute( {licence: 'blueAudi'} );
+    if( ! blueAudi ) throw new Error();
 
     const user = _.defaults( { context: { principal: { roles: ['user','userWithBlue'], colors: ['red', 'green'] } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( user );
     expect( user.args.filter ).toMatchObject(
       { expression: { $or: [{ color: { $in: ['red', 'green' ] } }, { color: { $eq: 'blue'}}]} } );
 
-    const userWithBlueId = _.defaults( { args: { id: blueAudi?.id } }, user );
-    await expect( car.entityPermissions.ensureTypeRead( userWithBlueId ) ).resolves.not.toThrowError();
+    const userWithBlueId = _.defaults( { args: { id: blueAudi.id } }, user );
+    await expect( car.entityPermissions.ensureTypeRead( blueAudi.id, userWithBlueId ) ).resolves.not.toThrowError();
   })
 
   it('should be able to use filter syntax', async () => {

@@ -1,3 +1,5 @@
+import { ResolverContext } from 'core/resolver-context';
+import { Runtime } from 'core/runtime';
 import { GraphQLType } from 'graphql';
 
 //
@@ -11,6 +13,6 @@ export type TypeAttribute = {
   defaultValue?:any
   mediaType?:'image'|'video'|'audio'
   list?:boolean
-  calculate?:( root?:any, args?:any, context?:any ) => any
+  resolve?:( item:any, resolverCtx:ResolverContext, runtime:Runtime ) => any
 }
 

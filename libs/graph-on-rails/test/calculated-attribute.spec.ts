@@ -21,8 +21,8 @@ describe('Calculated Attributes', () => {
           attributes: {
             name: { type: 'string' },
             some: { type: 'int' },
-            calculatedA: { type: 'string!', calculate: () => 'calculatedA' },
-            calculatedB: { type: 'int', calculate: async () => 42 }
+            calculatedA: { type: 'string!', resolve: () => 'calculatedA' },
+            calculatedB: { type: 'int', resolve: async () => 42 }
           },
           seeds: {
             alpha1: { name: 'alpha1' },

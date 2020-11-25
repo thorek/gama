@@ -7,15 +7,13 @@ import { CRUD } from './entity-resolver';
 
 export interface EntityPermissions  {
 
-  ensureTypeRead( resolverCtx:ResolverContext ):Promise<void>
-
-  ensureUpdate( resolverCtx:ResolverContext ):Promise<void>
-
-  ensureDelete( resolverCtx:ResolverContext ):Promise<void>
-
-  ensureCreate( resolverCtx:ResolverContext ):Promise<void>
+  ensureTypeRead( id:string|string[], resolverCtx:ResolverContext ):Promise<void>
 
   ensureTypesRead( resolverCtx:ResolverContext ):Promise<void>
+
+  ensureSave( resolverCtx:ResolverContext ):Promise<void>
+
+  ensureDelete( resolverCtx:ResolverContext ):Promise<void>
 
   getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>
 }
@@ -24,24 +22,9 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
 
   get dataStore() { return this.runtime.dataStore }
 
-  async ensureTypeRead( resolverCtx:ResolverContext ) {
-    const id = _.get( resolverCtx.args, 'id' );
-    await this.ensurePermittedId( id, CRUD.READ, resolverCtx );
-  }
-
-  async ensureUpdate( resolverCtx:ResolverContext ){
-    const id = _.get( resolverCtx.args, [this.entity.singular, 'id'] );
-    await this.ensurePermittedId( id, CRUD.UPDATE, resolverCtx );
-  }
-
-  async ensureDelete( resolverCtx:ResolverContext ){
-    const id = _.get( resolverCtx.args, 'id' );
-    await this.ensurePermittedId( id, CRUD.DELETE, resolverCtx );
-  }
-
-  async ensureCreate( resolverCtx:ResolverContext ){
-    const permission = await this.getPermissions( CRUD.CREATE, resolverCtx );
-    if( permission === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
+  async ensureTypeRead( ids:string|string[], resolverCtx:ResolverContext ) {
+    if( ! _.isArray( ids ) ) ids = [ids];
+    await Promise.all( _.map( ids, id => this.ensurePermittedId( id, CRUD.READ, resolverCtx ) ) );
   }
 
   async ensureTypesRead( resolverCtx:ResolverContext ){
@@ -55,6 +38,16 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     _.set( resolverCtx.args, 'filter', filter );
   }
 
+  ensureSave( resolverCtx:ResolverContext ){
+    const id =_.get( resolverCtx.args, [this.entity.singular, 'id'] );
+    return id ? this.ensureUpdate( resolverCtx ) : this.ensureCreate( resolverCtx );
+  }
+
+  async ensureDelete( resolverCtx:ResolverContext ){
+    const id = _.get( resolverCtx.args, 'id' );
+    await this.ensurePermittedId( id, CRUD.DELETE, resolverCtx );
+  }
+
   async getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>{
     const permissions = await this.getPermissions( action, resolverCtx );
     if( _.isBoolean( permissions ) ) return permissions;
@@ -63,6 +56,16 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
     const permittedItems = await this.dataStore.findByFilter( this.entity, { expression } );
     return _.map( permittedItems, item => item.id );
+  }
+
+  private async ensureCreate( resolverCtx:ResolverContext ){
+    const permission = await this.getPermissions( CRUD.CREATE, resolverCtx );
+    if( permission === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
+  }
+
+  private async ensureUpdate( resolverCtx:ResolverContext ){
+    const id = _.get( resolverCtx.args, [this.entity.singular, 'id'] );
+    await this.ensurePermittedId( id, CRUD.UPDATE, resolverCtx );
   }
 
   private async ensurePermittedId( id:string, action:CRUD, resolverCtx:ResolverContext ) {

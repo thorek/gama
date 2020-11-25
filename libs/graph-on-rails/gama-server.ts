@@ -15,9 +15,12 @@ export class GamaServer {
   static async create( apolloConfig:ApolloServerExpressConfig, gamaConfig:GamaConfig|DomainDefinition|DomainConfiguration|string ):Promise<ApolloServer> {
     const runtime = await Runtime.create( gamaConfig );
     apolloConfig.schema = runtime.schema;
-    const customContextFn = apolloConfig.context;
-    apolloConfig.context = (contextExpress:any) => {
-      const apolloContext = _.isFunction( customContextFn ) ? customContextFn(contextExpress) : {};
+    apolloConfig.context = (expressContext:any) => {
+      const apolloContext = {};
+      const contextFn =
+        _.has( gamaConfig, 'domainDefinition.contextFn' ) ? _.get( gamaConfig, 'domainDefinition.contextFn' ) :
+        _.has( gamaConfig, 'contextFn' ) ? _.get( gamaConfig, 'contextFn' ) : undefined;
+      _.forEach( contextFn, fn => fn( expressContext, apolloContext ) );
       return _.set( apolloContext, 'runtime', runtime );
     }
     return new ApolloServer( apolloConfig );

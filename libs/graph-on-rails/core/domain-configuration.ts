@@ -43,7 +43,7 @@ export type AttributeConfig = {
   filterType?:string|false
   validation?:object
   mediaType?:'image'|'video'|'audio'
-  calculate?:( root?:any, args?:any, context?:any ) => any
+  resolve?:( item:any, resolverCtx:ResolverContext, runtime:Runtime ) => any
 }
 
 export type SeedEvalContextType = {

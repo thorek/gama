@@ -374,9 +374,9 @@ export class EntityBuilder extends TypeBuilder {
   //
   //
   private skipCalculatedAttribute(name:string, attribute:TypeAttribute, purpose:AttributePurpose, fieldConfig:AttrFieldConfig ):boolean {
-    if( ! _.isFunction( attribute.calculate ) ) return false;
+    if( ! _.isFunction( attribute.resolve ) ) return false;
     if( purpose !== 'type' ) return true;
-    fieldConfig.resolve = attribute.calculate
+    fieldConfig.resolve = attribute.resolve
     return false;
   }
 
@@ -389,7 +389,7 @@ export class EntityBuilder extends TypeBuilder {
       const filterType = this.runtime.filterTypes['IDFilter'];
       const fields = { id: { type: filterType ? this.graphx.type(filterType.name()) : GraphQLID } };
       _.forEach( this.attributes(), (attribute, name) => {
-        if( _.isFunction( attribute.calculate ) ) return;
+        if( _.isFunction( attribute.resolve ) ) return;
         const filterType = this.getFilterType(attribute);
         if( filterType ) _.set( fields, name, { type: filterType } );
       });
@@ -403,7 +403,7 @@ export class EntityBuilder extends TypeBuilder {
   protected createSortType():void {
     const name = this.entity.sorterEnumName;
     const values = _(this.attributes()).
-      map( (attribute, name ) => _.isFunction(attribute.calculate) ? [] : [`${name}_ASC`, `${name}_DESC`] ).
+      map( (attribute, name ) => _.isFunction(attribute.resolve) ? [] : [`${name}_ASC`, `${name}_DESC`] ).
       flatten().compact().
       concat( ['id_ASC', 'id_DESC']).
       reduce( (values, item) => _.set( values, item, {value: item} ), {} );

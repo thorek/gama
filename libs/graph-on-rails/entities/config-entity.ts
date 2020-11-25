@@ -115,7 +115,7 @@ export class ConfigEntity extends Entity {
       // input: attrConfig.input,
       defaultValue: attrConfig.default,
       mediaType: attrConfig.mediaType,
-      calculate: attrConfig.calculate
+      resolve: attrConfig.resolve,
     }
   }
 
@@ -183,7 +183,7 @@ export class ConfigEntity extends Entity {
   }
 
   private warnAttribute( name: string, attrConfig:AttributeConfig ):void {
-    if( _.isFunction( attrConfig.calculate ) ){
+    if( _.isFunction( attrConfig.resolve ) ){
       if( attrConfig.filterType ) console.warn(
         this.name, `[${name}]`, 'filterType makes no sense for attribute that is resolved manually' )
     }

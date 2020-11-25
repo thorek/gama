@@ -1,8 +1,8 @@
 # Permissions
 
-All things described here refer to the default `EntityPermssions` implementation. You can replace this with your own implementation - as described in the last section of this document.
+All things described here refer to the default `EntityPermssions` implementation. You can replace this with your own implementation - as described in [Custom Implementations](./custom-implementations.md).
 
-Permissions are based on two dimensions - the CRUD action a principal (actually a role) can execute on an Entity (what) and the concept of permssion expressions (on which data).
+Permissions are based on two dimensions - the CRUD action a principal (actually a role) can execute on an Entity (what) and the concept of permission expressions (on which data).
 
 ## Principal 
 
@@ -17,11 +17,14 @@ export type PrincipalRolesType = undefined|boolean|string|string[]
 export type PrincipalRolesTypeFn = 
   (runtime:Runtime, resolverContext:ResolverContext) => PrincipalRolesType
 
-
 export type context = {
   principal?:PrincipalType | ((rt:Runtime, ctx:ResolverContext) => PrincipalType)
 }
 ```
+
+See how an application can provide a principal here: [Securing your API](./securing-api.md).
+
+<br>
 
 **No principal**
 
@@ -65,7 +68,7 @@ export type EntityConfig  = {
 
 <br/>
 
-**EntityPermissionsType**
+## RolePermissions
 
 ```typescript
 export type EntityPermissionsType = {
@@ -87,7 +90,7 @@ Possible values per role are:
 
 <br/>
 
-**ActionPermissionRights**
+## ActionPermission
 
 ```typescript
 export type ActionPermissions = {
@@ -128,7 +131,7 @@ _Possible values_ per actions key
 
 <br/>
 
-**Permission Expression**
+## Permission Expression
 
 ```typescript
 export type PermissionExpression = PrincipalAssignedIds|PermissionExpressionFn
@@ -136,13 +139,13 @@ export type PermissionExpressionFn = (principal:PrincipalType, resolverCtx:Resol
 export type PrincipalAssignedIds = string
 ```
 
-If you apply the value `true` to either a role or action - it will allow any affected query and mutation to executed without any further limitation.
+If the value of either a role or action permssion is a boolean - it has the effect that any affected query or  mutation is either allowed or prohibited regardless of the actual data handled by this query or mutation.
 
-This is sometimes not fine grained enough - a principal might probably be allowed to read all entity items but may only create or update certain items and should not be allowed to delete any items. 
+This is sometimes not fine grained enough - a principal might probably be allowed to read all entity items but may only create or update certain items and should not be allowed to delete any items at all. 
 
-While - in this example - read would be simply `true` and delete `false` - we must define a way which items a principal might update or create. 
+While - in this example - read would be simply `true` and delete `false` - we must find a way do define which exact items a principal might update or create. 
 
-This is done via `PermissionExpression` that a role permission or action permission can provide. Since a principal can have multiple roles, multiple expressions could have an effect to queries and muatations. 
+This can be done via `PermissionExpression`s that a role permission or action permission can provide. Think of an expression as an additional _filter_ to a query or mutation. Only data that match this _filter_ are allowed to be or read, created, updated, deleted. If multiple roles bestow more than one permission expression to a principal this would be true for any data that matches any of the expressions - think of an `or` join of _filters_.
 
 | Action  | Query / Mutation | Effect                                                                       | 
 | ------- | ---------------- | ---------------------------------------------------------------------------- |
@@ -176,9 +179,9 @@ The expression can of course use properties of the principal. Let's assume a pri
 }
 ```
 
-You might see that the expression syntax is dependent on the datastore. This is a tiny difference here (since the filter syntax is somehow leaned to the default _datastore_ implementation (MongoDB). But if you would decide to run your domain configuration with another _datastore_ implementation - say MySQL - things would break. 
+You might see that the expression syntax is dependent on the datastore. This is a tiny difference here (since the default filter syntax is somehow leaned to the default _datastore_ implementation (MongoDB). But if you would decide to run your domain configuration with another _datastore_ implementation - say MySQL - things will break. 
 
-On one hand this gives you all the freedom and possibilities the underlying _datastore_ technology offers, like complex aggregations, joins, calculations etc. On the other hand is your domain configuration now coupled to a certain _datastore_ implementation. You can avoid this by delegating the creation of the expression to the datastore itself and using the (of course limited) possibilities of the filter definition for this entity. So the example above could've been written with filter syntax like so:
+On one hand this gives you all the freedom and possibilities the underlying _datastore_ technology offers, like complex aggregations, joins, calculations etc. On the other hand is your domain configuration now coupled to a certain _datastore_ implementation. You can possibly avoid this by delegating the creation of the expression to the datastore itself and using the (of course limited) possibilities of the filter definition for this entity. This is of course only the case if the non-default _datastore_ implementation does not introduce a different filter syntax than the default implementation - which it very well could. Than the example above could've been written with filter syntax like so:
 
 ```typescript
 permissions: {
@@ -191,7 +194,7 @@ permissions: {
 }
 ```
 
-This is now exactly the syntax of the typesQuery filter, therefore decoupled from the actual datastore implementation. A more complex example - that could not be implemented via default filter syntax would be if the user should be allowed to read and update cars of all asigned brands or every other car that has a higher mileage than `100,000`. A filter cannot do that. The MongoDB expression for this requirement would look like this: 
+A more complex example - that could not be implemented via default filter syntax would be if the user should be allowed to read and update cars of all asigned brands or every other car that has a higher mileage than `100,000`. A filter cannot do that. The MongoDB expression for this requirement would look like this: 
 
 ```typescript
 permissions: {
@@ -206,7 +209,7 @@ permissions: {
 }
 ```
 
- 
+
 ## Examples
 
 Keep in mind every action is always allowed without any further evaluation if
