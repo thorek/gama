@@ -115,7 +115,7 @@ const login = async (runtime:Runtime, username:string, password:string) => {
   const user = await findUser( runtime, username );
   if( ! await bcrypt.compare( password, user.password ) ) return undefined;
   const token = generateToken();
-  _.set( users, [token], { user, date: Date.now() } );
+  setUser( user, token );
   return token;
 }
 
@@ -127,6 +127,12 @@ const findUser = async ( runtime:Runtime, username:string ) => {
 
 const generateToken = () => hash( _.toString(_.random(9999999) ) );
 
+const setUser = (user:any, token:string) => {
+  const roles = user.roles;
+  _.set( user, 'roles', () => _.includes( roles, 'admin' ) ? true : roles );
+  _.set( users, [token], { user, date: Date.now() } );
+}
+
 const users:{[token:string]:{ user:any, date:number }} = {};
 ```
 
@@ -137,7 +143,9 @@ The mutation defines the input (username, password) and return type, the token-s
   * if successfull - creates a token (just a random number, hashed again)
   * stores the user item under this token - along with the current datetime and
   * and returns the token to the API client. 
-  
+
+The default `EntityPermissions` implementation expects a principal to have either `roles` attribute or `function` that return an array of roles or a boolean value. We manipulate the user item in a way that we do not expose the roles from the _datastore_ directly but add a `roles` function instead in which we simply return `true` if any of the user's roles include the "admin" role. With this such a _super user_ is allowed to access any entity's queries and mutation, even if the "admin" role is not included specifically to an entity definition.
+
 A client can now use the `login` mutation to get a valid token. 
 
 *request*

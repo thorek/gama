@@ -24,7 +24,7 @@ const login = async (runtime:Runtime, username:string, password:string) => {
   const user = await findUser( runtime, username );
   if( ! await bcrypt.compare( password, user.password ) ) return undefined;
   const token = generateToken();
-  _.set( users, [token], { user, date: Date.now() } );
+  setUser( user, token );
   return token;
 }
 
@@ -32,6 +32,12 @@ const findUser = async ( runtime:Runtime, username:string ) => {
   const entity = runtime.entity('User')
   const user = await entity.findOneByAttribute( { username } );
   return user ? user.item : {};
+}
+
+const setUser = (user:any, token:string) => {
+  const roles = user.roles;
+  _.set( user, 'roles', () => _.includes( roles, 'admin' ) ? true : roles );
+  _.set( users, [token], { user, date: Date.now() } );
 }
 
 const validUser = ( token:string) => {
