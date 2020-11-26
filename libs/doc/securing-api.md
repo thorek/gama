@@ -74,9 +74,16 @@ const domainConfiguration:DomainConfiguration => {
 
 See how we use the `password` method in the _seed data_. The `password` method uses the [bcrypt.js](https://github.com/dcodeIO/bcrypt.js) library to create a secure hash of a plaintext password.
 
-With this an initial set of user items (with hashed passwords) are available. How to register new users is not covered here, but will probably consists of another custom mutation where you implement the sign up process and assigning of roles etc.
+With this an initial set of user items (with hashed passwords) are available. How to register new users is not covered here, but will probably consists of another custom mutation where you implement the sign up process and assigning of roles etc according to your business requirements.
 
-We will now add the custom `login` mutation, that takes a username and password, loads the according user item and (if credentials match) creates a random token, assigns the user to this token and returns it to the API client. We also store the `Date` when we assigned the user to the token, so we can later apply a maximum period of validity.
+We will now add the custom `login` mutation, that 
+  * takes a username and password, 
+  * loads the according user item and (if credentials match) from the datastore
+  * creates a random token, 
+  * assigns the user to this token 
+  and returns it to the API client. 
+  
+  We also store the `Date` when we assigned the user to the token, so we can later apply a maximum period of validity.
 
 ```typescript
 private users:{[username:string]:any} = {};

@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer } from 'http';
 import path from 'path';
-
+import expressJwt from 'express-jwt';
 import { gama } from './gama-app';
 
 
@@ -15,6 +15,7 @@ import { gama } from './gama-app';
   const uploadRootDir = path.join(__dirname, 'uploads');
   app.use('/uploads', express.static(uploadRootDir));
 
+  app.use( expressJwt({ secret: "My$3cr3Tf0r$1gn1n9", algorithms: ["HS256"], credentialsRequired: false } ) );
 
   const server = await gama();
   server.applyMiddleware({ app, path: '/graphql' });

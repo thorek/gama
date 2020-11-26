@@ -3,7 +3,7 @@ import { DomainDefinition, GamaServer } from 'graph-on-rails';
 import depthLimit from 'graphql-depth-limit';
 
 import { domainConfiguration } from './domain-configuration';
-import { addLogin } from './impl/simple-login';
+import { addLogin } from './impl/jwt-login';
 
 const apolloConfig:ApolloServerExpressConfig = { validationRules: [depthLimit(7)] };
 
