@@ -1,10 +1,9 @@
-import { ApolloServerExpressConfig } from 'apollo-server-express';
 import bcrypt from 'bcryptjs';
 import express from 'express';
 import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
 import _ from 'lodash';
 
-export const addLogin = ( domainDefinition:DomainDefinition ) => {
+export const addSimpleLogin = ( domainDefinition:DomainDefinition ) => {
   domainDefinition.add( domainConfiguration );
   domainDefinition.contextFn.push( addPrincipalToApolloContext );
 }
@@ -41,11 +40,15 @@ const validUser = ( token:string) => {
   invalidToken( token );
 }
 
-const addPrincipalToApolloContext = (expressContext:{req:express.Request}, apolloContext:any) => {
-  const token = _.last(_.split(expressContext.req.headers.authorization, ' '));
+const addPrincipalToApolloContext = async (expressContext:{req:express.Request}, apolloContext:any) => {
+  const token = expressContext.req.headers.authorization;
+  const username = _.startsWith( token, 'Username') ? _.last(_.split(token, 'Username ')) : undefined;
+  if( username ) return _.set( apolloContext, 'principal', await findUser( apolloContext.runtime, username ) );
   const principal = token ? validUser( token ) : undefined;
   _.set( apolloContext, 'principal', principal );
 }
+
+const logoff = (token:string) => _.unset( users, [token] );
 
 const domainConfiguration:DomainConfiguration = {
   entity: {
@@ -94,6 +97,12 @@ const domainConfiguration:DomainConfiguration = {
       },
       resolve: (root:any, args:any) => login( runtime, args.username, args.password ),
       description: 'returns a token if successfull, null otherwise'
+    }),
+    logoff: () => ({
+      type: 'String',
+      args: { token: 'String!' },
+      resolve: (root:any, args:any) => logoff( args.token ),
+      description: 'invalidates the token'
     })
   }
 }

@@ -8,3 +8,4 @@ export * from './core/runtime';
 export * from './gama-server';
 export * from './core/graphx';
 export * from './entities/entity-validation';
+export * from './mongodb-datastore/mongodb.data-store';

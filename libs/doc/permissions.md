@@ -2,7 +2,16 @@
 
 All things described here refer to the default `EntityPermssions` implementation. You can replace this with your own implementation - as described in [Custom Implementations](./custom-implementations.md).
 
-Permissions are based on two dimensions - the CRUD action a principal (actually a role) can execute on an Entity (what) and the concept of permission expressions (on which data).
+Per default your API is public. Anyone with access to the GraphQL endpoint can request any query or mutation. You can of course add restrictions on higher levels, e.g. enabling access via VPN or limit to certain IPs etc. This would be out of scope for GAMA. You could take the _GAMA starter application_ and implement this before delegating requests to a GAMA runtime. 
+
+On a functional level GAMA supports three quite common approaches to controll the usage of an API by a client:
+
+* access to certain parts (that is queries and mutations) based on roles 
+* limiting the data a client can read or manage, e.g. based on assigned items (think of seeing only employees of any organisation a certain user is member of but not of other organisation's)
+* API limits - the number of possible API requests a client can make  
+
+
+
 
 ## Principal 
 
@@ -22,7 +31,7 @@ export type context = {
 }
 ```
 
-See how an application can provide a principal here: [Securing your API](./securing-api.md).
+See how an application can provide a principal here: [GAMA Principal](./gama-principal.md).
 
 <br>
 

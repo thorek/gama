@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
 import express from 'express';
+import expressJwt from 'express-jwt';
 import { DomainConfiguration, DomainDefinition, Runtime } from 'graph-on-rails';
 import { sign } from 'jsonwebtoken';
 import _ from 'lodash';
 
-export const addLogin = ( domainDefinition:DomainDefinition ) => {
+export const addJwtLogin = ( domainDefinition:DomainDefinition, app:any ) => {
+  app.use( expressJwt({ secret: process.env.JWT_SECRET || '', algorithms: ["HS256"], credentialsRequired: false } ) );
   domainDefinition.add( domainConfiguration );
   domainDefinition.contextFn.push( addPrincipalToApolloContext );
 }
@@ -14,11 +16,9 @@ const claim = 'https://thorek.github.io/gama';
 const hash = (password:string):string => bcrypt.hashSync( password, bcrypt.genSaltSync(10) );
 
 const generateToken = (principal:any) => sign(
-  _.set( {}, [claim], {principal} ),
-  "My$3cr3Tf0r$1gn1n9",
+  _.set( {}, [claim], {principal} ), process.env.JWT_SECRET || '',
   { algorithm: "HS256", subject: _.toString(principal.id), expiresIn: "1d" }
 );
-
 
 const login = async (runtime:Runtime, username:string, password:string) => {
   const user = await findUser( runtime, username );
@@ -48,7 +48,8 @@ const domainConfiguration:DomainConfiguration = {
         roles: '[String!]'
       },
       permissions: {
-        admin: true
+        admin: true,
+        manager: () => _.set( {}, 'username', { $ne: 'admin'} )
       },
       seeds: {
         admin: {
