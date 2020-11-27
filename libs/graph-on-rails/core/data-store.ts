@@ -56,4 +56,6 @@ export abstract class DataStore {
 
   abstract joinExpressions( expressions:any[], join:'and'|'or' ):any;
 
+  abstract itemMatchesExpression( item:any, expression:any ):Promise<boolean>;
+
 }

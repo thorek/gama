@@ -16,20 +16,15 @@ import { StringFilterType } from './filter/string-filter-type';
 
 export class MongoDbDataStore extends DataStore {
 
-  constructor( protected db:Db ){ super() }
+  constructor( protected client:MongoClient, protected db:Db ){ super() }
 
   public static async create( config:{url:string, dbName:string} ):Promise<DataStore> {
-    const db = await this.getDb( config );
-    return new MongoDbDataStore( db );
-  }
-
-  protected static async getDb( config:any ):Promise<Db> {
     const url = _.get( config, 'url' );
     if( ! url ) throw `please provide url`;
     const dbName = _.get( config, 'dbName' );
     if( ! dbName ) throw `please provide dbName`;
     const client = await MongoClient.connect( url, { useNewUrlParser: true, useUnifiedTopology: true } );
-    return client.db(dbName);
+    return new MongoDbDataStore( client, client.db(dbName) );
   }
 
   async findById( entity:Entity, id:ObjectId|string ):Promise<any> {
@@ -154,6 +149,25 @@ export class MongoDbDataStore extends DataStore {
     return _.set({}, join === 'and' ? '$and' : '$or', expressions );
   }
 
+  // dont like the implementation but ran out if ideas
+  async itemMatchesExpression( item:any, expression:any ):Promise<boolean> {
+    let matches = true;
+    const session = this.client.startSession();
+    try {
+      session.withTransaction( async () => {
+        const collection = this.db.collection('__itemMatchesExpression');
+        const result = await collection.insertOne( item, { session } );
+        const found = await collection.findOneAndDelete(
+          { $and: [ { _id: result.insertedId }, expression ]}, { session } );
+        if( found ) return;
+        await collection.deleteOne( { _id : result.insertedId }, { session } );
+        matches = false;
+      });
+    } finally {
+      session.endSession();
+    }
+    return matches;
+  }
 
   protected getObjectId( id:any, entity:Entity ):ObjectId {
     if( ! id ) throw new Error(`cannot resolve type '${entity.name}' without id`);

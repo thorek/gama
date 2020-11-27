@@ -1,7 +1,8 @@
 import { ResolverContext } from 'core/resolver-context';
+import { CRUD } from 'entities/entity-resolver';
 import _ from 'lodash';
 
-import { DomainConfiguration } from '../core/domain-configuration';
+import { DomainConfiguration, PrincipalType } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
 import { Seeder } from '../core/seeder';
 
@@ -46,17 +47,12 @@ const domainConfiguration:DomainConfiguration = {
       },
       permissions: {
         roleA: true,
-        user: ( principal:any ) => ({color: { $in: principal.colors }}),
+        user: ( action:CRUD, principal:any ) => ({color: { $in: principal.colors }}),
         userWithBlue: () => ({color: { $eq: 'blue' }}),
-        userC: (principal:any, ctx:ResolverContext, runtime:Runtime) =>
+        userC: (action:CRUD, principal:any, ctx:ResolverContext, runtime:Runtime) =>
           runtime.dataStore.buildExpressionFromFilter( runtime.entity('Car'), { color: { in: principal.colors}} ),
-        assistant: {
-          r: true,
-          d: false
-        },
-        manager: {
-          cru: true
-        }
+        assistant: (action:CRUD) => _.includes( [CRUD.READ], action ),
+        manager: (action:CRUD, principal:PrincipalType) => ({ id: { $in: principal.carIds } })
       }
     },
     Accessory: {

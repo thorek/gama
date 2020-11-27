@@ -33,7 +33,7 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     if( ! permissions || _.isEmpty( permissions ) ) return _.set( resolverCtx.args, 'filter', { id: null } );
 
     const filter = _.get( resolverCtx.args, 'filter', {} );
-    const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
     _.set( filter, 'expression', expression );
     _.set( resolverCtx.args, 'filter', filter );
   }
@@ -53,19 +53,35 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     if( _.isBoolean( permissions ) ) return permissions;
     if( _.isEmpty( permissions ) ) return false;
 
-    const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
     const permittedItems = await this.dataStore.findByFilter( this.entity, { expression } );
     return _.map( permittedItems, item => item.id );
   }
 
   private async ensureCreate( resolverCtx:ResolverContext ){
-    const permission = await this.getPermissions( CRUD.CREATE, resolverCtx );
-    if( permission === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
+    const permissions = await this.getPermissions( CRUD.CREATE, resolverCtx );
+    if( permissions === true ) return;
+    if( permissions === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
+    const item =_.get( resolverCtx.args, [this.entity.singular] );
+    if( ! await this.dataStore.itemMatchesExpression( item, expression ) )
+      throw new Error(`principal not allowed to create this item of '${this.entity.name}'`);
   }
 
   private async ensureUpdate( resolverCtx:ResolverContext ){
+
+    const permissions = await this.getPermissions( CRUD.CREATE, resolverCtx );
+    if( permissions === true ) return;
+    if( permissions === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
+    const item =_.get( resolverCtx.args, [this.entity.singular] );
+    if( ! await this.dataStore.itemMatchesExpression( item, expression ) )
+    throw new Error(`principal not allowed to update this item of '${this.entity.name}'`);
+
     const id = _.get( resolverCtx.args, [this.entity.singular, 'id'] );
-    await this.ensurePermittedId( id, CRUD.UPDATE, resolverCtx );
+    const filter = { expression, id };
+    const permittedItems = await this.dataStore.findByFilter(this.entity, filter );
+    if( _.size( permittedItems ) === 0 ) throw new Error(`action not permitted for id '${id}'`)
   }
 
   private async ensurePermittedId( id:string, action:CRUD, resolverCtx:ResolverContext ) {
@@ -73,7 +89,7 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     if( permissions === true ) return;
     if( ! permissions || _.isEmpty( permissions ) ) throw new Error(`action not permitted`);
 
-    const expression = await this.buildPermissionsExpression( resolverCtx, permissions );
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
     const filter = { expression, id };
     const permittedItems = await this.dataStore.findByFilter(this.entity, filter );
     if( _.size( permittedItems ) === 0 ) throw new Error(`action not permitted for id '${id}'`)
@@ -81,33 +97,47 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
 
   private async getPermissions( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|PermissionExpression[]> {
     if( _.isUndefined( this.entity.permissions ) ) return true;
-    if( ! this.getPrincipalRoles( resolverCtx ) ) return false;
+    const principalRoles = this.getPrincipalRoles( resolverCtx );
+    if( _.isBoolean(principalRoles) ) return principalRoles;
 
     return _.isString( this.entity.permissions ) ?
       this.getPermissionsFromDelegate(this.entity.permissions, action, resolverCtx ) :
       this.getPermissionFromEntityDefinition( action, resolverCtx );
   }
 
-  private getPermissionFromEntityDefinition( action:CRUD, resolverCtx:ResolverContext ):boolean|PermissionExpression[] {
+  private async getPermissionFromEntityDefinition( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|PermissionExpression[]>{
     if( ! this.entity.permissions || _.isString( this.entity.permissions) ) return false; // type ensure
     const principalRoles = this.getPrincipalRoles( resolverCtx );
-    if( _.isBoolean(principalRoles) ) return principalRoles;
+    if( _.isBoolean(principalRoles) ) return principalRoles;  // type ensure
+    const roles = _.union( principalRoles, _.keys( this.entity.permissions ) );
+    return this.getPermissionsFromRoleDefinitions( roles, action, resolverCtx );
+  }
 
-    const filter:PermissionExpression[] = [];
-    if( _.find( this.entity.permissions, (roleDefinition, roleName ) => {
-      if( ! _.includes( principalRoles, roleName ) ) return false;
-      if( _.isBoolean( roleDefinition ) ) return roleDefinition;
-      if( _.isFunction( roleDefinition ) ) return filter.push( roleDefinition ) && false;
-      if( _.isString( roleDefinition ) ) return filter.push( roleDefinition ) && false;
+  private async getPermissionsFromRoleDefinitions( roles:string[], action:CRUD, resolverCtx:ResolverContext):Promise<boolean|PermissionExpression[]>{
+    const expressions:PermissionExpression[] = [];
+    for( const role of roles ){
+      const roleDefinition = _.get(this.entity.permissions, [role] );
+      if( ! roleDefinition ) continue;
+      if( roleDefinition === true ) return true;
+      if( _.isString( roleDefinition ) ){
+        if( _.includes( roleDefinition, action ) ) return true;
+        continue;
+      }
+      const foundTrue = await this.addExpressionsFromFns( expressions, roleDefinition, action, resolverCtx );
+      if( foundTrue === true ) return true;
+    }
+    return expressions.length === 0 ? false : expressions;
+  }
 
-      if( _.find( roleDefinition, (actionDefinition, actions) => {
-        if( ! _.includes( _.toLower( actions ), action ) ) return false;
-        if( _.isBoolean( actionDefinition ) ) return actionDefinition;
-        if( _.isFunction( actionDefinition ) ) return filter.push( actionDefinition ) && false;
-      })) return true;
-
-    })) return true;
-    return filter;
+  private async addExpressionsFromFns( expressions:PermissionExpression[], expressionFns:Function|Function[], action:CRUD, resolverCtx:ResolverContext ):Promise<true|undefined>{
+    const principal = this.getPrincipal( resolverCtx );
+    if( ! _.isArray( expressionFns ) ) expressionFns = [expressionFns];
+    for( const expressionFn of expressionFns ){
+      const expression = await Promise.resolve( expressionFn( action, principal, resolverCtx, this.runtime ) );
+      if( ! expression  ) continue;
+      if( expression === true ) return true;
+      expressions.push( expression );
+    }
   }
 
   private async getPermissionsFromDelegate( delegate:string, action:CRUD, resolverCtx:ResolverContext):Promise<boolean|PermissionExpressionFn[]> {
@@ -132,15 +162,6 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   private getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
     const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
     return _.isFunction( principal ) ? principal( this.runtime, resolverCtx ) : principal;
-  }
-
-  private async buildPermissionsExpression( resolverCtx: ResolverContext, permissions: PermissionExpression[] ):Promise<any> {
-    const principal = this.getPrincipal( resolverCtx ) as PrincipalType;
-    const expressions = await Promise.all( _.map( permissions, permission =>
-      _.isString( permission ) ?
-        this.runtime.dataStore.buildExpressionFromFilter( this.entity, { id: permission } ) :
-        Promise.resolve( permission( principal, resolverCtx, this.runtime ) ) ) );
-    return this.runtime.dataStore.joinExpressions( expressions, 'or' );
   }
 
 }
