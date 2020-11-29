@@ -12,8 +12,8 @@ export class IdFilterType extends AttributeFilterType {
   graphqlTypeName() { return GraphQLID.name }
 
   attributes() { return {
-    eq: { graphqlType: GraphQLID, description: 'equal' },
-    ne: { graphqlType: GraphQLID, description: 'not equal' },
+    is: { graphqlType: GraphQLID, description: 'equal' },
+    isNot: { graphqlType: GraphQLID, description: 'not equal' },
     isIn: { graphqlType: new GraphQLList(GraphQLID), description: 'ID is in list' },
     notIn: { graphqlType: new GraphQLList(GraphQLID), description: 'ID is not in list' },
     exist: { graphqlType: GraphQLBoolean }
@@ -21,23 +21,25 @@ export class IdFilterType extends AttributeFilterType {
 
   setFilterExpression( expression:any, condition:any, field:string ):any {
     if( field === 'id' ) field = '_id';
-    if( _.isArray( condition ) ) return _.set( expression, field, { $in: _.map(condition, id => new ObjectID( id ) ) } );
-    if( _.isString( condition) ) return _.set( expression, field, { $eq: new ObjectID( condition ) } );
-    const e = this.getFilterExpression( condition );
+    if( _.isString( condition) ) condition = _.set( {}, 'is', condition );
+    if( _.isArray( condition ) ) condition = _.set( {}, 'isIn', condition );
+    const e = this.getFilterExpression( condition, field );
     if( ! e ) return;
     _.set( expression, field, e );
   } 
 
-  getFilterExpression( condition:any ):any {
-    return _.merge( {}, ... _.compact( _.map( condition, (operand, operator) => this.getOperation( operator, operand ) ) ) );
+  getFilterExpression( condition:any, field:string ):any {
+    return _.merge( {}, ... _.compact( _.map( condition, (operand, operator) =>
+      this.getOperation( operator, operand, field ) ) ) );
   }
 
-  private getOperation( operator:string, operand:any ):any {
+  private getOperation( operator:string, operand:any, field:string ):any {
     operand = _.isBoolean( operand ) ? operand :
-      _.isArray( operand ) ? _.map( operand, op => new ObjectID(op)) : new ObjectID( operand );
+      _.isArray( operand ) ? _.map( operand, op => field == '_id' ? new ObjectID(op) : _.toString( op ) ) :
+      field == '_id' ? new ObjectID( operand ) : _.toString( operand );
     switch( operator ){
-      case 'eq': return { $eq : operand };
-      case 'ne': return { $ne : operand };
+      case 'is': return { $eq : operand };
+      case 'isNot': return { $ne : operand };
       case 'isIn': return { $in : operand };
       case 'notIn': return { $nin : operand };
       case 'exist': return operand === false ? { $eq: null } : { $ne: null };

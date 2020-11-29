@@ -1,4 +1,4 @@
-import { CRUD } from 'entities/entity-resolver';
+import { CRUD } from '../entities/entity-resolver';
 import { ValidationViolation } from '../entities/entity-validation';
 import { ResolverContext } from './resolver-context';
 import { Runtime } from './runtime';
@@ -93,7 +93,15 @@ export type EntityPermissionsType = {
   [role:string]:boolean|PermissionExpressionFn|PermissionExpressionFn[]|string
 }
 
-export type PermissionExpressionFn = (action:CRUD, principal:PrincipalType, resolverCtx:ResolverContext, runtime:Runtime) => Permission|Promise<Permission>
+
+export type PermissionExpressionFn = ( peCtx:PermissionExpressionContext) => Permission|Promise<Permission>
+export type PermissionExpressionContext = {
+  action:CRUD
+  principal:PrincipalType
+  role:string
+  resolverCtx:ResolverContext,
+  runtime:Runtime
+}
 export type Permission = undefined|boolean|PermissionExpression
 export type PermissionExpression = object
 

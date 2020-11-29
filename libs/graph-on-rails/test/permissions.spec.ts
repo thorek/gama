@@ -1,10 +1,9 @@
-import { ResolverContext } from 'core/resolver-context';
-import { CRUD } from 'entities/entity-resolver';
 import _ from 'lodash';
 
-import { DomainConfiguration, PrincipalType } from '../core/domain-configuration';
+import { DomainConfiguration } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
 import { Seeder } from '../core/seeder';
+import { CRUD } from '../entities/entity-resolver';
 
 const domainConfiguration:DomainConfiguration = {
   entity: {
@@ -32,27 +31,51 @@ const domainConfiguration:DomainConfiguration = {
           color: 'red',
           Fleet: { sample: 'Fleet' }
         },
+        greenBmw: {
+          licence: 'greenBmw',
+          brand: 'BWM',
+          color: 'green',
+          Fleet: { sample: 'Fleet' }
+        },
+        blackBmw: {
+          licence: 'blackBmw',
+          brand: 'BWM',
+          color: 'black',
+          Fleet: { sample: 'Fleet' }
+        },
         blueAudi: {
           licence: 'blueAudi',
           brand: 'Audi',
           color: 'blue',
           Fleet: { sample: 'Fleet' }
         },
-        3: {
-          licence: { eval: 'faker.phone.phoneNumberFormat()' },
-          brand: { sample: ["Mercedes", "BMW", "Porsche", "Audi"] },
-          color: { sample: ['red','green', 'blue', 'black', 'white'] },
+        redAudi: {
+          licence: 'redAudi',
+          brand: 'Audi',
+          color: 'red',
+          Fleet: { sample: 'Fleet' }
+        },
+        redPorsche: {
+          licence: 'redPorsche',
+          brand: 'Porsche',
+          color: 'red',
+          Fleet: { sample: 'Fleet' }
+        },
+        blackPorsche: {
+          licence: 'blackPorsche',
+          brand: 'Porsche',
+          color: 'black',
           Fleet: { sample: 'Fleet' }
         }
       },
       permissions: {
         roleA: true,
-        user: ( action:CRUD, principal:any ) => ({color: { $in: principal.colors }}),
+        user: ( { principal } ) => ({color: { $in: principal.colors }}),
         userWithBlue: () => ({color: { $eq: 'blue' }}),
-        userC: (action:CRUD, principal:any, ctx:ResolverContext, runtime:Runtime) =>
+        userC: ( {principal, runtime} ) =>
           runtime.dataStore.buildExpressionFromFilter( runtime.entity('Car'), { color: { in: principal.colors}} ),
-        assistant: (action:CRUD) => _.includes( [CRUD.READ], action ),
-        manager: (action:CRUD, principal:PrincipalType) => ({ id: { $in: principal.carIds } })
+        assistant: ( { action } ) => _.includes( [CRUD.READ], action ),
+        manager: ( { principal } ) => ({ id: { $in: principal.carIds } })
       }
     },
     Accessory: {
@@ -65,14 +88,18 @@ const domainConfiguration:DomainConfiguration = {
           name: 'aForRedBwm',
           Car: 'redBmw'
         },
+        bForRedBmw: {
+          name: 'bForRedBmw',
+          Car: 'redBmw'
+        },
         aForBlueAudi: {
           name: 'aForBlueAudi',
           Car: 'aForBlueAudi'
         },
-        1: {
-          name: { eval: 'faker.commerce.product() + ld.random(10000)' },
-          Car: { sample: 'Car' }
-        }
+        aForGreenBwm: {
+          name: 'aForGreenBwm',
+          Car: 'greenBmw'
+        },
       },
       permissions: 'Car'
     },
@@ -110,7 +137,6 @@ describe('Permissions', () => {
   it('should allow super user', async ()=> {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) throw new Error();
     const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
     if( ! redBmw ) throw new Error();
 
@@ -123,7 +149,6 @@ describe('Permissions', () => {
   it('should prohibit looser user', async ()=> {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) throw new Error();
     const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
     if( ! redBmw ) throw new Error();
 
@@ -141,7 +166,7 @@ describe('Permissions', () => {
   it('should allow everyone if no permissions definition at entity exists', async () =>{
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const some = runtime.entity('Some');
-    if( ! some ) throw new Error();
+
     const foo = await some.findOneByAttribute( {name: 'foo'} );
     if( ! foo ) throw new Error();
 
@@ -153,7 +178,6 @@ describe('Permissions', () => {
   it( 'should set no permssion filter if at least one role allows action', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) throw new Error();
     const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
     if( ! redBmw ) throw new Error();
 
@@ -163,10 +187,10 @@ describe('Permissions', () => {
     await car.entityPermissions.ensureTypeRead( redBmw.id, superUser );
   })
 
-  it('should add a filter when the role defined by role and principal', async () => {
+  it('should add a filter when defined by role and principal', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) throw new Error();
+
     const redBmw = await car.findOneByAttribute( {licence: 'redBmw'} );
     if( ! redBmw ) throw new Error();
 
@@ -187,7 +211,6 @@ describe('Permissions', () => {
   it( 'should or-join multiple permission expressions', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) throw new Error();
 
     const blueAudi = await car.findOneByAttribute( {licence: 'blueAudi'} );
     if( ! blueAudi ) throw new Error();
@@ -204,10 +227,21 @@ describe('Permissions', () => {
   it('should be able to use filter syntax', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const car = runtime.entity('Car');
-    if( ! car ) return;
 
     const user = _.defaults( { context: { principal: { roles: 'userC', colors: ['red', 'green'] } } }, resolverCtx  );
     await car.entityPermissions.ensureTypesRead( user );
     expect( user.args.filter ).toMatchObject( { expression: { color: { $in: ['red', 'green' ] } } } );
+  })
+
+  fit( 'should get permissions from delegate', async () => {
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const accessory = runtime.entity('Accessory');
+
+    const user = _.defaults( { context: { principal: { roles: ['user'], colors: ['red', 'green'] } } }, _.clone(resolverCtx)  );
+    await accessory.entityPermissions.ensureTypesRead( user );
+    expect( user.args.filter.expression.carId['$in'] ).toHaveLength( 4 );
+    const user2 = _.defaults( { context: { principal: { roles: ['user'], colors: ['red', 'green'] } } }, _.clone(resolverCtx)  );
+    const acessories = await accessory.resolver.resolveTypes( user2 );
+    expect( acessories ).toHaveLength( 3 );
   })
 })

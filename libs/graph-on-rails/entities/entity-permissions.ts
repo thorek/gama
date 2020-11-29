@@ -69,7 +69,6 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   }
 
   private async ensureUpdate( resolverCtx:ResolverContext ){
-
     const permissions = await this.getPermissions( CRUD.CREATE, resolverCtx );
     if( permissions === true ) return;
     if( permissions === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
@@ -101,15 +100,15 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     if( _.isBoolean(principalRoles) ) return principalRoles;
 
     return _.isString( this.entity.permissions ) ?
-      this.getPermissionsFromDelegate(this.entity.permissions, action, resolverCtx ) :
-      this.getPermissionFromEntityDefinition( action, resolverCtx );
+      await this.getPermissionsFromDelegate(this.entity.permissions, action, resolverCtx ) :
+      await this.getPermissionFromEntityDefinition( action, resolverCtx );
   }
 
   private async getPermissionFromEntityDefinition( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|PermissionExpression[]>{
     if( ! this.entity.permissions || _.isString( this.entity.permissions) ) return false; // type ensure
     const principalRoles = this.getPrincipalRoles( resolverCtx );
     if( _.isBoolean(principalRoles) ) return principalRoles;  // type ensure
-    const roles = _.union( principalRoles, _.keys( this.entity.permissions ) );
+    const roles = _.intersection( principalRoles, _.keys( this.entity.permissions ) );
     return this.getPermissionsFromRoleDefinitions( roles, action, resolverCtx );
   }
 
@@ -140,14 +139,15 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     }
   }
 
-  private async getPermissionsFromDelegate( delegate:string, action:CRUD, resolverCtx:ResolverContext):Promise<boolean|PermissionExpressionFn[]> {
+  private async getPermissionsFromDelegate( delegate:string, action:CRUD, resolverCtx:ResolverContext):Promise<boolean|PermissionExpression[]> {
     const entity = this.runtime.entities[ delegate ];
     if( ! entity ) return false;
-
     const delegatePermissionIds = await entity.entityPermissions.getPermittedIds( action, resolverCtx );
     if( _.isBoolean( delegatePermissionIds ) ) return delegatePermissionIds;
-
-    return [() => _.set({}, 'id', delegatePermissionIds )];
+    const ids = _.map( delegatePermissionIds , id => _.toString( id ) );
+    const expression = await this.dataStore.buildExpressionFromFilter(
+      this.entity, _.set({}, entity.foreignKey, ids ) )
+    return [expression];
   }
 
   private getPrincipalRoles( resolverCtx:ResolverContext ):string[]|boolean{
