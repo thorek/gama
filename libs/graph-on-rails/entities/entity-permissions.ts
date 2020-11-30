@@ -1,3 +1,4 @@
+import { UV_FS_O_FILEMAP } from 'constants';
 import _ from 'lodash';
 
 import { PermissionExpression, PermissionExpressionFn, PrincipalType } from '../core/domain-configuration';
@@ -115,18 +116,28 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   }
 
   private async getPermissionsFromRoleDefinitions( roles:string[], action:CRUD, resolverCtx:ResolverContext):Promise<boolean|PermissionExpression[]>{
+    if( ! this.entity.permissions || _.isString( this.entity.permissions) ) return false; // type ensure
     const expressions:PermissionExpression[] = [];
     for( const role of roles ){
-      const roleDefinition = _.get(this.entity.permissions, [role] );
-      if( ! roleDefinition ) continue;
-      if( roleDefinition === true ) return true;
-      if( _.isString( roleDefinition ) ) {
+      const roleDefinition = this.entity.permissions[role];
+      if( roleDefinition === undefined ) {
+        continue;
+      } else if( roleDefinition === true ){
+        return true
+      } else if( _.isString( roleDefinition ) ) {
         const expression = await this.getExpressionFromAssign( roleDefinition, action, resolverCtx );
         if( expression ) expressions.push( expression );
-        continue;
+      } else if( _.isFunction( roleDefinition ) ){
+        const foundTrue = await this.addExpressionsFromFns( expressions, role, roleDefinition, action, resolverCtx );
+        if( foundTrue === true ) return true;
+      } else if( _.isObject( roleDefinition ) ){
+        const actionPermission = _.get( roleDefinition, action );
+        if( actionPermission === true ) return true;
+        if( _.isString( actionPermission ) ) {
+          const expression = await this.getExpressionFromAssign( actionPermission, action, resolverCtx );
+          if( expression ) expressions.push( expression );
+        }
       }
-      const foundTrue = await this.addExpressionsFromFns( expressions, role, roleDefinition, action, resolverCtx );
-      if( foundTrue === true ) return true;
     }
     return expressions.length === 0 ? false : expressions;
   }
@@ -158,18 +169,16 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   private async addExpressionsFromFns(
       expressions:PermissionExpression[],
       role:string,
-      expressionFns:PermissionExpressionFn|PermissionExpressionFn[],
+      expressionFn:PermissionExpressionFn,
       action:CRUD,
       resolverCtx:ResolverContext ):Promise<true|undefined>{
     const principal = this.getPrincipal( resolverCtx );
-    if( ! _.isArray( expressionFns ) ) expressionFns = [expressionFns];
-    for( const expressionFn of expressionFns ){
-      const expression = await Promise.resolve(
-        expressionFn( {action, principal, resolverCtx, role, runtime: this.runtime } ) );
-      if( ! expression  ) continue;
-      if( expression === true ) return true;
-      expressions.push( expression );
-    }
+
+    const expression = await Promise.resolve(
+      expressionFn( {action, principal, resolverCtx, role, runtime: this.runtime } ) );
+    if( ! expression  ) return;
+    if( expression === true ) return true;
+    expressions.push( expression );
   }
 
   private async getPermissionsFromDelegate( delegate:string, action:CRUD, resolverCtx:ResolverContext):Promise<boolean|PermissionExpression[]> {

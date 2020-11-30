@@ -8,10 +8,10 @@ import { EntityItem } from './entity-item';
 import { EntityModule } from './entity-module';
 
 export enum CRUD  {
-  CREATE = 'c',
-  READ = 'r',
-  UPDATE= 'u',
-  DELETE = 'd'
+  CREATE = 'create',
+  READ = 'read',
+  UPDATE= 'update',
+  DELETE = 'delete'
 }
 
 

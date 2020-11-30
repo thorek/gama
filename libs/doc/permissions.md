@@ -1,21 +1,21 @@
 # Permissions
 
-All things described here refer to the default `EntityPermssions` implementation. You can replace this with your own implementation - as described in [Custom Implementations](./custom-implementations.md).
+Everything described here refers to the default `EntityPermissions` implementation. You could replace this with your own implementation though - as described in [Custom Implementations](./custom-implementations.md).
 
-Per default your API is public. Anyone with access to the GraphQL endpoint can request any query or mutation. You can of course add restrictions on higher levels, e.g. enabling access via VPN or limit to certain IPs etc. This would be out of scope for GAMA. You could take the _GAMA starter application_ and implement this before delegating requests to a GAMA runtime. 
+## Securing your API
 
-On a functional level GAMA supports three quite common approaches to controll the usage of an API by a client:
+Per default your API is public. Anyone with access to the GraphQL endpoint can request any query or mutation. You can of course add restrictions on higher levels, e.g. enabling access via VPN or limit to certain IPs etc. These measures would be out of scope for GAMA. 
 
-* access to certain parts (that is queries and mutations) based on roles 
-* limiting the data a client can read or manage, e.g. based on assigned items (think of seeing only employees of any organisation a certain user is member of but not of other organisation's)
-* API limits - the number of possible API requests a client can make  
+On a functional level though GAMA supports three quite common approaches to control the access of an API by a client:
 
-
+  * access to queries and mutations based on roles and rights 
+  * limiting the data a client can read or manage, e.g. based on assigned items (think of seeing only employees of any organisation a certain user is member of but not of other organisation's)
+  * API limits - the number of possible API requests a client can make  (not yet)
 
 
 ## Principal 
 
-GAMA expects an object of type `PrincipalType` under the name `principal` in the resolver context. This can be either the `object` or a function returning the principal .
+To evaluate access rights GAMA expects an object of type `PrincipalType` under the name `principal` in the resolver context. This can be either the `object` itself or a function returning the principal object.
 
 ```typescript
 export type PrincipalType = {
@@ -37,19 +37,21 @@ See how an application can provide a principal here: [GAMA Principal](./gama-pri
 
 **No principal**
 
-If no principal can be determined any default mutation of any entity with a `permissions` definition would be prohibited
+If no principal can be determined any default query and mutation of any entity with a `permissions` definition would be prohibited
+
+<br>
 
 **Principal roles**
 
-These are possible values of the `roles` property - you can provide it as literals or as a function that is evaluated everytime a permission is determined. 
+These are possible values of the `roles` property - provided it as literals or as a function that is evaluated everytime a permission is determined. 
 
-|   |   |
-| - | - |
-| `undefined` | same as no `principal` present  |
-| `true`      | "superuser" - any query & mutation of any entity is allowed - regardless of assigned filter |
-| `false`     | "looser user" - same as `undefined` - no action allowed if permissions are required | 
-| string      | any query & mutation of any entity requiring this role is allowed - if assigned filter match |
-| string[]    | any query & mutation of any entity requiring any of these roles is allowed - if assigned filter match |
+| Value     | Type | Description  |
+| --------- | ---- | ------------ |
+| _empty_   | `undefined` | same as no `principal` present  |
+| `true`    | boolean     | "superuser" - any query & mutation of any entity is allowed - regardless of assigned filter |
+| `false`   | boolean     | "looser user" - same as `undefined` - no action allowed if permissions are required | 
+| roleName  | string | any query & mutation of any entity requiring this role is allowed - if assigned filter match |
+| roleNames | string[] | any query & mutation of any entity requiring any of these roles is allowed - if assigned filter match |
 
 <br/>
 
@@ -57,90 +59,234 @@ These are possible values of the `roles` property - you can provide it as litera
 
 ## Entity Permissions Definition
 
-You can configure the required role(s) for accessing queries and mutations of an entity by requiring certain roles - also differentiated for any of the CRUD (create, read, upate, delete) actions. 
+You may configure required role(s) for accessing queries and mutations of an entity by adding it to the entity configuration. 
 
 ```typescript
 export type EntityConfig  = {
   // rest omitted
-  permissions?:string|EntityPermissionsType
+  permissions?:PermissionDelegate|EntityPermissionsType
 }
+
+export type PermissionDelegate = string
 ```
 
 **Permissions Values**
 
-
-|   |   |
-| - | - |
-| `undefined` | no permission evaluation for this entity, regardless of a `principal` exists or any of its roles  |
-| string  | delegate the permissions evaluation to this entity, must be an `assocTo` relationship  |
-| EntityPermissionsType | require certain roles to allow qeries and mutation for this entity      |
+| Value | Type | Description |  
+| ----- | - | - |
+| _empty_ | `undefined` | no permission evaluation for this entity, any query and mutation is allowed unlimited, regardless if a `principal` exists or has any roles  |
+| [Role Permissions](#role-permissions) | EntityPermissionsType |  require certain roles to allow qeries and mutation for this entity    |
+| [Permission Delegate](#permission-delegate) | string  | Entity name, must be an `assocTo` relationship, delegates the permissions evaluation to this entity |
 
 <br/>
 
-## RolePermissions
+### Example
 
-```typescript
-export type EntityPermissionsType = {
-  [roleName:string]:boolean|RolePermissions
-}
-
-export type RolePermissions = PermissionExpression|ActionPermissions
+```yaml
+entities: 
+  Car:
+    attributes: 
+      licence: Key
 ```
 
-Possible values per role are:
-
-|   |   |
-| ----------------------- | - |
-| `true`   | any query and mutation of this entity is allowed if principal has role `roleName`, any restriction from other roles are not regarded |
-| `false`  | same as not adding `roleName` to permissions definition |
-| string   | builds a permisson expression from assigned ids of principal to be found under this property  (see below) |
-| `()=>any`| allows _any_ query and mutation of this entity if `principal` has role `roleName` and expression matches the required data |
-| ActionPermissionRights  | Define permissions for this entity / role per action  |
-
-<br/>
-
-## ActionPermission
-
-```typescript
-export type ActionPermissions = {
-  [actions:string]: boolean|PermissionExpression
-```
-
-You can specify allowed / prohibited actions in as key in the `ActionPermissionRights` definition.
-
-| Action  | key in actionDefinition  |  Query / Mutation | 
-| - | - | - |
-| CREATE  | c | `createEntity` mutation | 
-| READ    | r | `type` and `types` query     | 
-| UPDATE  | u | `updateEntity` mutation      |
-| DELETE  | d | `deleteEntity` mutation |
-
-<br/>
-
-You can combine any of this keys; order is irrelevant; if an action key appears more than once any will be evaluated seperately. 
-
-|   |   |
-| - | - |
-| `crud`  | all actions, same as setting this at role level  |
-| `r`     | only read actions |
-| `cru`   | any action, except delete |
-| `xyz`   | any other letter / key will be ignored |
+There will be no permission evaluation for any query or mutation of this entity. Whether a principal is present or what roles the principal has, has no effect. 
 
 <br>
 
-_Possible values_ per actions key
+## Role Permissions
 
-|   |   |
-| -------- | - |
-| `true`   | queries and mutations of this entity for the action(s) are allowed if principal has role `roleName`, any restriction from other roles are not regarded |
-| `false`  | same as omitting the actions in permissions definition for the role |
-| string   | builds a permisson expression from assigned ids of principal to be found under this property  (see below) |
-| `()=>any`| allows the query/mutation for the action(s) of this entity if `principal` has role `roleName` and expression matches the required data |
+```typescript
+export type EntityPermissionsType = {
+  [role:string]:
+    boolean | 
+    ActionPermissionType
+    PermissionExpressionFn |     
+    AssignedEntity 
+}
+
+export type AssignedEntity = string
+```
+
+Possible values (per role) are:
+
+| Value | Type | Description |  
+| ----------------------- | - | - |
+| `true` | boolean | any query and mutation of this entity is allowed if principal has role `roleName`, any restriction from other roles are not regarded |
+| `false` | boolean | same as not adding `roleName` to permissions definition |
+| [Action Permissions](#action-permissions) | ActionPermissionType | differentiate permissions for this entity / role further per action (create, read, update, delete)  |
+| [Permission Function(s)](#permission-function) | PermissionExpressionFn | Callback to add expressions to determine the permitted items for the role  |
+| [Assigned Entity](#assigned-entity) | string |  name of an entity that is referenced by the principal object to filter permitted items for all actions |
+
+<br/>
+
+### Example 
+
+```yaml
+entities: 
+  Car:
+    attributes: 
+      licence: Key
+    permissions: 
+      manager: true
+      assistant: false
+```
+
+Any principal with the role "manager" is allowed to access any query and mutation of the entity. The configuration of the role "assistent" is redundant. It could have been omitted. Any principal without the "manager" role (whether it has "assistant" or not) can not access any of the queries or mutations of this entity.
+
+<br>
+
+## Action Permissions
+
+If you want to diffirentiate the allowed action (e.g. a client should be able to read data but not save or delete them) you can specify a permission per action.
+
+```typescript
+export type ActionPermissionType = {
+  create?: boolean|AssignedEntity
+  read?: boolean|AssignedEntity
+  update?: boolean|AssignedEntity
+  delete?: boolean|AssignedEntity
+}
+```
+
+| Value | Type | Description |  
+| -------- | - | - |
+| `true`    | boolean | queries and mutations of this entity for the action(s) are allowed if principal has role `roleName`, any restriction from other roles are not regarded |
+| `false`   | boolean | same as omitting the actions permissions definition |
+| [Assigned Entity](#assigned-entity) | string |  name of an entity that is referenced by the principal object to filter permitted items for this action |
 
 
 <br/>
 
+The allowed / prohibited action affect the following queries and mutations.
+
+| Action  |  Query / Mutation | 
+| - | - | 
+| create | `createEntity` mutation | 
+| read   | `type` and `types` query     | 
+| update | `updateEntity` mutation      |
+| delete | `deleteEntity` mutation |
+
+<br/>
+
+### Example 
+
+```yaml
+entities: 
+  Car:
+    attributes: 
+      licence: Key
+    permissions: 
+      manager: 
+        create: true
+        read: true
+        update: true
+        delete: true
+      assistant: 
+        read: true
+        delete: false
+```
+
+The configuration of the "manager" role is equivalent to the shorter notation `manager: true`. 
+
+Any principal with the role "assistant" might only access the read queries. The configuration of the `delete` action is redundant, any action other than `read` is prohibited. 
+
+<br>
+
+## Permission Function
+
+```typescript
+export type PermissionExpressionFn = 
+  (peCtx:PermissionExpressionContext) => Permission|Promise<Permission>
+
+export type PermissionExpressionContext = {
+  action:CRUD
+  principal:PrincipalType
+  role:string
+  resolverCtx:ResolverContext,
+  runtime:Runtime
+}
+
+export type Permission = undefined|boolean|PermissionExpression
+export type PermissionExpression = object
+```
+
+While the other permission configurations are literal values and therefore can be expressed in YAML or JSON you can add a callback in the configuration object in which you can implement any desired permission behaviour based on the `PermissionExpressionContext`.
+
+The possible return values of the Permission Function and their affects are as follows. You can also return a `Promise` of these values. 
+
+| Value | Type | Description |  
+| -------- | - | - |
+| _no value_ | `undefined` | no effect - action might be allowed if granted by other roles | 
+| `true`    | boolean | query and mutations of this entity for the action is allowed |
+| `false`   | boolean | same as omitting - action might be allowed if granted by other roles |
+| [Permission Expression](#permission-expression) | object | Expression used to filter permitted items for an action |
+
+<br>
+
+### Example
+
+```typescript
+const domainConfiguration:DomainConfiguration = {
+  entity: {
+    Car: {
+      attributes: {
+        brand: 'String!'
+      }
+      permissions: {
+        manager: ({action}) => return _.includes(['read','create','update'], action ),
+        assistant: ({action, principal}) => {
+          if( action === CRUD.READ && principal.active === true ) return true;          
+        }
+      }
+    }
+  }
+}
+```
+
+Any principal with the role "manager" is allowed any query and mutation of the entity, except the `delete` mutation. Of course this could have also be written as `action !== 'delete'` or even with static configuration.
+
+Any principal with the role "assistant" might access the read queries if the principal object has an `active` property with the value `true`. This of course that the principal object somehow has this property set correctly - see [GAMA Principal](./gama-principal.md) how to achieve this. Here we just to demonstrate that you can use any object from the `PermissionExpressionContext` to determine the permission. 
+
+
+
+
 ## Permission Expression
+
+You can not only express whether a principal might or might not access a certain query or mutation but also limit the permitted items affected by these queries and mutations. You can return an `expression` that is used to filter the items for the queries and mutations or check of a certain item might be allowed to be read or written. Only items that match the expression will be affected. 
+
+Be aware that there can be multiple expressions for a principal. While it is sufficient for accessing a certain query or mutation that _just one_ role of the principal allows this, there can be multiple roles of a principal granting different limitations to the permitted items. In this case any item that matches _any_ of the expressions for a principal is permitted (think `or` join of expressions).
+
+If _any_ of the roles of a principal allows unlimited access to a query or mutation (by having a permisson value `true`) no further expression will be evaluated. One `true` overrides all expression-limits. 
+
+On the other hand if _any_ role provides an `expression` - the affected query or mutation is allowed. If no role provides an `expression` - the query or mutation is prohibited per se.
+
+<br>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br><br>
+<br>
+<br>
+<br>
+<br><br>
+<br>
+<br>
+<br>
+<br><br>
+<br>
+<br>
+<br>
+<br>
+
+
+## _______________Permission Expression ___________________
 
 ```typescript
 export type PermissionExpression = PrincipalAssignedIds|PermissionExpressionFn
@@ -278,5 +424,28 @@ entity:
     permissions: Car  # take permissions from Car 
 ```
 
+## Permission Delegate
+
+If you have a `assocTo` relationship between two entities, you can delegate the permssion evaluation to the `assocTo` entity. Let's say there is the following _domain definition_.
+
+```yaml
+entity: 
+  VehicleFleet:
+    attributes: 
+      name: Key
+    permission:
+      manager: true
+      user: 
+        read: true
+
+  Car:
+    attributes: 
+      licence: Key
+      brand: String
+    assocTo: VehicleFleet
+    permissions: VehicleFleet
+```
+
+<br/>
 
 

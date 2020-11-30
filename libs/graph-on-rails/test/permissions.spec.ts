@@ -76,7 +76,10 @@ const domainConfiguration:DomainConfiguration = {
           runtime.dataStore.buildExpressionFromFilter( runtime.entity('Car'), { color: { in: principal.colors}} ),
         assistant: ( { action } ) => _.includes( [CRUD.READ], action ),
         manager: ( { principal } ) => ({ id: { $in: principal.carIds } }),
-        fleetUser: 'Fleet'
+        fleetUser: 'Fleet',
+        readUser: {
+          read: true
+        }
       }
     },
     Accessory: {
@@ -301,4 +304,17 @@ describe('Permissions', () => {
     expect( fleetUserCtx.args.filter.expression.accessoryId['$in'][0]).toBe( aForBlackPorsche.id );
   })
 
+  fit( 'should differentiate per action', async () => {
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const car = runtime.entity('Car');
+
+    const readUserCtx = _.defaults( { context: { principal: { roles: ['readUser'] } } }, _.clone(resolverCtx)  );
+    await car.entityPermissions.ensureTypesRead( readUserCtx );
+    expect( readUserCtx.args.filter ).toBeUndefined();
+
+    const blueAudi = await car.findOneByAttribute( {licence: 'blueAudi'} );
+    if( ! blueAudi ) throw new Error();
+    readUserCtx.args.car = { id: blueAudi.id, color: 'black' };
+    await expect( car.entityPermissions.ensureSave( readUserCtx ) ).rejects.toBeTruthy();
+  })
 })

@@ -2,6 +2,7 @@ import { CRUD } from '../entities/entity-resolver';
 import { ValidationViolation } from '../entities/entity-validation';
 import { ResolverContext } from './resolver-context';
 import { Runtime } from './runtime';
+import _ from 'lodash';
 
 export type DomainConfiguration = {
   entity?:{[name:string]:EntityConfig},
@@ -77,7 +78,7 @@ export type EntityConfig  = {
   path?:string;
 
   seeds?:{[seedId:string]:SeedType}|SeedType[]
-  permissions?:string|EntityPermissionsType
+  permissions?:PermissionDelegate|EntityPermissionsType
 
   union?:string[]
   interface?:boolean
@@ -90,10 +91,10 @@ export type EntityConfig  = {
 }
 
 export type EntityPermissionsType = {
-  [role:string]:boolean|PermissionExpressionFn|PermissionExpressionFn[]|string
+  [role:string]:boolean|PermissionExpressionFn|AssignedEntity|ActionPermissionType
 }
-
-
+export type PermissionDelegate = string
+export type AssignedEntity = string
 export type PermissionExpressionFn = ( peCtx:PermissionExpressionContext) => Permission|Promise<Permission>
 export type PermissionExpressionContext = {
   action:CRUD
@@ -104,6 +105,12 @@ export type PermissionExpressionContext = {
 }
 export type Permission = undefined|boolean|PermissionExpression
 export type PermissionExpression = object
+export type ActionPermissionType = {
+  create?: boolean|AssignedEntity
+  read?: boolean|AssignedEntity
+  update?: boolean|AssignedEntity
+  delete?: boolean|AssignedEntity
+}
 
 export type PrincipalType = any | {
   roles?:PrincipalRolesType|PrincipalRolesTypeFn
