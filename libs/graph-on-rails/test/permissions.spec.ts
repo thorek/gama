@@ -29,43 +29,43 @@ const domainConfiguration:DomainConfiguration = {
           licence: 'redBmw',
           brand: 'BMW',
           color: 'red',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet1'
         },
         greenBmw: {
           licence: 'greenBmw',
           brand: 'BWM',
           color: 'green',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet1'
         },
         blackBmw: {
           licence: 'blackBmw',
           brand: 'BWM',
           color: 'black',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet1'
         },
         blueAudi: {
           licence: 'blueAudi',
           brand: 'Audi',
           color: 'blue',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet1'
         },
         redAudi: {
           licence: 'redAudi',
           brand: 'Audi',
           color: 'red',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet2'
         },
         redPorsche: {
           licence: 'redPorsche',
           brand: 'Porsche',
           color: 'red',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet2'
         },
         blackPorsche: {
           licence: 'blackPorsche',
           brand: 'Porsche',
           color: 'black',
-          Fleet: { sample: 'Fleet' }
+          Fleet: 'fleet3'
         }
       },
       permissions: {
@@ -75,7 +75,8 @@ const domainConfiguration:DomainConfiguration = {
         userC: ( {principal, runtime} ) =>
           runtime.dataStore.buildExpressionFromFilter( runtime.entity('Car'), { color: { in: principal.colors}} ),
         assistant: ( { action } ) => _.includes( [CRUD.READ], action ),
-        manager: ( { principal } ) => ({ id: { $in: principal.carIds } })
+        manager: ( { principal } ) => ({ id: { $in: principal.carIds } }),
+        fleetUser: 'Fleet'
       }
     },
     Accessory: {
@@ -100,6 +101,10 @@ const domainConfiguration:DomainConfiguration = {
           name: 'aForGreenBwm',
           Car: 'greenBmw'
         },
+        aForBlackPorsche: {
+          name: 'aForBlackPorsche',
+          Car: 'blackPorsche'
+        }
       },
       permissions: 'Car'
     },
@@ -107,14 +112,36 @@ const domainConfiguration:DomainConfiguration = {
       attributes: {
         name: 'String'
       },
+      assocTo: 'Accessory',
+      permissions: {
+        fleetUser: 'Accessory:Car:Fleet'
+      },
       seeds: {
-        foo: {
-          name: 'foo'
+        Some1aForBlueAudi: {
+          name: 'Some1aForBlueAudi',
+          Accessory: 'aForBlueAudi',
         },
-        10: {
-          name: {
-            eval: 'faker.lorem.word'
-          }
+        Some2aForBlueAudi: {
+          name: 'Some2aForBlueAudi',
+          Accessory: 'aForBlueAudi',
+        },
+        Some1bForRedBmw: {
+          name: 'Some1bForRedBmw',
+          Accessory: 'bForRedBmw'
+        },
+        Some1bForBlackPorsche: {
+          name: 'Some1aForBlackPorsche',
+          Accessory: 'aForBlackPorsche'
+        }
+      }
+    },
+    Foo: {
+      attributes: {
+        name: 'String'
+      },
+      seeds: {
+        foo1: {
+          name: 'foo1'
         }
       }
     }
@@ -165,14 +192,14 @@ describe('Permissions', () => {
 
   it('should allow everyone if no permissions definition at entity exists', async () =>{
     const resolverCtx:any = { root: {}, args: {}, context: {} };
-    const some = runtime.entity('Some');
+    const foo = runtime.entity('Foo');
 
-    const foo = await some.findOneByAttribute( {name: 'foo'} );
-    if( ! foo ) throw new Error();
+    const foo1 = await foo.findOneByAttribute( {name: 'foo1'} );
+    if( ! foo1 ) throw new Error();
 
-    await some.entityPermissions.ensureTypesRead( resolverCtx );
+    await foo.entityPermissions.ensureTypesRead( resolverCtx );
     expect( resolverCtx.args.filter ).toBeUndefined();
-    await some.entityPermissions.ensureTypeRead( foo.id, resolverCtx );
+    await foo.entityPermissions.ensureTypeRead( foo1.id, resolverCtx );
   })
 
   it( 'should set no permssion filter if at least one role allows action', async () => {
@@ -233,7 +260,7 @@ describe('Permissions', () => {
     expect( user.args.filter ).toMatchObject( { expression: { color: { $in: ['red', 'green' ] } } } );
   })
 
-  fit( 'should get permissions from delegate', async () => {
+  it( 'should get permissions from delegate', async () => {
     const resolverCtx:any = { root: {}, args: {}, context: {} };
     const accessory = runtime.entity('Accessory');
 
@@ -244,4 +271,34 @@ describe('Permissions', () => {
     const acessories = await accessory.resolver.resolveTypes( user2 );
     expect( acessories ).toHaveLength( 3 );
   })
+
+  it( 'should get permission from assignedEntity', async () => {
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const fleet = runtime.entity('Fleet');
+    const fleet1 = await fleet.findOneByAttribute({ name: 'Fleet 1' } );
+    if( ! fleet1 ) throw new Error();
+    const car = runtime.entity('Car');
+
+    const fleetUserCtx = _.defaults( { context: { principal: { roles: ['fleetUser'], fleetId: fleet1.id } } }, _.clone(resolverCtx)  );
+    await car.entityPermissions.ensureTypesRead( fleetUserCtx );
+    console.log( fleetUserCtx.args.filter.expression );
+    expect( fleetUserCtx.args.filter.expression.fleetId['$eq']).toBe( fleet1.id );
+  })
+
+  it( 'should get permission from assignedEntity over multiple hops', async () => {
+    const resolverCtx:any = { root: {}, args: {}, context: {} };
+    const fleet = runtime.entity('Fleet');
+    const fleet3 = await fleet.findOneByAttribute({ name: 'Fleet 3' } );
+    if( ! fleet3 ) throw new Error();
+    const accessory = runtime.entity('Accessory');
+    const aForBlackPorsche = await accessory.findOneByAttribute({name: 'aForBlackPorsche'});
+    if( ! aForBlackPorsche ) throw new Error();
+    const some = runtime.entity('Some');
+
+    const fleetUserCtx = _.defaults( { context: { principal: { roles: ['fleetUser'], fleetId: fleet3.id } } }, _.clone(resolverCtx)  );
+    await some.entityPermissions.ensureTypesRead( fleetUserCtx );
+    console.log( fleetUserCtx.args.filter.expression );
+    expect( fleetUserCtx.args.filter.expression.accessoryId['$in'][0]).toBe( aForBlackPorsche.id );
+  })
+
 })

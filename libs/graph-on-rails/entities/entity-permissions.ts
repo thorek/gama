@@ -16,6 +16,8 @@ export interface EntityPermissions  {
   ensureDelete( resolverCtx:ResolverContext ):Promise<void>
 
   getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>
+
+  getExpressionFromAssign( assign:string, action:CRUD, resolverCtx:ResolverContext ):Promise<object|undefined>
 }
 
 export class DefaultEntityPermissions extends EntityModule implements EntityPermissions {
@@ -118,21 +120,52 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
       const roleDefinition = _.get(this.entity.permissions, [role] );
       if( ! roleDefinition ) continue;
       if( roleDefinition === true ) return true;
-      if( _.isString( roleDefinition ) ){
-        if( _.includes( roleDefinition, action ) ) return true;
+      if( _.isString( roleDefinition ) ) {
+        const expression = await this.getExpressionFromAssign( roleDefinition, action, resolverCtx );
+        if( expression ) expressions.push( expression );
         continue;
       }
-      const foundTrue = await this.addExpressionsFromFns( expressions, roleDefinition, action, resolverCtx );
+      const foundTrue = await this.addExpressionsFromFns( expressions, role, roleDefinition, action, resolverCtx );
       if( foundTrue === true ) return true;
     }
     return expressions.length === 0 ? false : expressions;
   }
 
-  private async addExpressionsFromFns( expressions:PermissionExpression[], expressionFns:Function|Function[], action:CRUD, resolverCtx:ResolverContext ):Promise<true|undefined>{
+  async getExpressionFromAssign( assign:string, action:CRUD, resolverCtx:ResolverContext ):Promise<object|undefined>{
+    const entities = _.split( assign, ':' );
+    if( _.size( entities ) === 0 ) return;
+    if( _.size( entities ) === 1 ) return this.getExpressionFromAssignedEntity( _.first( entities ) || '', action, resolverCtx );
+    const next = this.runtime.entities[ entities.shift() || ''];
+    if( ! next ) return;
+    const expression = next.entityPermissions.getExpressionFromAssign( _.join( entities, ':' ), action, resolverCtx );
+    const nextItems = await this.dataStore.findByFilter( next, { expression } );
+    const nextIds = _.map( nextItems, item => item.id );
+    return this.runtime.dataStore.buildExpressionFromFilter(  this.entity, _.set( {}, next.foreignKey, nextIds ) );
+  }
+
+  private async getExpressionFromAssignedEntity( assigned:string, action:CRUD, resolverCtx:ResolverContext ):Promise<object|undefined>{
+    const assignedEntity = assigned === this.entity.name ? this.entity : this.runtime.entities[assigned || ''];
+    if( ! assignedEntity ) return;
+    const principal = this.getPrincipal( resolverCtx );
+    const key =
+      _.has( principal, assignedEntity.foreignKey ) ? assignedEntity.foreignKey :
+      _.has( principal, assignedEntity.foreignKeys ) ? assignedEntity.foreignKeys : undefined;
+    if( ! key ) return;
+    const field = assigned === this.entity.name ? 'id' : assignedEntity.foreignKey;
+    return this.runtime.dataStore.buildExpressionFromFilter(  this.entity, _.set( {}, field, principal[key] ) );
+  }
+
+  private async addExpressionsFromFns(
+      expressions:PermissionExpression[],
+      role:string,
+      expressionFns:PermissionExpressionFn|PermissionExpressionFn[],
+      action:CRUD,
+      resolverCtx:ResolverContext ):Promise<true|undefined>{
     const principal = this.getPrincipal( resolverCtx );
     if( ! _.isArray( expressionFns ) ) expressionFns = [expressionFns];
     for( const expressionFn of expressionFns ){
-      const expression = await Promise.resolve( expressionFn( action, principal, resolverCtx, this.runtime ) );
+      const expression = await Promise.resolve(
+        expressionFn( {action, principal, resolverCtx, role, runtime: this.runtime } ) );
       if( ! expression  ) continue;
       if( expression === true ) return true;
       expressions.push( expression );
