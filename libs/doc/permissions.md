@@ -268,7 +268,7 @@ On the other hand if _any_ role provides an `expression` - the affected query or
 ## Effect of permission values on queries and mutations
 
 ***types query***
-|             |   | 
+|             |   |  
 | ----------- | - | 
 | `true`      | query is resolved without any limitations                 |
 | `false`     | query is allowed but will return no items                 |
@@ -311,6 +311,25 @@ On the other hand if _any_ role provides an `expression` - the affected query or
 | expression  | if `id` is not within the items that match the expressions an error is thrown |
 
 <br>
+
+***assocFrom relationship in query***
+|             |   |  
+| ----------- | - | 
+| `true`      | all items from the `assocFrom` entity will be included                              |
+| `false`     | no item from the `assocFrom` entity will be included                                |
+| expression  | only items from the `asscoFrom` entity that match the expressions will be included  |
+
+<br>
+
+***assocTo relationship in query***
+|             |   |  
+| ----------- | - | 
+| `true`      | item from the `assocTo` entity will be included                                                 |
+| `false`     | item from the `assocTo` entity will not be included                                             |
+| expression  | item from the `assocTo` entity will be included if it matches the expression, `null` otherwise  |
+
+<br>
+
 
 ### Example
 
