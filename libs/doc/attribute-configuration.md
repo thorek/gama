@@ -16,7 +16,8 @@ export type AttributeConfig = {
   description?:string
   validation?:object  
   mediaType?:'image'|'video'|'audio'
-  calculate?:( root?:any, args?:any, context?:any ) => any
+  virtual?:boolean
+  resolve?:(arc:AttributeResolveContext) => any
 }
 ```
 
@@ -36,7 +37,8 @@ All configuration options are documented in detail further below:
 | [description](#description) |                           | adding documentaton to the public API                           |
 | [validation](#validation)   | field validation          | configure business validation using extensive ValidateJS syntax |
 | [mediatype](#mediatype)     |                           | only used as metadata for UI clients, e.g. GAMA Admin UI        |
-| [calculate](#calculate)     | dynamic attrirbute value  | determine custom value for (virtual) field                      |
+| [resolve](#resolve)         | custom attribute value    | callback to determine custom value for a field                  |
+| [virtual](#virtual)         | non-persistant value      | value is never written or read from datastore                   |
 
  <br>
 

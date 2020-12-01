@@ -1,9 +1,7 @@
-import { printSchema } from 'graphql';
-import _ from 'lodash';
 import YAML from 'yaml';
 
+import { ResolverContext } from '../core/domain-configuration';
 import { Runtime } from '../core/runtime';
-import { ResolverContext } from '../core/resolver-context';
 import { Seeder } from '../core/seeder';
 
 const domainConfiguration = YAML.parse(`

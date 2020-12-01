@@ -1,8 +1,7 @@
 import { UV_FS_O_FILEMAP } from 'constants';
 import _ from 'lodash';
 
-import { PermissionExpression, PermissionExpressionFn, PrincipalType } from '../core/domain-configuration';
-import { ResolverContext } from '../core/resolver-context';
+import { ResolverContext, PermissionExpression, PermissionExpressionFn, PrincipalType } from '../core/domain-configuration';
 import { EntityModule } from './entity-module';
 import { CRUD } from './entity-resolver';
 
@@ -10,7 +9,11 @@ export interface EntityPermissions  {
 
   ensureTypeRead( id:string|string[], resolverCtx:ResolverContext ):Promise<void>
 
-  ensureTypesRead( resolverCtx:ResolverContext ):Promise<void>
+  ensureTypesRead(resolverCtx:ResolverContext ):Promise<void>
+
+  addPermissionToFilter( filter:any, resolverCtx:ResolverContext ):Promise<void>
+
+  isIdPermitted( id:string, action:CRUD, resolverCtx:ResolverContext ):Promise<boolean>
 
   ensureSave( resolverCtx:ResolverContext ):Promise<void>
 
@@ -27,18 +30,35 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
 
   async ensureTypeRead( ids:string|string[], resolverCtx:ResolverContext ) {
     if( ! _.isArray( ids ) ) ids = [ids];
-    await Promise.all( _.map( ids, id => this.ensurePermittedId( id, CRUD.READ, resolverCtx ) ) );
+    for( const id of ids ){
+      if( this.isIdPermitted( id, CRUD.READ, resolverCtx ) ) continue;
+      throw new Error(`id '${id}' does not exist`);
+    }
   }
 
-  async ensureTypesRead( resolverCtx:ResolverContext ){
+  async ensureTypesRead(resolverCtx:ResolverContext ):Promise<void>{
+    const filter = _.get( resolverCtx.args, 'filter', {} );
+    await this.addPermissionToFilter( filter, resolverCtx );
+    _.set( resolverCtx.args, 'filter', filter );
+  }
+
+  async isIdPermitted( id:string, action:CRUD, resolverCtx:ResolverContext ):Promise<boolean> {
+    const permissions = await this.getPermissions( action, resolverCtx );
+    if( permissions === true ) return true;
+    if( ! permissions || _.isEmpty( permissions ) ) return false;
+
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
+    const filter = { expression, id };
+    const permittedItems = await this.dataStore.findByFilter(this.entity, filter );
+    return _.size( permittedItems ) > 0;
+  }
+
+  async addPermissionToFilter( filter:any, resolverCtx:ResolverContext ):Promise<void>{
     const permissions = await this.getPermissions( CRUD.READ, resolverCtx );
     if( permissions === true ) return;
-    if( ! permissions || _.isEmpty( permissions ) ) return _.set( resolverCtx.args, 'filter', { id: null } );
-
-    const filter = _.get( resolverCtx.args, 'filter', {} );
-    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
+    const expression = ( ! permissions || _.isEmpty( permissions ) ) ?
+      { id: null } : this.runtime.dataStore.joinExpressions( permissions, 'or' );
     _.set( filter, 'expression', expression );
-    _.set( resolverCtx.args, 'filter', filter );
   }
 
   ensureSave( resolverCtx:ResolverContext ){
@@ -48,7 +68,7 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
 
   async ensureDelete( resolverCtx:ResolverContext ){
     const id = _.get( resolverCtx.args, 'id' );
-    await this.ensurePermittedId( id, CRUD.DELETE, resolverCtx );
+    await this.isIdPermitted( id, CRUD.DELETE, resolverCtx );
   }
 
   async getPermittedIds( action:CRUD, resolverCtx:ResolverContext ):Promise<boolean|string[]>{
@@ -72,7 +92,7 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   }
 
   private async ensureUpdate( resolverCtx:ResolverContext ){
-    const permissions = await this.getPermissions( CRUD.CREATE, resolverCtx );
+    const permissions = await this.getPermissions( CRUD.UPDATE, resolverCtx );
     if( permissions === true ) return;
     if( permissions === false ) throw new Error(`principal not allowed to create new item of '${this.entity.name}'`);
     const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
@@ -81,17 +101,6 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
     throw new Error(`principal not allowed to update this item of '${this.entity.name}'`);
 
     const id = _.get( resolverCtx.args, [this.entity.singular, 'id'] );
-    const filter = { expression, id };
-    const permittedItems = await this.dataStore.findByFilter(this.entity, filter );
-    if( _.size( permittedItems ) === 0 ) throw new Error(`action not permitted for id '${id}'`)
-  }
-
-  private async ensurePermittedId( id:string, action:CRUD, resolverCtx:ResolverContext ) {
-    const permissions = await this.getPermissions( action, resolverCtx );
-    if( permissions === true ) return;
-    if( ! permissions || _.isEmpty( permissions ) ) throw new Error(`action not permitted`);
-
-    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
     const filter = { expression, id };
     const permittedItems = await this.dataStore.findByFilter(this.entity, filter );
     if( _.size( permittedItems ) === 0 ) throw new Error(`action not permitted for id '${id}'`)

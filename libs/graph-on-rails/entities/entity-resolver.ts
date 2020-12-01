@@ -1,7 +1,14 @@
 import _ from 'lodash';
 
 import { Sort } from '../core/data-store';
-import { ResolverContext } from '../core/resolver-context';
+import {
+  AfterResolverHook,
+  AttributeResolveContext,
+  PreResolverHook,
+  PrincipalType,
+  ResolverContext,
+  ResolverHookContext,
+} from '../core/domain-configuration';
 import { Entity } from './entity';
 import { FileInfo } from './entity-file-save';
 import { EntityItem } from './entity-item';
@@ -75,8 +82,8 @@ export class EntityResolver extends EntityModule {
   async resolveAssocToType( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
     const id = _.get( resolverCtx.root, refEntity.foreignKey );
     if( _.isNil(id) ) return null;
-    await refEntity.entityPermissions.ensureTypeRead( id, resolverCtx );
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocTo( refEntity, resolverCtx, id );
+    if( ! await refEntity.entityPermissions.isIdPermitted( id, CRUD.READ, resolverCtx ) ) return null;
     const enit = await refEntity.findById( id );
     return enit.item;
   }
@@ -92,11 +99,10 @@ export class EntityResolver extends EntityModule {
   async resolveAssocFromTypes( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any[]> {
     const id = _.toString(resolverCtx.root.id);
     const fieldName = refEntity.isAssocToMany( this.entity ) ? this.entity.foreignKeys : this.entity.foreignKey;
-    const attr = _.set({}, fieldName, id );
-
-    // das geht nicht.. wir müssen hier die permissions noch reinbringen
-    if( refEntity.isPolymorph ) return this.resolvePolymorphAssocFromTypes( refEntity, attr );
-    const enits = await refEntity.findByAttribute( attr );
+    if( refEntity.isPolymorph ) return this.resolvePolymorphAssocFromTypes( refEntity, fieldName, id, resolverCtx );
+    const filter = _.set( {}, fieldName, id );
+    await refEntity.entityPermissions.addPermissionToFilter( filter, resolverCtx );
+    const enits = await refEntity.accessor.findByFilter( filter );
     return _.map( enits, enit => enit.item );
   }
 
@@ -110,11 +116,22 @@ export class EntityResolver extends EntityModule {
     return { count: _.size( enits ), createdFirst, createdLast, updatedLast };
   }
 
-  private async callWithHooks( impl:Function, resolverCtx:ResolverContext, preHook?:Function, afterHook?:Function ){
-    let result = _.isFunction( preHook ) ? preHook( resolverCtx ): undefined;
-    if( _.isObject(result) ) return result;
-    result = impl( resolverCtx );
-    return _.isFunction( afterHook ) ? afterHook( result, resolverCtx ): result;
+  private async callWithHooks(
+      impl:Function,
+      resolverCtx:ResolverContext,
+      preHook?:PreResolverHook,
+      afterHook?:AfterResolverHook ):Promise<any>{
+    let resolved = _.isFunction( preHook ) ?
+      Promise.resolve( preHook( this.getResolverHookContext( resolverCtx ) ) ) : undefined;
+    if( _.isObject(resolved) ) return resolved;
+    resolved = impl( resolverCtx );
+    return _.isFunction( afterHook ) ?
+      Promise.resolve( afterHook( resolved, this.getResolverHookContext( resolverCtx ) ) ) : resolved;
+  }
+
+  private getResolverHookContext( resolverCtx:ResolverContext ):ResolverHookContext {
+    const principal = this.getPrincipal( resolverCtx );
+    return { resolverCtx, principal, runtime: this.runtime };
   }
 
   private getSort( sortString: string ):Sort|undefined {
@@ -142,6 +159,7 @@ export class EntityResolver extends EntityModule {
 
   private async resolvePolymorphAssocTo( refEntity:Entity, resolverCtx:ResolverContext, id:any ):Promise<any> {
     const polymorphType = this.runtime.entities[_.get( resolverCtx.root, refEntity.typeField )];
+    if( ! await polymorphType.entityPermissions.isIdPermitted( id, CRUD.READ, resolverCtx ) ) return ;
     const enit = await polymorphType.findById( id );
     _.set( enit.item, '__typename', polymorphType.typeName );
     return enit.item;
@@ -151,10 +169,12 @@ export class EntityResolver extends EntityModule {
     throw 'not implemented';
   }
 
-  private async resolvePolymorphAssocFromTypes(refEntity:Entity, attr:any ):Promise<any[]> {
+  private async resolvePolymorphAssocFromTypes(refEntity:Entity, fieldName:string, id:string, resolverCtx:ResolverContext ):Promise<any[]> {
     const result = [];
     for( const entity of refEntity.entities ){
-      const enits = await entity.findByAttribute( attr );
+      const filter = _.set( {}, fieldName, id );
+      refEntity.entityPermissions.addPermissionToFilter( filter, resolverCtx );
+      const enits = await refEntity.accessor.findByFilter( filter );
       _.forEach( enits, enit => _.set(enit.item, '__typename', entity.typeName ) );
       result.push( enits );
     }
@@ -192,10 +212,17 @@ export class EntityResolver extends EntityModule {
     for( const name of _.keys( this.entity.attributes ) ){
       const attribute = this.entity.attributes[name];
       if( ! _.isFunction(attribute.resolve) ) continue;
-      const value = await Promise.resolve( attribute.resolve( item, resolverCtx, this.runtime ) );
+      const principal = this.getPrincipal( resolverCtx );
+      const arc:AttributeResolveContext = { item, resolverCtx, principal, runtime: this.runtime };
+      const value = await Promise.resolve( attribute.resolve( arc ) );
       Object.defineProperty( item, name, { value } )
     }
     return item;
+  }
+
+  private getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
+    const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
+    return _.isFunction( principal ) ? principal( this.runtime, resolverCtx ) : principal;
   }
 
 

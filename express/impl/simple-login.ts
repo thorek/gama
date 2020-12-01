@@ -48,8 +48,6 @@ const validUser = ( token:string) => {
 
 const addPrincipalToApolloContext = async (expressContext:{req:express.Request}, apolloContext:any) => {
   const token = expressContext.req.headers.authorization;
-  const username = _.startsWith( token, 'Username') ? _.last(_.split(token, 'Username ')) : undefined;
-  if( username ) return _.set( apolloContext, 'principal', await findUser( apolloContext.runtime, username ) );
   const principal = token ? validUser( token ) : undefined;
   _.set( apolloContext, 'principal', principal );
 }

@@ -21,7 +21,6 @@ import { TypeBuilder } from './schema-builder';
 type AttrFieldConfig = {
   type:GraphQLType
   description?:string
-  resolve?:any
 }
 
 type AttributePurpose = 'createInput'|'updateInput'|'filter'|'type';
@@ -345,7 +344,7 @@ export class EntityBuilder extends TypeBuilder {
     const shouldAddNonNull = this.shouldAddNonNull( name, attribute, purpose);
     const description = this.getDescriptionForField( attribute, purpose );
     const fieldConfig = { type: this.getGraphQLTypeDecorated(attribute, shouldAddNonNull, purpose ), description };
-    if( this.skipCalculatedAttribute( name, attribute, purpose, fieldConfig ) ) return;
+    if( this.skipVirtualAttribute( name, attribute, purpose, fieldConfig ) ) return;
     return fieldConfig;
   }
 
@@ -373,11 +372,8 @@ export class EntityBuilder extends TypeBuilder {
 
   //
   //
-  private skipCalculatedAttribute(name:string, attribute:TypeAttribute, purpose:AttributePurpose, fieldConfig:AttrFieldConfig ):boolean {
-    if( ! _.isFunction( attribute.resolve ) ) return false;
-    if( purpose !== 'type' ) return true;
-    fieldConfig.resolve = attribute.resolve
-    return false;
+  private skipVirtualAttribute(name:string, attribute:TypeAttribute, purpose:AttributePurpose, fieldConfig:AttrFieldConfig ):boolean {
+    return attribute.virtual === true && purpose !== 'type';
   }
 
   /**
@@ -389,7 +385,7 @@ export class EntityBuilder extends TypeBuilder {
       const filterType = this.runtime.filterTypes['IDFilter'];
       const fields = { id: { type: filterType ? this.graphx.type(filterType.name()) : GraphQLID } };
       _.forEach( this.attributes(), (attribute, name) => {
-        if( _.isFunction( attribute.resolve ) ) return;
+        if( attribute.virtual ) return;
         const filterType = this.getFilterType(attribute);
         if( filterType ) _.set( fields, name, { type: filterType } );
       });
@@ -403,7 +399,7 @@ export class EntityBuilder extends TypeBuilder {
   protected createSortType():void {
     const name = this.entity.sorterEnumName;
     const values = _(this.attributes()).
-      map( (attribute, name ) => _.isFunction(attribute.resolve) ? [] : [`${name}_ASC`, `${name}_DESC`] ).
+      map( (attribute, name ) => attribute.virtual ? [] : [`${name}_ASC`, `${name}_DESC`] ).
       flatten().compact().
       concat( ['id_ASC', 'id_DESC']).
       reduce( (values, item) => _.set( values, item, {value: item} ), {} );

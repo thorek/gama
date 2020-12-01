@@ -10,20 +10,28 @@ export type EntityConfig  = {
 }
 
 export type EntityHooksType = {
-  preSave?: ( ctx:ResolverContext ) => void|undefined|object
-  afterSave?: ( resolved:any, ctx:ResolverContext ) => object
-  preTypeQuery?: ( ctx:ResolverContext ) => void|undefined|object
-  afterTypeQuery?: ( resolved:any, ctx:ResolverContext ) => object
-  preTypesQuery?: ( ctx:ResolverContext ) => void|undefined|object
-  afterTypesQuery?: ( resolved:any, ctx:ResolverContext ) => object
-  preDelete?: ( ctx:ResolverContext ) => void|undefined|object
-  afterDelete?: ( resolved:any, ctx:ResolverContext ) => object
+  preSave?: PreResolverHook
+  afterSave?: AfterResolverHook
+  preTypeQuery?: PreResolverHook
+  afterTypeQuery?: AfterResolverHook
+  preTypesQuery?: PreResolverHook
+  afterTypesQuery?: AfterResolverHook
+  preDelete?: PreResolverHook
+  afterDelete?: AfterResolverHook
 }
-```
 
-In any _hook_ function you get the `ResolverContext` which holds the data from the GraphQL layer and which you can use to perform any task or influencing the default implementation.
+export type PreResolverHook = 
+  (rhc:ResolverHookContext) => undefined|object|Promise<undefined|object>;
 
-```typescript
+export type AfterResolverHook = 
+  (resolved: any, rhc:ResolverHookContext) => object|Promise<object>;
+
+export type ResolverHookContext = {
+  resolverCtx:ResolverContext
+  runtime:Runtime
+  principal:PrincipalType
+}
+
 export type ResolverContext = {
   root:any
   args:any
@@ -31,9 +39,11 @@ export type ResolverContext = {
 }
 ```
 
-The `beforeHooks` can interrupt the normal execution flow by returning an `object`. This would be handled as the result that will be sent to the client. In other words - if a `beforeXXX` hook returns `void` or `undefined` the regular implementation will be executed.
+In any _hook_ function you get the `ResolverContext` which holds the data from the GraphQL layer, the principal and the runtime which you can use to perform any task or influencing the default implementation. 
 
-In the the `afterXXX` hooks you also get the `result` that is about to be sent to the client. Hooks can change the `resolverContext` and `result` to influence the behaviour. A hook must return this `result` either changed or untouched, otherwise nothing will be sent to the client.
+The `beforeHooks` can interrupt the normal execution flow by returning an `object`. This would be handled as the result that will be sent to the client. In other words - if a `beforeXXX` hook returns `undefined` the regular implementation will be executed. If it returns an object - neither the regular implementation nor any possible `afterXXX` hook will be performed.
+
+In the the `afterXXX` hooks you also get the `resolved` value that is about to being sent to the client. A `afterXXX` hook must return this `resolved` either changed or untouched, otherwise nothing will be sent to the client.
 
 ## Example
 
@@ -45,13 +55,13 @@ const domainConfiguration:DomainConfiguration = {
     Car: {
       hooks: {
         preTypeQuery: () => console.log( 'preType' ),
-        afterTypeQuery: (result:any) => { console.log( "afterTypeQuery"); return result },
+        afterTypeQuery: (resolved:any) => { console.log( "afterTypeQuery"); return resolved },
         preTypesQuery: () => console.log( 'preTypes' ),
-        afterTypesQuery: (result:any) => { console.log( "afterTypesQuery"); return result },
+        afterTypesQuery: (resolved:any) => { console.log( "afterTypesQuery"); return resolved },
         preSave: () => console.log( 'preSave' ),
-        afterSave: (result:any) => { console.log( "afterSave"); return result },
+        afterSave: (resolved:any) => { console.log( "afterSave"); return resolved },
         preDelete: () => console.log( 'preDelete' ),
-        afterDelete: (result:any) => { console.log( "afterDelete"); return result },
+        afterDelete: (resolved:any) => { console.log( "afterDelete"); return resolved },
       }
 
     }

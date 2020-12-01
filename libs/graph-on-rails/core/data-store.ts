@@ -1,6 +1,5 @@
 import { FilterType } from '../builder/filter-type';
 import { Entity } from '../entities/entity';
-import { ResolverContext } from './resolver-context';
 
 export type Sort = {
   field:string

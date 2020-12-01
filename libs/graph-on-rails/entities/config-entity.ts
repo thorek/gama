@@ -116,6 +116,7 @@ export class ConfigEntity extends Entity {
       defaultValue: attrConfig.default,
       mediaType: attrConfig.mediaType,
       resolve: attrConfig.resolve,
+      virtual: attrConfig.virtual
     }
   }
 

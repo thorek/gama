@@ -245,54 +245,11 @@ const domainConfiguration:DomainConfiguration = {
 
 Any principal with the role "manager" is allowed any query and mutation of the entity, except the `delete` mutation. Of course this could have also be written as `action !== 'delete'` or even with static configuration.
 
-Any principal with the role "assistant" might access the read queries if the principal object has an `active` property with the value `true`. This of course that the principal object somehow has this property set correctly - see [GAMA Principal](./gama-principal.md) how to achieve this. Here we just to demonstrate that you can use any object from the `PermissionExpressionContext` to determine the permission. 
+Any principal with the role "assistant" might access the read queries if the principal object has an `active` property with the value `true`. This is assuming that the principal object somehow has this property set correctly - see [GAMA Principal](./gama-principal.md) how to achieve this. Here we just to demonstrate that you can use any object from the `PermissionExpressionContext` to determine the permission. 
 
-
-
+<br>
 
 ## Permission Expression
-
-You can not only express whether a principal might or might not access a certain query or mutation but also limit the permitted items affected by these queries and mutations. You can return an `expression` that is used to filter the items for the queries and mutations or check of a certain item might be allowed to be read or written. Only items that match the expression will be affected. 
-
-Be aware that there can be multiple expressions for a principal. While it is sufficient for accessing a certain query or mutation that _just one_ role of the principal allows this, there can be multiple roles of a principal granting different limitations to the permitted items. In this case any item that matches _any_ of the expressions for a principal is permitted (think `or` join of expressions).
-
-If _any_ of the roles of a principal allows unlimited access to a query or mutation (by having a permisson value `true`) no further expression will be evaluated. One `true` overrides all expression-limits. 
-
-On the other hand if _any_ role provides an `expression` - the affected query or mutation is allowed. If no role provides an `expression` - the query or mutation is prohibited per se.
-
-<br>
-
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br><br>
-<br>
-<br>
-<br>
-<br><br>
-<br>
-<br>
-<br>
-<br><br>
-<br>
-<br>
-<br>
-<br>
-
-
-## _______________Permission Expression ___________________
-
-```typescript
-export type PermissionExpression = PrincipalAssignedIds|PermissionExpressionFn
-export type PermissionExpressionFn = (principal:PrincipalType, resolverCtx:ResolverContext, runtime:Runtime) => any
-export type PrincipalAssignedIds = string
-```
 
 If the value of either a role or action permssion is a boolean - it has the effect that any affected query or  mutation is either allowed or prohibited regardless of the actual data handled by this query or mutation.
 
@@ -300,33 +257,74 @@ This is sometimes not fine grained enough - a principal might probably be allowe
 
 While - in this example - read would be simply `true` and delete `false` - we must find a way do define which exact items a principal might update or create. 
 
-This can be done via `PermissionExpression`s that a role permission or action permission can provide. Think of an expression as an additional _filter_ to a query or mutation. Only data that match this _filter_ are allowed to be or read, created, updated, deleted. If multiple roles bestow more than one permission expression to a principal this would be true for any data that matches any of the expressions - think of an `or` join of _filters_.
+This can be done via `PermissionExpression`s that a role permission or action permission can provide. Think of an expression as an additional _filter_ to a query or mutation. Only data that match this _expression_ are allowed to be or read, created, updated, deleted. If multiple roles bestow more than one permission expression to a principal this would be true for any data that matches any of the expressions - think of an `or` join of _expressions_.
 
-| Action  | Query / Mutation | Effect                                                                       | 
-| ------- | ---------------- | ---------------------------------------------------------------------------- |
-| CREATE  | createMutation   | allowed if role or action permission resolves to `true` or **any expression**; otherwise throws error  |
-| READ    | typesQuery       | add expression to the given filter of the typesQuery; would only return items that match the filter from the request **and any** of the permission expressions |
-| READ    | typeQuery        | throws error if `id` does not match any of the items from **any** of the permission expressions |
-| UPDATE  | updateMutation   | throws error if `id` does not match any of the items from **any** of the permission expressions |
-| DELETE  | deleteMutation   | throws error if `id` does not match any of the items from **any** of the permission expressions |
+If _any_ of the roles of a principal allows unlimited access to a query or mutation (by having a permisson value `true`) no further expression will be evaluated. One `true` overrides all expression-limits. 
+
+On the other hand if _any_ role provides an `expression` - the affected query or mutation is allowed. If no role provides an `expression` - the permission for query or mutation is the same as `false`, thus prohibited per se.
 
 <br>
 
-The expression can of course use properties of the principal. Let's assume a principal with the role "user" should only be able to read and update cars of certain brands and that the assigned brands is a property of the principal the application sets in the context, e.g. `principal.brands = ['BMW', 'Mercedes']`.
+## Effect of permission values on queries and mutations
+
+***types query***
+|             |   | 
+| ----------- | - | 
+| `true`      | query is resolved without any limitations                 |
+| `false`     | query is allowed but will return no items                 |
+| expression  | expressions are added to the filter of the query          |
+
+<br>
+
+***type query***
+|             |   | 
+| ----------- | - | 
+| `true`      | query is resolved                                                               |
+| `false`     | an error is thrown always                                                       |
+| expression  | if `id` is not within the items that match the expressions an error is thrown   |
+
+<br>
+
+***create mutation***
+|             |   | 
+| ----------- | - | 
+| `true`      | mutation is executed                                     |
+| `false`     | an error is thrown always                                |
+| expression  | if the item attempted to be created does not match the expressions - in other words: the resulting item would not allowed to be read by a type query - an error is thrown |
+
+<br>
+
+***update mutation***
+|             |   | 
+| ----------- | - | 
+| `true`      | mutation is executed                                     |
+| `false`     | an error is thrown always                                |
+| expression  | if `id` is not within the items that match the expressions or the item attempted to be updated does not match the expressions - in other words: the resulting item would not allowed to be read by a type query - an error is thrown |
+
+<br>
+
+***delete mutation***
+|             |   | 
+| ----------- | - | 
+| `true`      | mutation is executed                                                          |
+| `false`     | an error is thrown always                                                     |
+| expression  | if `id` is not within the items that match the expressions an error is thrown |
+
+<br>
+
+### Example
 
 ```typescript
-{
+const domainConfiguration:DomainConfiguration = {
   entity: {
-    'Car': {
+    Car: {
       attributes: {
-        licence: 'Key',
-        brand: 'String!',
-        mileage: 'Int'
-      },
+        brand: 'String!'
+      }
       permissions: {
-        user: {
-          ru: (principal) => ({ brand: { $in: principal.brands } }),
-          cd: false // same as omitting this 
+        assistant: ({ action }) => {          
+          if( action === CRUD.DELETE ) return false;
+          return { brand: { $in: ['VW', 'BMW', 'Opel'] } };
         }
       }
     }
@@ -334,95 +332,116 @@ The expression can of course use properties of the principal. Let's assume a pri
 }
 ```
 
-You might see that the expression syntax is dependent on the datastore. This is a tiny difference here (since the default filter syntax is somehow leaned to the default _datastore_ implementation (MongoDB). But if you would decide to run your domain configuration with another _datastore_ implementation - say MySQL - things will break. 
+While a principal with the role "assistant" is not allowed to delete any car item, it is allowed to call the read queries and create and update mutations. However, the data that the read query returns will only include items where the "brand" of a car is included in the given array "allowed brand values". You would probably do not hard code this, but get the value from the principal object. 
 
-On one hand this gives you all the freedom and possibilities the underlying _datastore_ technology offers, like complex aggregations, joins, calculations etc. On the other hand is your domain configuration now coupled to a certain _datastore_ implementation. You can possibly avoid this by delegating the creation of the expression to the datastore itself and using the (of course limited) possibilities of the filter definition for this entity. This is of course only the case if the non-default _datastore_ implementation does not introduce a different filter syntax than the default implementation - which it very well could. Than the example above could've been written with filter syntax like so:
+You might have realized that the `expression` is in the syntax of the current _datastore_ implementation (default MongoDB). If you would decide to run your domain configuration with another _datastore_ implementation - say MySQL - things will not work as expected. 
+
+On one hand this gives you all the freedom and possibilities the underlying _datastore_ technology offers, like complex aggregations, joins, calculations etc. On the other hand is your domain configuration now coupled to a certain _datastore_ implementation. You can possibly avoid this by delegating the creation of the expression to the datastore itself and using the (of course limited) possibilities of the filter definition for this entity. Than the example above could've been written with filter syntax like so:
 
 ```typescript
-permissions: {
-  user: {
-    ru: (principal:any, ctx:ResolverContext, runtime:Runtime) => 
-      runtime.dataStore.buildExpressionFromFilter( 
-        runtime.entity('Car'), { brand: { in: principal.brands} } )
+
+assistant: ({runtime}) => 
+  runtime.dataStore.buildExpressionFromFilter( 
+    runtime.entity('Car'), { brand: { in: ['VW', 'BMW', 'Opel'] } } )
+}
+```
+
+It does look similar - since the default filter implementations leans to the default MongoDB implementation. Nonetheless if the non-default _datastore_ implementation uses the same filter syntax as the default implementation - which we suggest - it would run against this implementation as well. 
+
+As an a bit more complex example - that could not be implemented via default filter syntax - we could want to express that a principal should be allowed to read and write cars items of all "asigned brands" as provided by the principal object or every other car item that has a higher mileage than `100,000`. The MongoDB expression for this requirement would look like this: 
+
+```typescript
+assistant: ({principal}) => ({
+  $or: [
+    { brand: { $in: principal.brands } }, 
+    { mileage: { $gt: 100000 } }
+  ]
+})
+```
+
+## Assigned Entity
+
+Quite often there is the situation that your principal is an entity item itself (e.g. a User item) and the User has a relationship to one or more other entities as kind of assigned entity. Let's look at this domain example: 
+
+```
++----------------+           +--------------+        +--------+        +-----------+
+| User           |           | VehicleFleet |        | Car    |        | Accessory |
++----------------+           +--------------+        +--------+        +-----------+
+| roles:string[] |           |              |        |        |        |           |
+|                +----1..* --|              |--1-----|        |--1-----|           |
+|                |           |              |        |        |        |           |
+|                |           |              |        |        |        |           |
++----------------+           +--------------+        +--------+        +-----------+
+```
+
+The user is assigned to one or many VehicleFleets. Therefore a user should be able to access the entities VehicleFleet, Car, Accessory with right regarding to its roles but limited to entity items of the assigned VehicleFeets. 
+
+You could express this with a [Permission Function](#permission-function). That takes the principal and adds the matching expression. 
+
+```typescript
+entity: {
+  VehicleFleet: {
+    permissions: {
+      manager: ({principal}) => ({ id: { $in: principal.vehicleFleetIds } })
+    }
+  },
+  Car: {
+    permissions: {
+      manager: ({principal}) => ({ vehicleFleetId: { $in: principal.vehicleFleetIds } })
+    }
+  },
+  Accessory: {
+    permissions: {
+      manager: async ({principal, runtime}) => {
+        const car = runtime.entity('Car');
+        const allowedCars = await car.findByAttribute({vehicleFleetId: principal.vehicleFleetIds});
+        const allowedCardIds = _.map( allowedCars, car => car.id );
+        return { carId: { $in: allowedCardIds } };
+      }
     }
   }
 }
 ```
 
-A more complex example - that could not be implemented via default filter syntax would be if the user should be allowed to read and update cars of all asigned brands or every other car that has a higher mileage than `100,000`. A filter cannot do that. The MongoDB expression for this requirement would look like this: 
+As you see this becomes quite complicated when moving along relationships. This can be expressed shorter by simply referring to the entiy a principal item is assigned to. The following would achieve the same as above.
 
-```typescript
-permissions: {
-  user: {
-    ru: (principal) => ({
-      $or: [
-        {brand: {$in: principal.brands}}, 
-        {mileage: {$gt: 100000}}
-      ]
-    })
-  }
-}
+```yaml
+entity: 
+  VehicleFleet:
+    permissions:
+      manager: VehicleFleet
+
+  Car: 
+    assocTo: VehicleFleet
+    permissions:
+      manager: VehicleFleet
+
+  Accessory:
+    assocTo: Car
+    permissions:
+      manager: Car.VehicleFleet
 ```
 
+When expressing this permission at an entity - if the entity that a principal is assigned to is not the entity itself or a `assocTo` relationship from the entity, you can specify the "path" to the assigned entity with dots between the entity names.
 
-## Examples
+This works over any amount of entity `assocTo` relationships. As you might have guessed, we hit the datastore for any entity that is more than one `assocTo` relationship away - so this may become a performance issue with very large datasets. You can of course always implement your own expression function - or bypass this permission implementation alltogether by providing [Resolver Hooks](./resolver-hooks.md) or even your own entity permission implementation.
 
-Keep in mind every action is always allowed without any further evaluation if
+Please not that we configured the `AssignedEntity` at the role level, thus allowing any action for this role limited by this assigned entity. We can also configure this for a certain action like so: 
 
-  * no `permissions` configuration exists at the entity **or**
-  * the `principal` is a "superuser" - `principal.roles` is `true`
+```yaml
+entity: 
+  VehicleFleet:
+    permissions:
+      manager: 
+        read: true
+        create: VehicleFleet
+        update: VehicleFleet        
+```
 
-Every action is always prohibited without any further evaluation if 
-  * a `permissions` configuration exists at the entity **and**
-  * there is no `principal` present or a principal with `principal.roles` is `false`
+Now a principal with the role "manager" is allowed to read any VehicleFleet item, but is only allowed to create and update VehicleFleet items for the assigned VehicleFleets (and deleting not allowed at all). 
+
 
 <br>
-
-```yaml
-entity: 
-  Car: 
-    attributes: 
-      brand: String
-      mileage: Int
-    permissions: 
-      manager: true    # all actions allowed if principal has role 'manager' 
-```
-
-```yaml
-entity: 
-  Car: 
-    attributes: 
-      brand: String
-      mileage: Int
-    permissions: 
-      manager:  
-        crud: true     # Same as before, all actions allowed if principal has role 'manager' 
-      user: false      # all actions not allowed if principal has role 'user', same as omitting this
-```
-
-```yaml
-entity: 
-  Car: 
-    attributes: 
-      brand: String
-      mileage: Int
-    permissions: 
-      manager:  
-        cru: true     # create, read, update allowed if principal has role 'manager' 
-        d: false      # delete not allowed - same as omitting this
-      user: 
-        r: true       # read allowed if principal has role 'user' , all other actions not allowed
-```
-
-```yaml
-entity: 
-  Accessory: 
-    attributes: 
-      name: String
-      price: Int
-    assocTo: Car
-    permissions: Car  # take permissions from Car 
-```
 
 ## Permission Delegate
 
@@ -447,5 +466,34 @@ entity:
 ```
 
 <br/>
+
+## Restricting attributes based on roles
+
+We have seen how to control which queries and mutations a principal might access and how to limit the affected data. Sometimes there might be another securtiy issue where you want to restrict the possible attributes a user / principal might see. 
+
+Let`s look at this example 
+
+```yaml
+entity: 
+  Car: 
+    attributes: 
+      licence: Key
+      brand: String!
+      mileage: Int!
+    permissions: 
+      manager: true
+      assistant: 
+        read: true
+```
+
+So far a principal with the role "manager" might read and write any car item, a principal with the role "assistant" can read all car items. Let's assume you do not want to provide an "assistant" with the mileage of a car. While GAMA does not provide an explicit solution to this, there are two easy ways to achieve this. 
+
+***Attribute Resolver***
+
+We cannot take away the attribute mileage for certain API clients, since it is part of the type definition of the GraphQL schema. But we can hide or mask any attribute value - even based on the principal's role. 
+
+```typescript
+
+```
 
 

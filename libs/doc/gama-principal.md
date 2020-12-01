@@ -1,7 +1,6 @@
 # Principal
 
-To controll access to the entity queries and mutations GAMA includes a default `EntityPermission` module that uses the concept of a `principal` that is expected in the `context` of any query or mutation.
-
+To control access to the entity queries and mutations GAMA includes a default `EntityPermission` module that uses the concept of a `principal` object (with the properties "roles") that is expected in the `context` (under the name "principal") of any query or mutation.
 
 A principal bears the information of API client / user
   * possible _roles_ for the current 
@@ -14,7 +13,7 @@ Whether and how an application determines a principial object is usually specifi
 
 ## Example - User as Principal
 
-To show how you would add your own implementation to obtain and provide a `principal` to your GAMA application we will create a bit similar solution to the default JWT based implementation but still quite simple approach with a _User_ entity as `prinicipal` that will hold all information to grant or prohibit any API client's access to certain queries and mutations. 
+To show how you would add your own implementation to obtain and provide a `principal` to your GAMA application we will create a bit similar solution to the default JWT based implementation but use a quite simple approach with a _User_ entity as `prinicipal` that will hold all information to grant or prohibit any API client's access to certain queries and mutations. 
 
 We will provide a method that we can call from our's apps `gama-app.ts` to include this implementation to our application.
 

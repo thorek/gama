@@ -1,8 +1,8 @@
+import _ from 'lodash';
+
 import { CRUD } from '../entities/entity-resolver';
 import { ValidationViolation } from '../entities/entity-validation';
-import { ResolverContext } from './resolver-context';
 import { Runtime } from './runtime';
-import _ from 'lodash';
 
 export type DomainConfiguration = {
   entity?:{[name:string]:EntityConfig},
@@ -11,15 +11,30 @@ export type DomainConfiguration = {
   mutation?:{[name:string]:MutationConfigFn},
 }
 
+export type ResolverContext = {
+  root:any
+  args:any
+  context:any
+}
+
 export type EntityHooksType = {
-  preSave?: ( ctx:ResolverContext ) => void|undefined|object
-  afterSave?: ( resolved:any, ctx:ResolverContext ) => object
-  preTypeQuery?: ( ctx:ResolverContext ) => void|undefined|object
-  afterTypeQuery?: ( resolved:any, ctx:ResolverContext ) => object
-  preTypesQuery?: ( ctx:ResolverContext ) => void|undefined|object
-  afterTypesQuery?: ( resolved:any, ctx:ResolverContext ) => object
-  preDelete?: ( ctx:ResolverContext ) => void|undefined|object
-  afterDelete?: ( resolved:any, ctx:ResolverContext ) => object
+  preSave?: PreResolverHook
+  afterSave?: AfterResolverHook
+  preTypeQuery?: PreResolverHook
+  afterTypeQuery?: AfterResolverHook
+  preTypesQuery?: PreResolverHook
+  afterTypesQuery?: AfterResolverHook
+  preDelete?: PreResolverHook
+  afterDelete?: AfterResolverHook
+}
+
+export type PreResolverHook = (rhc:ResolverHookContext) => undefined|object|Promise<undefined|object>;
+export type AfterResolverHook = (resolved: any, rhc:ResolverHookContext) => object|Promise<object>;
+
+export type ResolverHookContext = {
+  resolverCtx:ResolverContext
+  runtime:Runtime
+  principal:PrincipalType
 }
 
 type QueryMutationArgConfig = { type: string|object }
@@ -45,7 +60,15 @@ export type AttributeConfig = {
   filterType?:string|false
   validation?:object
   mediaType?:'image'|'video'|'audio'
-  resolve?:( item:any, resolverCtx:ResolverContext, runtime:Runtime ) => any
+  virtual?:boolean
+  resolve?:(arc:AttributeResolveContext) => any
+}
+
+export type AttributeResolveContext = {
+  item:any
+  resolverCtx:ResolverContext
+  runtime:Runtime
+  principal:PrincipalType
 }
 
 export type SeedEvalContextType = {

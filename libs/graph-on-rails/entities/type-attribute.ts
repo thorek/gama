@@ -1,6 +1,6 @@
-import { ResolverContext } from 'core/resolver-context';
-import { Runtime } from 'core/runtime';
 import { GraphQLType } from 'graphql';
+
+import { AttributeResolveContext } from '../core/domain-configuration';
 
 //
 export type TypeAttribute = {
@@ -13,6 +13,7 @@ export type TypeAttribute = {
   defaultValue?:any
   mediaType?:'image'|'video'|'audio'
   list?:boolean
-  resolve?:( item:any, resolverCtx:ResolverContext, runtime:Runtime ) => any
+  resolve?:(arc:AttributeResolveContext) => any
+  virtual?:boolean
 }
 
