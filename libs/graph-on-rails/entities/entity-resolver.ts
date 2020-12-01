@@ -35,7 +35,7 @@ export class EntityResolver extends EntityModule {
       const id = _.get( resolverCtx.args, 'id' );
       this.permissions.ensureTypeRead( id, resolverCtx );
       const enit = await this.accessor.findById( id );
-      return this.applyAttributeResolver( enit.item, resolverCtx );
+      return this.resolve( enit, resolverCtx );
     };
     return this.callWithHooks( impl, resolverCtx, this.hooks?.preTypeQuery, this.hooks?.afterTypeQuery );
   }
@@ -47,10 +47,9 @@ export class EntityResolver extends EntityModule {
       const sort = this.getSort( _.get( resolverCtx.args, 'sort') );
       const paging = _.get( resolverCtx.args, 'paging');
       const enits = await this.accessor.findByFilter( filter, sort, paging );
-      return await Promise.all(
-        _.map( enits, enit => this.applyAttributeResolver( enit.item, resolverCtx ) ) );
+      return this.resolve( enits, resolverCtx );
     };
-    return this.callWithHooks( impl, resolverCtx, this.entity.hooks?.preTypesQuery, this.entity.hooks?.afterTypesQuery );
+    return this.callWithHooks( impl, resolverCtx, this.hooks?.preTypesQuery, this.hooks?.afterTypesQuery );
   }
 
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
@@ -58,14 +57,15 @@ export class EntityResolver extends EntityModule {
       await this.permissions.ensureSave( resolverCtx );
       const attributes = _.get( resolverCtx.args, this.entity.singular );
       const fileInfos = await this.setFileValuesAndGetFileInfos( resolverCtx.args, attributes );
-      const result = await this.accessor.save( attributes );
-      if( result instanceof EntityItem ) {
-        this.saveFiles( result.item.id, fileInfos );
-        return _.set( {validationViolations: []}, this.entity.singular, result.item );
+      const enit = await this.accessor.save( attributes );
+      if( enit instanceof EntityItem ) {
+        const item = await this.resolve( enit, resolverCtx );
+        this.saveFiles( item.id, fileInfos );
+        return _.set( {validationViolations: []}, this.entity.singular, item );
       }
-      return { validationViolations: result };
+      return { validationViolations: enit };
     };
-    return this.callWithHooks( impl, resolverCtx, this.entity.hooks?.preSave, this.entity.hooks?.afterSave );
+    return this.callWithHooks( impl, resolverCtx, this.hooks?.preSave, this.hooks?.afterSave );
   }
 
   async deleteType( resolverCtx:ResolverContext ):Promise<string[]> {
@@ -76,7 +76,7 @@ export class EntityResolver extends EntityModule {
       try { await this.entity.fileSave.deleteFiles( id ) } catch (error) { return ['Error', _.toString(error)] }
       return [];
     };
-    return this.callWithHooks( impl, resolverCtx, this.entity.hooks?.preSave, this.entity.hooks?.afterSave );
+    return this.callWithHooks( impl, resolverCtx, this.hooks?.preSave, this.hooks?.afterSave );
   }
 
   async resolveAssocToType( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
@@ -85,7 +85,7 @@ export class EntityResolver extends EntityModule {
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocTo( refEntity, resolverCtx, id );
     if( ! await refEntity.entityPermissions.isIdPermitted( id, CRUD.READ, resolverCtx ) ) return null;
     const enit = await refEntity.findById( id );
-    return enit.item;
+    return this.resolve( enit, resolverCtx, refEntity );
   }
 
   async resolveAssocToManyTypes( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
@@ -93,7 +93,7 @@ export class EntityResolver extends EntityModule {
     const ids = _.map( _.get( resolverCtx.root, refEntity.foreignKeys ), id => _.toString(id) );
     await refEntity.entityPermissions.ensureTypeRead( ids, resolverCtx );
     const enits = await refEntity.findByIds( ids );
-    return _.map( enits, enit => enit.item );
+    return this.resolve( enits, resolverCtx, refEntity );
   }
 
   async resolveAssocFromTypes( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any[]> {
@@ -103,7 +103,7 @@ export class EntityResolver extends EntityModule {
     const filter = _.set( {}, fieldName, id );
     await refEntity.entityPermissions.addPermissionToFilter( filter, resolverCtx );
     const enits = await refEntity.accessor.findByFilter( filter );
-    return _.map( enits, enit => enit.item );
+    return this.resolve( enits, resolverCtx, refEntity );
   }
 
   async resolveStats( resolverCtx:ResolverContext ):Promise<any> {
@@ -162,7 +162,7 @@ export class EntityResolver extends EntityModule {
     if( ! await polymorphType.entityPermissions.isIdPermitted( id, CRUD.READ, resolverCtx ) ) return ;
     const enit = await polymorphType.findById( id );
     _.set( enit.item, '__typename', polymorphType.typeName );
-    return enit.item;
+    return this.resolve( enit, resolverCtx, polymorphType );
   }
 
   private async resolvePolymorphAssocToMany( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
@@ -176,9 +176,10 @@ export class EntityResolver extends EntityModule {
       refEntity.entityPermissions.addPermissionToFilter( filter, resolverCtx );
       const enits = await refEntity.accessor.findByFilter( filter );
       _.forEach( enits, enit => _.set(enit.item, '__typename', entity.typeName ) );
-      result.push( enits );
+      const items = await this.resolve( enits, resolverCtx, refEntity );
+      result.push( items );
     }
-    return _(result).flatten().compact().map( enit => enit.item ).value();
+    return _(result).flatten().compact().value();
   }
 
   private async setFileValuesAndGetFileInfos( args:any, attributes:any ):Promise<FileInfo[]> {
@@ -206,24 +207,25 @@ export class EntityResolver extends EntityModule {
     for( const fileInfo of fileInfos ) await this.entity.fileSave.saveFile( id, fileInfo );
   }
 
-    //
-  //
-  private async applyAttributeResolver( item:any, resolverCtx:ResolverContext  ):Promise<any>{
-    for( const name of _.keys( this.entity.attributes ) ){
-      const attribute = this.entity.attributes[name];
+  private async resolve( enits:EntityItem|EntityItem[], resolverCtx:ResolverContext, entity = this.entity  ):Promise<any|any[]> {
+    const items = _.isArray( enits ) ? _.map( enits, enit => enit.item) : [enits.item];
+    for( const item of items ) await this.applyAttributeResolver( entity, item, resolverCtx );
+    return _.isArray( enits ) ? items : _.first( items );
+  }
+
+  private async applyAttributeResolver( entity:Entity, item:any, resolverCtx:ResolverContext ){
+    const principal = this.getPrincipal( resolverCtx );
+    for( const name of _.keys( entity.attributes ) ){
+      const attribute = entity.attributes[name];
       if( ! _.isFunction(attribute.resolve) ) continue;
-      const principal = this.getPrincipal( resolverCtx );
       const arc:AttributeResolveContext = { item, resolverCtx, principal, runtime: this.runtime };
       const value = await Promise.resolve( attribute.resolve( arc ) );
       Object.defineProperty( item, name, { value } )
     }
-    return item;
   }
 
   private getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
     const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
     return _.isFunction( principal ) ? principal( this.runtime, resolverCtx ) : principal;
   }
-
-
 }

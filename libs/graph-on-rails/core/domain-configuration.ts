@@ -111,6 +111,9 @@ export type EntityConfig  = {
   extendEntity?:( runtime:Runtime ) => void | Promise<void>
   validation?:( item:any, runtime:Runtime ) => ValidationReturnType
   hooks?:EntityHooksType
+
+  foreignKey?:string
+  foreignKeys?:string
 }
 
 export type EntityPermissionsType = {

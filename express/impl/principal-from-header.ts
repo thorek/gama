@@ -2,7 +2,7 @@ import express from 'express';
 import { DomainDefinition } from 'graph-on-rails';
 import _ from 'lodash';
 
-export const addSetPrincipal = ( domainDefinition:DomainDefinition ) => {
+export const addPrincipalFromHeader = ( domainDefinition:DomainDefinition ) => {
   domainDefinition.contextFn.push( addPrincipalToApolloContext );
 }
 

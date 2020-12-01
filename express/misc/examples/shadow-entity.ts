@@ -8,28 +8,24 @@ export const domainConfiguration:DomainConfiguration = {
         name: 'Key'
       },
       assocFrom: 'Car',
+      permissions: {
+        manager: true
+      },
       seeds: {
         fleet1: { name: 'Fleet1' },
         fleet2: { name: 'Fleet2' },
         fleet3: { name: 'Fleet3' },
-      },
-      permissions: {
-        user: () => ( { name: { $in: ['Fleet1', 'Fleet2' ] } } )
       }
     },
     Car: {
       attributes: {
         brand: 'String',
-        mileage: {
-          type: 'Int',
-          resolve: ({principal, item}) => _.includes(principal.roles, 'manager') ? item.mileage : null
-        }
+        mileage: 'Int',
+        price: 'Int'
       },
       assocTo: 'Fleet',
-      permissions: {
-        manager: true,
-        user: () => ({brand: { $eq: 'BMW' } })
-      },
+      assocFrom: 'Accessory',
+      permissions: 'Fleet',
       seeds: {
         fleet1Bmw: { brand: 'BMW', mileage: 10000, Fleet: 'fleet1' },
         fleet1Porsche: { brand: 'Porsche', mileage: 20000, Fleet: 'fleet1' },
@@ -37,6 +33,29 @@ export const domainConfiguration:DomainConfiguration = {
         fleet2Opel: { brand: 'Opel', mileage: 23000, Fleet: 'fleet2' },
         fleet3Bmw: { brand: 'BMW', mileage: 45000, Fleet: 'fleet3' },
       }
+    },
+    Accessory: {
+      attributes: {
+        name: 'String',
+        price: 'Int'
+      },
+      assocTo: 'Car',
+      seeds: {
+        30: {
+          name: { eval: 'faker.commerce.productName()' },
+          price: { eval: 'ld.random(100)' },
+          Car: { sample: 'Car' }
+        }
+      }
+    },
+    CarLimited: {
+      attributes: {
+        brand: 'String'
+      },
+      assocTo: 'Fleet',
+      assocFrom: 'Accessory',
+      collection: 'cars',
+      foreignKey: 'carId'
     }
   }
 }

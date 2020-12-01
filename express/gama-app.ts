@@ -5,8 +5,8 @@ import path from 'path';
 import express from 'express';
 
 // import { domainConfiguration } from './domain-configuration';
-import { domainConfiguration } from './misc/examples/permissions-assoc-from';
-import { addSetPrincipal } from './impl/principal-from-header';
+import { domainConfiguration } from './misc/examples/shadow-entity';
+import { addPrincipalFromHeader } from './impl/principal-from-header';
 import { addJwtLogin } from './impl/jwt-login';
 
 // some default values
@@ -23,7 +23,7 @@ const domainDefinition:DomainDefinition = new DomainDefinition( DOMAIN_CONFIGURA
 domainDefinition.add( domainConfiguration );
 
 // add custom code
-addSetPrincipal( domainDefinition );
+addPrincipalFromHeader( domainDefinition );
 
 // the default datastore implementation
 const dataStore = () => MongoDbDataStore.create({ url: MONGODB_URL, dbName: MONGODB_DBNAME });

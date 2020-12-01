@@ -1,4 +1,3 @@
-import { UV_FS_O_FILEMAP } from 'constants';
 import _ from 'lodash';
 
 import { ResolverContext, PermissionExpression, PermissionExpressionFn, PrincipalType } from '../core/domain-configuration';
@@ -56,8 +55,8 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   async addPermissionToFilter( filter:any, resolverCtx:ResolverContext ):Promise<void>{
     const permissions = await this.getPermissions( CRUD.READ, resolverCtx );
     if( permissions === true ) return;
-    const expression = ( ! permissions || _.isEmpty( permissions ) ) ?
-      { id: null } : this.runtime.dataStore.joinExpressions( permissions, 'or' );
+    if( ! permissions || _.isEmpty( permissions ) ) return _.set( filter, 'id', null );
+    const expression = this.runtime.dataStore.joinExpressions( permissions, 'or' );
     _.set( filter, 'expression', expression );
   }
 

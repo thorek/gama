@@ -95,6 +95,9 @@ export class ConfigEntity extends Entity {
 
   protected getPermissions():string|EntityPermissionsType|undefined { return this.entityConfig.permissions }
 
+  protected getForeignKey() { return this.entityConfig.foreignKey || super.getForeignKey() }
+  protected getForeignKeys() { return this.entityConfig.foreignKeys || super.getForeignKeys() }
+
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );
     this.resolveKey( attrConfig );

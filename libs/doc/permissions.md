@@ -464,7 +464,9 @@ Now a principal with the role "manager" is allowed to read any VehicleFleet item
 
 ## Permission Delegate
 
-If you have a `assocTo` relationship between two entities, you can delegate the permssion evaluation to the `assocTo` entity. Let's say there is the following _domain definition_.
+Often the definition of roles, rights and Assigned Entities are repeated identitcal for many entities. If you have an `assocTo` relationship between two entities you can avoid this duplication and delegate the permission definition to the `assocTo` entity. The role rights are identitcal to the ones at the delegate entity. Even if the permissions at the delegate entity include a permission expression or AssignedEntity - an expression is created in which the foreignKeys match the permitted ids from the delegate entity.
+
+Let's say there is the following _domain definition_. 
 
 ```yaml
 entity: 
@@ -473,22 +475,44 @@ entity:
       name: Key
     permission:
       manager: true
-      user: 
-        read: true
 
   Car:
     attributes: 
       licence: Key
       brand: String
     assocTo: VehicleFleet
-    permissions: VehicleFleet
+    permissions: 
+      manager: VehicleFleet
+      user: 
+        read: VehicleFleet
+
+  Accessory:
+    attributes:
+      name: String!
+      price: Float!
+    assocTo: Car
+    permissions: Car
+```
+
+`Accessory` delegates its permissions definition to `Car` - this is identical to 
+
+```yaml
+  Accessory:
+    attributes:
+      name: String!
+      price: Float!
+    assocTo: Car
+    permissions: 
+      manager: Car.VehicleFleet
+      user: 
+        read: Car.VehicleFleet
 ```
 
 <br/>
 
 ## Restricting attributes based on roles
 
-We have seen how to control which queries and mutations a principal might access and how to limit the affected data. Sometimes there might be another securtiy issue where you want to restrict the possible attributes a user / principal might see. 
+We have seen how to control which queries and mutations a principal might access and how to limit the affected data. Sometimes there might be another security issue where you want to restrict the possible attributes a user / principal might see. 
 
 Let`s look at this example 
 
@@ -509,10 +533,69 @@ So far a principal with the role "manager" might read and write any car item, a 
 
 ***Attribute Resolver***
 
-We cannot take away the attribute mileage for certain API clients, since it is part of the type definition of the GraphQL schema. But we can hide or mask any attribute value - even based on the principal's role. 
+We cannot take away the attribute "mileage" for certain API clients, since it is part of the type definition of the GraphQL schema. But we can hide or mask any attribute value - even based on the principal's role. 
 
 ```typescript
+const domainDefinition:DomainDefinition = {
+  entities: {
+    Car: {
+      attributes: {
+        brand: 'String',
+        mileage: {
+          type: 'Int',
+          resolve: ({principal, item}) => 
+            _.includes(principal.roles, 'manager') ? item.mileage : null
+        }
+      },
+      permission: {
+        manager: true, 
+        assistant: { read: true }        
+      }
+    }
+  }
+}
+```
+
+So only if the principal has the role "manager" we actually return the "mileage" value - otherwise `null`, thus preventing any other user (e.g. the "assistant") from seeing the mileage of a car. 
+
+***Shadow Entity***
+
+GAMA uses a _convention over configuration_ approach wherever possible. But the 2nd part is equaly important, we can override any convention. And use that for a neat little trick to split access to certain attribute sets of an entity for different principal roles. 
+
+Take a look at the following example: 
+
+```yaml
+entity:
+  Car:
+    attributes: 
+      brand: String
+      mileage: Int
+      price: Int
+    },
+    assocTo: Fleet
+    assocFrom: Accessory
+    permissions: 
+      manager: true
+
+  Accessory: 
+    attributes: 
+      name: String
+      price: Int    
+    assocTo: Car
+
+  CarLimited: 
+    attributes:
+      brand: String    
+    assocTo: Fleet
+    assocFrom: Accessory
+    collection: cars
+    foreignKey: carId
+    permissions: 
+      assistant: 
+        read: true
 
 ```
 
+In the definition of the so called _shadow entity_ `CarLimited` we use the same `collection` as for `Car` - and not as per convention "car_limiteds" - thus getting the same entity items in the queries for this entity. But we include only the attributes a user without the "manager" role should see. 
 
+The `assocFrom` relationship from `Accessory` would assume however to find its foreignKey - again as per convention - as "carLimitedId". But in the _datastore_ accessory items have `carId` as foreign key. So we also set this value to `carId` and now have a seperate entity that we can give seperate permissions with only a subset of the attributes of the "real" entity. 

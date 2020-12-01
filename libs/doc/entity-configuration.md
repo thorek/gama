@@ -41,13 +41,22 @@ From the definition of an _entity_ a full fledged GraphQL schema is generated in
 The behaviour is strongly oppionated and uses mostly conventions; nonetheless you can configure most of the details. 
 You will probably only ever use the following configuration attributes: 
 
-  * `attributes` the attributes of the entity
-  * `assocTo`, `assocToMany`, `assocFrom` to express the relation of one entity to another (has relationships)
-  * `union`, `interface`, `implements` to express identity relations between entities
-  * `permissions` to configure the access of users and roles to entity data
-  * `seeds` to declare seed data you can use to develop or run your API
-  * `description` to document the entity in the GraqphQL schema
-
+|   |    |
+| - | -- |
+| [attributes](#attributes ) |  the attributes of the entity  |
+| [assocTo](#assocto ) |  has-one relationship to another entity  |
+| [assocToMany](#assocToMany ) |  has-many relationship to another entity   |
+| [assocFrom](#assocFrom ) |  has-many as the opposite of an has-one relationship to another entity  |
+| [union](#union ) |    |
+| [interface](#interface ) |    |
+| [implements](#implements ) |    |
+| [permissions](#permissions ) |  role-based rights permission configuration  |
+| [seeds](#seeds ) |  generating seed or test data  |
+| [description](#description ) |  description to add to the schema documentation  |
+| [validation](#validation ) |  callback for complex or non-attribute based validation  |
+| [hooks](#hooks ) |  hook callbacks to customize the behaivour and result of the default queries and mutation  |
+  
+<br>
 
 
 
