@@ -10,22 +10,24 @@ export type FileInfo = {
   name:string
   filename:string
   stream:any
+  secret:string
 }
 
 //
 //
 export class EntityFileSave extends EntityModule {
 
-  saveFile( id:string, fileAttribute:FileInfo ):Promise<void> {
+  saveFile( id:string, fileInfo:FileInfo ):Promise<void> {
     return new Promise( async (resolve, reject) => {
       const dirname = [
         this.runtime.config.uploadRootDir as string,
+        fileInfo.secret,
         this.entity.typeName,
         _.toString(id),
-        fileAttribute.name ];
+        fileInfo.name ];
       await fs.mkdirp( path.join(...dirname) );
-      const filename = path.join( ...dirname, fileAttribute.filename );
-      const data = await this.getData( fileAttribute.stream );
+      const filename = path.join( ...dirname, fileInfo.filename );
+      const data = await this.getData( fileInfo.stream );
       fs.writeFile( filename, data, (error) => error ? reject( error ) : resolve() );
     });
   }

@@ -197,9 +197,11 @@ export class EntityResolver extends EntityModule {
     const filePromise = _.get( args, name );
     if( ! filePromise ) return;
     return new Promise( resolve => Promise.resolve(filePromise).then( value => {
-      value.filename = this.entity.fileSave.sanitizeFilename( value.filename );
-      _.set( attributes, name, _.pick(value, 'filename', 'encoding', 'mimetype') );
-      resolve({ name, filename: _.get(value, 'filename'), stream: value.createReadStream() });
+      const filename = this.entity.fileSave.sanitizeFilename( value.filename );
+      const secret = _.toString( _.random(999999999999) + _.random(999999999999) );
+      const attribute = _.merge( _.pick(value, 'encoding', 'mimetype' ), {filename, secret }  );
+      _.set( attributes, name, attribute );
+      resolve({ name, secret, filename, stream: value.createReadStream() });
     }));
   }
 

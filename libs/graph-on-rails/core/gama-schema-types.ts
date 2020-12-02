@@ -50,7 +50,8 @@ export class GamaSchemaTypes {
       fields: () => ({
         filename: { type: GraphQLNonNull(GraphQLString) },
         mimetype: { type: GraphQLNonNull(GraphQLString) },
-        encoding: { type: GraphQLNonNull(GraphQLString) }
+        encoding: { type: GraphQLNonNull(GraphQLString) },
+        secret: { type: GraphQLNonNull(GraphQLString) }
       })
     });
 

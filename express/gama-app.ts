@@ -5,12 +5,13 @@ import path from 'path';
 import express from 'express';
 
 // import { domainConfiguration } from './domain-configuration';
-import { domainConfiguration } from './misc/examples/shadow-entity';
+import { domainConfiguration } from './misc/examples/file-attribute';
 import { addPrincipalFromHeader } from './impl/principal-from-header';
 import { addJwtLogin } from './impl/jwt-login';
 
 // some default values
 const UPLOAD_DIR = '/uploads';
+const UPLOAD_PATH = '/files';
 const GRAPHQL_URL = '/graphql';
 const MONGODB_URL = 'mongodb://localhost:27017';
 const MONGODB_DBNAME = 'GAMA';
@@ -36,7 +37,7 @@ const gamaConfig = { domainDefinition, dataStore };
 
 export const gama = async( app: any ) => {
   // addJwtLogin( domainDefinition, app );
-  app.use( UPLOAD_DIR, express.static( path.join(__dirname, UPLOAD_DIR ) ) );
+  app.use( UPLOAD_PATH, express.static( path.join(__dirname, UPLOAD_DIR ) ) );
   const server = await GamaServer.create( apolloConfig, gamaConfig );
   server.applyMiddleware({ app, path: GRAPHQL_URL });
 }
