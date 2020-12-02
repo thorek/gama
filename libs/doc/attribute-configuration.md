@@ -149,32 +149,29 @@ entity types as attribute types but instead describe the relations between entit
 
 The most common attribute configurations can be done by via shortcut notation: 
 
-| Value         | Description  |
-| ------------- | ------------ |
-| `Key`         | sets the type to `String`, `required` and `unique` to `true` |
-| `typeName!`   | sets the type to 'typeName' and `required` to true, e.g. `Int!` becomes `{ type: 'Int, required: true}` |
-| `[typeName]`  | sets type to 'typeName' and `list` to `true`, e.g. `Int!` becomes `{ type: 'Int, list: true}` |
-| `[typeName!]` | sets type to 'typeName' and `list` and `required` to `true` |
+| Value       | Description  |
+| ----------- | ------------ |
+| Key         | sets the type to `String`, `required` and `unique` to `true` |
+| typeName!   | sets the type to 'typeName' and `required` to true, e.g. `Int!` becomes `{ type: 'Int, required: true}` |
+| [typeName]  | sets type to 'typeName' and `list` to `true`, e.g. `Int!` becomes `{ type: 'Int, list: true}` |
+| [typeName!] | sets type to 'typeName' and `list` and `required` to `true` |
 
 
 <br>
 
 #### **GraphQL scalar type**
 
-You can use any GraphQL scalar type
+You can use any GraphQL scalar type. Check also [GraphQL Type System](https://graphql.org/learn/schema/#type-system)
 
+| Value       | Description                                         |
+| ----------- | --------------------------------------------------- |
+| Int         | A signed 32‐bit integer.                            |
+| Float       | A signed double-precision floating-point value.     |
+| String      | A UTF‐8 character sequence.                         |
+| Boolean     | true or false                                       |
+| String      | A UTF‐8 character sequence.                         |
+| ID          | represents a unique identifier, Although allowed it is advised not to use the `ID` type since GAMA uses this to identify entity items and establich relations between entities (think primary and foreign keys). |
 
-| Value         | Description                                         | 
-| ------------- | --------------------------------------------------- | 
-| `Int`         | A signed 32‐bit integer.                            |
-| `Float`       | A signed double-precision floating-point value.     |
-| `String`      | A UTF‐8 character sequence.                         |
-| `Boolean`     | true or false                                       |
-| `String`      | A UTF‐8 character sequence.                         |
-| `ID`          | represents a unique identifier, Although allowed it is advised not to use the `ID` type since GAMA uses this to identify entity items and establich relations between entities (think primary and foreign keys). |
-
-
-Check also [GraphQL Type System](https://graphql.org/learn/schema/#type-system)
 
 <br>
 
@@ -182,10 +179,10 @@ Check also [GraphQL Type System](https://graphql.org/learn/schema/#type-system)
 
 GAMA provides in addition to the GraphQL scalar type the following scalar types:
 
-| Value         | Description                                         | 
-| ------------- | --------------------------------------------------- | 
-| `Date`        | String representation of a Date in the JSON data it serializes to/from `new Date().toJSON()` internally it converts it to a TypeScript Date object                            |
-| `JSON`        | arbitrary JSON structure (you should use this with caution and prefer GraphQL types instead)  |
+| Value       | Description                                         |
+| ----------- | --------------------------------------------------- |
+| Date        | String representation of a Date in the JSON data it serializes to/from `new Date().toJSON()` internally it converts it to a TypeScript Date object |
+| JSON        | arbitrary JSON structure (you should use this with caution and prefer GraphQL types instead) |
 
 <br>
 
