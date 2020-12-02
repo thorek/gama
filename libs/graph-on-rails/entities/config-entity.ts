@@ -116,7 +116,7 @@ export class ConfigEntity extends Entity {
       list: attrConfig.list,
       description: attrConfig.description,
       // input: attrConfig.input,
-      defaultValue: attrConfig.default,
+      defaultValue: attrConfig.defaultValue,
       mediaType: attrConfig.mediaType,
       resolve: attrConfig.resolve,
       virtual: attrConfig.virtual

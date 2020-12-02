@@ -1,7 +1,6 @@
 # Attribute Configuration
 
-Entities have attributes describing the data of the entity. Many aspects to this can be configured by the this 
-configuration type
+Entities have attributes describing the data of the entity. You can define its aspects by the this configuration type.
 
 ### Configuration Type
 
@@ -10,35 +9,34 @@ export type AttributeConfig = {
   type?:string;
   required?:boolean|'create'|'update'
   unique?:boolean|string
-  list?:boolean
-  default?:any
-  filterType?:string|false;
   description?:string
-  validation?:object  
+  list?:boolean
+  defaultValue?:any|(( attributes:any, runtime:Runtime)=>any|Promise<any>)
+  filterType?:string|false
+  validation?:object
   mediaType?:'image'|'video'|'audio'
   virtual?:boolean
   resolve?:(arc:AttributeResolveContext) => any
 }
 ```
 
-Except the `calculate` callback you can use either an configuration object or YAML for the configuration. 
-In the following examples we will use YAML and object configuration equally.  
+Except of the callback functions you can use either an configuration object or YAML for the configuration. In the following examples we will use YAML and object configuration equally.  
 
 All configuration options are documented in detail further below: 
 
-| | | |
+| parameter | type | purpose |
 | - | - | - |
-| [type](#type)               | Type of attribute values  | can be any GraphQL or GAMA scalar or any of your defined enums  |
-| [required](#required)       | mandatory attribute value | adds schema and business validations for non-null values        |
-| [unique](#unique)           | uniqueness of value       | adds business validation for unique values, also scoped         |
-| [list](#list)               | list scalars              | allows to have list of scalar types                             |
-| [default](#default)         | default value             | static or dynamic default values for new entity items           |
-| [filterType](#filterType)   |                           | disable or change filter behaviour for attributes               |
-| [description](#description) |                           | adding documentaton to the public API                           |
-| [validation](#validation)   | field validation          | configure business validation using extensive ValidateJS syntax |
-| [mediatype](#mediatype)     |                           | only used as metadata for UI clients, e.g. GAMA Admin UI        |
-| [resolve](#resolve)         | custom attribute value    | callback to determine custom value for a field                  |
-| [virtual](#virtual)         | non-persistant value      | value is never written or read from datastore                   |
+| [type](#type)               |  string           | type of attribute values, can be any GraphQL or GAMA scalar or any of your defined enums |
+| [required](#required)       | boolean           | mandatory attribute value; adds schema and business validations for non-null values |
+| [unique](#unique)           | boolean           | uniqueness of value; adds business validation for unique values, also within a scope |
+| [list](#list)               | boolean           | list of scalar types |
+| [defaultValue](#defaultValue)         | any or Function   | static or dynamic default values for new entity items |
+| [filterType](#filterType)   | string or boolean | disable or change filter behaviour for attributes |
+| [description](#description) | string            | adding documentaton to the public API / schema | 
+| [validation](#validation)   | object            | configure business validation using extensive ValidateJS syntax |
+| [mediatype](#mediatype)     | string            | only used as metadata for UI clients, e.g. GAMA Admin UI |
+| [resolve](#resolve)         | Function          | callback to determine custom value for a field that will be send to a client |
+| [virtual](#virtual)         | boolean           | non-persistant value; value is never written or read from datastore |
 
  <br>
 
@@ -151,12 +149,13 @@ entity types as attribute types but instead describe the relations between entit
 
 The most common attribute configurations can be done by via shortcut notation: 
 
-| Value         | Description                                                       | 
-| ------------- | ----------------------------------------------------------------- | 
-| `Key`         | sets the type to `String`, `required` and `unique` to `true`      |
+| Value         | Description  |
+| ------------- | ------------ |
+| `Key`         | sets the type to `String`, `required` and `unique` to `true` |
 | `typeName!`   | sets the type to 'typeName' and `required` to true, e.g. `Int!` becomes `{ type: 'Int, required: true}` |
 | `[typeName]`  | sets type to 'typeName' and `list` to `true`, e.g. `Int!` becomes `{ type: 'Int, list: true}` |
-| `[typeName!]`  | sets type to 'typeName' and `list` and `required` to `true` |
+| `[typeName!]` | sets type to 'typeName' and `list` and `required` to `true` |
+
 
 <br>
 
@@ -173,6 +172,7 @@ You can use any GraphQL scalar type
 | `Boolean`     | true or false                                       |
 | `String`      | A UTF‐8 character sequence.                         |
 | `ID`          | represents a unique identifier, Although allowed it is advised not to use the `ID` type since GAMA uses this to identify entity items and establich relations between entities (think primary and foreign keys). |
+
 
 Check also [GraphQL Type System](https://graphql.org/learn/schema/#type-system)
 
@@ -915,32 +915,29 @@ as seperate entities with associations with eachother.
 
 ---
 
-## default
+## defaultValue
 
 ```typescript
-default?:any
+defaultValue?:any|(( attributes:any, runtime:Runtime)=>any|Promise<any>)
 ```
 
 | Value                    | Shortcut  | Description                                           |
 | ------------------------ | --------- | ----------------------------------------------------- |
 | [empty]                  | (default) | no effect                                             |
 | [any value]              |           | default value when creating a new entity item         |
-| (runtime:Runtime) => any |           | called to get the default value for a new entity item |
+| [Function] |           | called to get the default value for a new entity item; can return a value or a Promise |
 
 <br>
 
-You can set either a value or a callback function (configuration object only) to determine a default value for
-an attribute if a client does not provide a value for it. There will be no checks if the `value` matches 
-the `type` of the attribute. If you provide a value of another type it can come to unwanted casts or error, so 
-you have to ensure the correct type of the defaultValue.
+You can set either a value or a callback function (configuration object only) to determine a default value for an attribute if a client does not provide a value for it. There will be no checks if the `value` matches  the `type` of the attribute. If you provide a value of another type it can come to unwanted casts or error, so you have to ensure the correct type of the defaultValue.
+
+If you provide `defaultValue` (literal or function) in the configuration, this attribut becomes no longer mandatory in the `CreateInputType` schema type. Since there will always be a default value the required condition will be met when creating a new items even when a value is not provided by a client. 
 
 <br>
 
 ### Example
 
-Let's assume any new car should have a mileage of _0_ and the color _white_. Notice how the required attribute "mileage"
-becomes still a NonNull field in the `Car` schema type but no longer in the `CarCreateInput` type. Since we have a 
-default value the required condition will be met when creating a new car entity even when not provided by a client. 
+Let's assume any new car should have a mileage of _0_ and the color _white_. Notice how the required attribute "mileage" becomes still a NonNull field in the `Car` schema type but no longer in the `CarCreateInput` type. 
 
 <table width="100%" style="font-size: 0.9em">
 <tr valign="top">
@@ -990,9 +987,7 @@ input CarUpdateInput {
 </td></tr>
 </table>
 
-Sometimes we need dynamic default values. Let's say the registration date of a car should be set to _today_ when
-not provided by a client. We could not add a static value for that - so we use the callback. We do not use the 
-`runtime` in this implementation - but it could be used to access other entities or similar.
+Sometimes we need dynamic default values. Let's say the registration date of a car should be set to _today_ when not provided by a client. We could not add a static value for that - so we use the callback. We do not use the  `runtime` in this implementation - but it could be used to access other entities or similar.
 
 
 ```typescript
@@ -1191,7 +1186,7 @@ leave your description intact.
 
 <table width="100%" style="font-size: 0.8em">
 <tr valign="top">
-<td width="40%"> YAML Configuration </td> <td width="60%"> Schema (excerpt) </td>
+<td width="30%"> YAML Configuration </td> <td width="70%"> Schema (excerpt) </td>
 </tr>
 <tr valign="top"><td>
 
@@ -1203,8 +1198,10 @@ entity:
       color:
         type: String
         description: >
-          this is not really evaluated anywhere
-          and just informally collected
+          this is not really 
+          evaluated anywhere
+          and just informally 
+          collected
 ```
 
 We use the standard YAML feature of multiline text input here

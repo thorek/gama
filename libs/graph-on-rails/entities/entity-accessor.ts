@@ -55,7 +55,7 @@ export class EntityAccessor extends EntityModule {
    *
    */
   async save( attributes:any, skipValidation = false ):Promise<EntityItem|ValidationViolation[]> {
-    this.setDefaultValues( attributes );
+    await this.setDefaultValues( attributes );
     this.setTimestamps( attributes );
     if( ! skipValidation ){
       const validationViolations = await this.entity.validate( attributes );
@@ -107,14 +107,15 @@ export class EntityAccessor extends EntityModule {
   /**
    *
    */
-  private setDefaultValues( attributes:any ):void {
-    _.forEach( this.entity.attributes, (attribute, name) => {
-      if( _.has( attributes, name ) || _.isUndefined( attribute.defaultValue ) ) return;
+  private async setDefaultValues( attributes:any ):Promise<void> {
+    for( const name of _.keys( this.entity.attributes ) ){
+      const attribute = this.entity.attributes[name];
+      if( _.has( attributes, name ) || _.isUndefined( attribute.defaultValue ) ) continue;
       const defaultValue = _.isFunction( attribute.defaultValue ) ?
-        attribute.defaultValue( this.runtime ) :
+        await Promise.resolve( attribute.defaultValue( attributes, this.runtime ) ) :
         attribute.defaultValue;
       _.set( attributes, name, defaultValue );
-    });
+    }
   }
 
   /**

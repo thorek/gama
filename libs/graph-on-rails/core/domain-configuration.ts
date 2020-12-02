@@ -56,7 +56,7 @@ export type AttributeConfig = {
   unique?:boolean|string
   description?:string
   list?:boolean
-  default?:any
+  defaultValue?:any|(( attributes:any, runtime:Runtime)=>any|Promise<any>)
   filterType?:string|false
   validation?:object
   mediaType?:'image'|'video'|'audio'
