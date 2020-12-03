@@ -88,7 +88,7 @@ export class FormComponent extends AdminComponent implements OnInit {
   onSelectionChange(field:FieldConfigType, value:any ){
     const assocConfig = this.adminService.getEntityConfig( field.path );
     if( ! assocConfig ) return;
-    _.set( this.data.item, [assocConfig.typeQuery, 'id'], value );
+    _.set( this.data.item, [assocConfig.typeQueryName, 'id'], value );
     _.forEach( this.fields, field => {
       const config = this.data.entityConfig.assocs[field.path];
       if( config && config.scope ) this.options[field.name] =

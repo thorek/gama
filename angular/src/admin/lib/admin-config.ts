@@ -18,14 +18,15 @@ export type EntityConfigType = {
   assocs?:{[name:string]:AssocType}
   entitesName?:string
   entityName?:string
-  typesQuery?:string
-  typeQuery?:string
-  deleteMutation?:string
-  updateMutation?:string
-  updateInput?:string
-  createMutation?:string
-  createInput?:string,
+  typesQueryName?:string
+  typeQueryName?:string
+  deleteMutationName?:string
+  updateMutationName?:string
+  updateInputTypeName?:string
+  createMutationName?:string
+  createInputTypeName?:string,
   foreignKey?:string
+  foreignKeys?:string
   name?:( item:any ) => string
   index?:UiConfigType
   show?:UiConfigType
@@ -167,9 +168,18 @@ export class AdminConfig {
       _.set( assocs, assocToMany.path, _.merge( assocToMany, { type: 'assocToMany' } ) ), assocs );
     _.reduce( data.assocFrom, (assocs, assocFrom) =>
       _.set( assocs, assocFrom.path, _.merge( assocFrom, { type: 'assocFrom' } ) ), assocs );
-    const config = _.pick( data,
-      [ 'path', 'typeQuery', 'typesQuery', 'deleteMutation',
-        'updateInput', 'updateMutation', 'createInput', 'createMutation', 'foreignKey']);
+    const config = _.pick( data,[
+      'path',
+      'typeQueryName',
+      'typesQueryName',
+      'deleteMutationName',
+      'updateInputTypeName',
+      'updateMutationName',
+      'createInputTypeName',
+      'createMutationName',
+      'foreignKey',
+      'foreignKeys'
+    ]);
     return _.merge( config, { fields, assocs } );
   };
 
@@ -191,7 +201,7 @@ export class AdminConfig {
     if( ! _.has(entityConfig, uiType ) ) _.set( entityConfig, uiType, {} );
     const uiConfig:UiConfigType = _.get( entityConfig, uiType );
     if( ! _.has( uiConfig, 'query' ) ) _.set( uiConfig, 'query',
-      uiType === 'index' ? entityConfig.typesQuery : entityConfig.typeQuery );
+      uiType === 'index' ? entityConfig.typesQueryName : entityConfig.typeQueryName );
     this.setFieldsDefaults( uiConfig, entityConfig );
     return entityConfig;
   }
@@ -304,8 +314,8 @@ export class AdminConfig {
     if( ! assoc.scope ) return true;
     const scopeConfig = this.config.entities[ assoc.scope ];
     if( ! scopeConfig ) return true;
-    const itemScopedId = _.get( data, [entityConfig.typeQuery, scopeConfig.typeQuery, 'id'] );
-    const assocScopedId = _.get( assocItem, [scopeConfig.typeQuery, 'id'] );
+    const itemScopedId = _.get( data, [entityConfig.typeQueryName, scopeConfig.typeQueryName, 'id'] );
+    const assocScopedId = _.get( assocItem, [scopeConfig.typeQueryName, 'id'] );
     return itemScopedId === assocScopedId;
   }
 

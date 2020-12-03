@@ -6,14 +6,15 @@ const query = gql`
   query {
     metaData {
       path
-      typeQuery
-      typesQuery
-      deleteMutation
-      updateMutation
-      updateInput
-      createMutation
-      createInput
+      typeQueryName
+      typesQueryName
+      deleteMutationName
+      updateMutationName
+      updateInputTypeName
+      createMutationName
+      createInputTypeName
       foreignKey
+      foreignKeys
       fields {
         name
         type

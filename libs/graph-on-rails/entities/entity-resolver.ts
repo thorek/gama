@@ -123,16 +123,18 @@ export class EntityResolver extends EntityModule {
       resolverCtx:ResolverContext,
       preHook?:PreResolverHook,
       afterHook?:AfterResolverHook ):Promise<any>{
-    let resolved = _.isFunction( preHook ) ?
-      Promise.resolve( preHook( this.getResolverHookContext( resolverCtx ) ) ) : undefined;
+    const hookContext = _.isFunction( preHook ) || _.isFunction( afterHook ) ?
+      this.createHookContext( resolverCtx ) : undefined;
+    let resolved = _.isFunction( preHook ) && hookContext ?
+      Promise.resolve( preHook( hookContext ) ) : undefined;
     if( _.isObject(resolved) ) return resolved;
-    resolved = impl( resolverCtx );
-    return _.isFunction( afterHook ) ?
-      Promise.resolve( afterHook( resolved, this.getResolverHookContext( resolverCtx ) ) ) : resolved;
+    resolved = await impl( resolverCtx );
+    return _.isFunction( afterHook ) && hookContext ?
+      Promise.resolve( afterHook( resolved, hookContext ) ) : resolved;
   }
 
-  private getResolverHookContext( resolverCtx:ResolverContext ):ResolverHookContext {
-    const principal = this.getPrincipal( resolverCtx );
+  private createHookContext( resolverCtx:ResolverContext ):ResolverHookContext {
+    const principal = this.runtime.getPrincipal( resolverCtx );
     return { resolverCtx, principal, runtime: this.runtime };
   }
 
@@ -218,7 +220,7 @@ export class EntityResolver extends EntityModule {
   }
 
   private async applyAttributeResolver( entity:Entity, item:any, resolverCtx:ResolverContext ){
-    const principal = this.getPrincipal( resolverCtx );
+    const principal = this.runtime.getPrincipal( resolverCtx );
     for( const name of _.keys( entity.attributes ) ){
       const attribute = entity.attributes[name];
       if( ! _.isFunction(attribute.resolve) ) continue;
@@ -228,8 +230,4 @@ export class EntityResolver extends EntityModule {
     }
   }
 
-  private getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
-    const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
-    return _.isFunction( principal ) ? principal( this.runtime, resolverCtx ) : principal;
-  }
 }

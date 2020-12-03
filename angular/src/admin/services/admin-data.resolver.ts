@@ -62,7 +62,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
       uiConfig:UiConfigType,
       parent?:AdminData ):Promise<any> {
     const data = await this.loadOnlyExpressions( uiConfig );
-    const item = parent ? _.set( {}, parent.entityConfig.typeQuery, parent.item ) : {};
+    const item = parent ? _.set( {}, parent.entityConfig.typeQueryName, parent.item ) : {};
     _.set( data, uiConfig.query, item );
     return new AdminData( data, entityConfig, uiConfig, parent );
   }
@@ -100,7 +100,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
     const config = this.adminService.getEntityConfig( data.path );
     if( ! config ) return this.warn(`no such config '${data.path}'`, undefined );
     const fields = this.buildFieldQuery( config, config.show );
-    return `${config.typesQuery} ${fields}`;
+    return `${config.typesQueryName} ${fields}`;
   }
 
 

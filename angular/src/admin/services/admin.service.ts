@@ -74,8 +74,8 @@ export class AdminService {
     const context = this.getMutationContext( variables );
     return new Promise( resolve => {
       this.apollo.mutate({ mutation, variables, context }).subscribe(({data}) => resolve({
-        violations: _.get( data, [config.createMutation, 'validationViolations'] ),
-        id: _.get( data, [config.createMutation, config.typeQuery, 'id'] )
+        violations: _.get( data, [config.createMutationName, 'validationViolations'] ),
+        id: _.get( data, [config.createMutationName, config.typeQueryName, 'id'] )
       }));
     });
   }
@@ -83,10 +83,10 @@ export class AdminService {
   private getCreateMutation( config:EntityConfigType ):DocumentNode {
     const fileVariableDeclaration = _(this.fileAttributes(config)).map( attr => `$${attr}: Upload` ).join(' ');
     const fileVariableAssign = _(this.fileAttributes(config)).map( attr => `${attr}: $${attr}` ).join(' ');
-    return gql`mutation($input: ${config.createInput} ${fileVariableDeclaration} ) {
-      ${config.createMutation}(${config.typeQuery}: $input ${fileVariableAssign} ) {
+    return gql`mutation($input: ${config.createInputTypeName} ${fileVariableDeclaration} ) {
+      ${config.createMutationName}(${config.typeQueryName}: $input ${fileVariableAssign} ) {
         validationViolations{ attribute message }
-        ${config.typeQuery} { id }
+        ${config.typeQueryName} { id }
       }
     }`;
   }
@@ -97,8 +97,8 @@ export class AdminService {
     const context = this.getMutationContext( variables );
     return new Promise( (resolve, reject) => {
       this.apollo.mutate({mutation: updateMutation, variables, context }).subscribe(({data}) => resolve({
-        violations: _.get( data, [config.updateMutation, 'validationViolations'] ),
-        id: _.get( data, [config.updateMutation, config.typeQuery, 'id'] )
+        violations: _.get( data, [config.updateMutationName, 'validationViolations'] ),
+        id: _.get( data, [config.updateMutationName, config.typeQueryName, 'id'] )
       }), error => reject( error ) );
     });
   }
@@ -106,10 +106,10 @@ export class AdminService {
   private getUpdateMutation( config:EntityConfigType ):DocumentNode {
     const fileVariableDeclaration = _(this.fileAttributes(config)).map( attr => `$${attr}: Upload` ).join(' ');
     const fileVariableAssign = _(this.fileAttributes(config)).map( attr => `${attr}: $${attr}` ).join(' ');
-    return gql`mutation($input: ${config.updateInput} ${fileVariableDeclaration} ) {
-      ${config.updateMutation}(${config.typeQuery}: $input ${fileVariableAssign} ) {
+    return gql`mutation($input: ${config.updateInputTypeName} ${fileVariableDeclaration} ) {
+      ${config.updateMutationName}(${config.typeQueryName}: $input ${fileVariableAssign} ) {
         validationViolations{ attribute message }
-        ${config.typeQuery} { id }
+        ${config.typeQueryName} { id }
       }
     }`;
   }

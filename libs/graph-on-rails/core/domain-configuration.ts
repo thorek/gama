@@ -81,7 +81,7 @@ export type EntityHooksType = {
 }
 
 export type PreResolverHook = (rhc:ResolverHookContext) => undefined|object|Promise<undefined|object>;
-export type AfterResolverHook = (resolved: any, rhc:ResolverHookContext) => object|Promise<object>;
+export type AfterResolverHook = (resolved: any, rhc:ResolverHookContext) => object|object[]|Promise<object|object[]>;
 
 export type ResolverHookContext = {
   resolverCtx:ResolverContext

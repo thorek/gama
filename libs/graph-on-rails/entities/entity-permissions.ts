@@ -165,7 +165,7 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   private async getExpressionFromAssignedEntity( assigned:string, action:CRUD, resolverCtx:ResolverContext ):Promise<object|undefined>{
     const assignedEntity = assigned === this.entity.name ? this.entity : this.runtime.entities[assigned || ''];
     if( ! assignedEntity ) return;
-    const principal = this.getPrincipal( resolverCtx );
+    const principal = this.runtime.getPrincipal( resolverCtx );
     const key =
       _.has( principal, assignedEntity.foreignKey ) ? assignedEntity.foreignKey :
       _.has( principal, assignedEntity.foreignKeys ) ? assignedEntity.foreignKeys : undefined;
@@ -180,7 +180,7 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
       expressionFn:PermissionExpressionFn,
       action:CRUD,
       resolverCtx:ResolverContext ):Promise<true|undefined>{
-    const principal = this.getPrincipal( resolverCtx );
+    const principal = this.runtime.getPrincipal( resolverCtx );
 
     const expression = await Promise.resolve(
       expressionFn( {action, principal, resolverCtx, role, runtime: this.runtime } ) );
@@ -201,17 +201,12 @@ export class DefaultEntityPermissions extends EntityModule implements EntityPerm
   }
 
   private getPrincipalRoles( resolverCtx:ResolverContext ):string[]|boolean{
-    const principal = this.getPrincipal( resolverCtx );
+    const principal = this.runtime.getPrincipal( resolverCtx );
     if( ! principal ) return false;
     const roles = _.isFunction( principal.roles ) ? principal.roles( this.runtime, resolverCtx ) : principal.roles;
     if( _.isBoolean( roles ) ) return roles;
     if( ! roles ) return [];
     return _.isArray( roles ) ? roles : [roles];
-  }
-
-  private getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
-    const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
-    return _.isFunction( principal ) ? principal( this.runtime, resolverCtx ) : principal;
   }
 
 }

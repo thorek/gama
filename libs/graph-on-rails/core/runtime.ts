@@ -13,7 +13,7 @@ import { MongoDbDataStore } from '../mongodb-datastore/mongodb.data-store';
 import { ValidateJs } from '../validation/validate-js';
 import { Validator } from '../validation/validator';
 import { DataStore } from './data-store';
-import { DomainConfiguration } from './domain-configuration';
+import { DomainConfiguration, PrincipalType, ResolverContext } from './domain-configuration';
 import { DomainDefinition } from './domain-definition';
 import { GraphQLTypeDefinition, GraphX } from './graphx';
 import { SchemaFactory } from './schema-factory';
@@ -135,6 +135,21 @@ export class Runtime {
 
   configuration(){
     return (this.config.domainDefinition as DomainDefinition).getConfiguration();
+  }
+
+  getPrincipal( resolverCtx:ResolverContext ):PrincipalType|undefined {
+    const principal:PrincipalType = _.get(resolverCtx, 'context.principal');
+    return _.isFunction( principal ) ? principal( this, resolverCtx ) : principal;
+  }
+
+  principalHasRole( role:string, resolverCtx:ResolverContext ):boolean {
+    const principal = this.getPrincipal( resolverCtx );
+    if( ! principal ) return false;
+    let roles = principal.roles;
+    if( _.isFunction( roles ) ) roles = roles( this, resolverCtx );
+    if( _.isBoolean( roles ) ) return roles;
+    if( ! _.isArray( roles ) ) roles = [roles];
+    return _.includes( roles, role );
   }
 
   warn<T>( message:string, returnValue:T ):T{

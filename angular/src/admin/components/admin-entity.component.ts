@@ -73,7 +73,7 @@ export abstract class AdminEntityComponent extends AdminComponent implements OnI
   }
 
   private async delete( id:string ){
-    const violations = await this.adminService.delete( id, this.data.entityConfig.deleteMutation );
+    const violations = await this.adminService.delete( id, this.data.entityConfig.deleteMutationName );
     if( _.size( violations ) === 0 ) return this.onDeleteSuccess();
     const message = _.join(violations, '\n');
     const dialogData = new ConfirmDialogModel('Could not delete', message);

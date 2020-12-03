@@ -40,14 +40,15 @@ export class MetaDataBuilder extends SchemaBuilder {
       name: 'entityMetaData',
       fields: () => ({
         path: { type: GraphQLString },
-        typeQuery: { type: GraphQLString },
-        typesQuery: { type: GraphQLString },
-        deleteMutation: { type: GraphQLString },
-        updateMutation: { type: GraphQLString },
-        updateInput: { type: GraphQLString },
-        createMutation: { type: GraphQLString },
-        createInput: { type: GraphQLString },
+        typeQueryName: { type: GraphQLString },
+        typesQueryName: { type: GraphQLString },
+        deleteMutationName: { type: GraphQLString },
+        updateMutationName: { type: GraphQLString },
+        updateInputTypeName: { type: GraphQLString },
+        createMutationName: { type: GraphQLString },
+        createInputTypeName: { type: GraphQLString },
         foreignKey: { type: GraphQLString },
+        foreignKeys: { type: GraphQLString },
         fields: {
           type: GraphQLList( fieldMetaData ),
           resolve: (root:any) => this.resolveFields(root)
