@@ -97,6 +97,25 @@ export class ConfigEntity extends Entity {
 
   protected getForeignKey() { return this.entityConfig.foreignKey || super.getForeignKey() }
   protected getForeignKeys() { return this.entityConfig.foreignKeys || super.getForeignKeys() }
+  protected getTypeQueryName() { return this.entityConfig.typeQueryName || super.getTypeQueryName() }
+  protected getTypesQueryName() { return this.entityConfig.typesQueryName || super.getTypesQueryName() }
+  protected getCreateInputTypeName() { return this.entityConfig.createInputTypeName || super.getCreateInputTypeName() }
+  protected getUpdateInputTypeName() { return this.entityConfig.updateInputTypeName || super.getUpdateInputTypeName() }
+  protected getDeleteMutationName() { return this.entityConfig.deleteMutationName || super.getDeleteMutationName() }
+  protected getFilterTypeName() { return this.entityConfig.filterTypeName || super.getFilterTypeName() }
+  protected getTypeField() { return this.entityConfig.typeField || super.getTypeField() }
+  protected getTypesEnumName() { return this.entityConfig.typesEnumName || super.getTypeField() }
+  protected getCreateMutationName() { return this.entityConfig.createInputTypeName || super.getCreateMutationName() }
+  protected getUpdateMutationName() { return this.entityConfig.updateInputTypeName || super.getUpdateMutationName() }
+  protected getMutationResultName() { return this.entityConfig.mutationResultName || super.getMutationResultName() }
+  protected getStatsQueryName() { return this.entityConfig.statsQueryName || super.getStatsQueryName() }
+
+  protected getTypeQuery() { return _.isNil(this.entityConfig.typeQuery) ? super.getTypeQuery() : this.entityConfig.typeQuery }
+  protected getTypesQuery() { return _.isNil(this.entityConfig.typesQuery) ? super.getTypesQuery() : this.entityConfig.typesQuery }
+  protected getCreateMutation() { return _.isNil(this.entityConfig.createMutation) ? super.getCreateMutation() : this.entityConfig.createMutation }
+  protected getUpdateMutation() { return _.isNil(this.entityConfig.updateMutation) ? super.getUpdateMutation() : this.entityConfig.updateMutation }
+  protected getDeleteMutation() { return _.isNil(this.entityConfig.deleteMutation) ? super.getDeleteMutation() : this.entityConfig.deleteMutation}
+  protected getStatsQuery() { return _.isNil(this.entityConfig.statsQuery) ? super.getStatsQuery() : this.entityConfig.statsQuery }
 
   private buildAttribute( name:string, attrConfig:AttributeConfig|string ):TypeAttribute {
     attrConfig = this.resolveShortcut( attrConfig );

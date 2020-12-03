@@ -99,7 +99,7 @@ export class MetaDataBuilder extends SchemaBuilder {
         path: refEntity.path,
         query: refEntity.singular,
         required: assocTo.required,
-        typesQuery: refEntity.typesQuery,
+        typesQuery: refEntity.typesQueryName,
         foreignKey: refEntity.foreignKey
       };
     });
@@ -114,7 +114,7 @@ export class MetaDataBuilder extends SchemaBuilder {
         path: refEntity.path,
         query: refEntity.plural,
         required: assocToMany.required,
-        typesQuery: refEntity.typesQuery,
+        typesQuery: refEntity.typesQueryName,
         foreignKey: refEntity.foreignKeys,
         scope: _.get( scopeEntity, 'path' )
       };
@@ -128,7 +128,7 @@ export class MetaDataBuilder extends SchemaBuilder {
       return {
         path: refEntity.path,
         query: refEntity.plural,
-        typesQuery: refEntity.typesQuery,
+        typesQuery: refEntity.typesQueryName,
         foreignKey: entity.foreignKey
       };
     });

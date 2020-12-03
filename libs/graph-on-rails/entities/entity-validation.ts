@@ -104,8 +104,8 @@ export class EntityValidation  {
   }
 
   private async validateFn( item:any ):Promise<ValidationViolation[]>  {
-    if( ! this.entity.validatFn ) return [];
-    const violations = await Promise.resolve( this.entity.validatFn( item, this.runtime ) );
+    if( ! this.entity.validateFn ) return [];
+    const violations = await Promise.resolve( this.entity.validateFn( item, this.runtime ) );
     if( _.isString( violations ) ) return [{message: violations}];
     if( _.isArray( violations ) ) return violations;
     return violations ? [violations] : [];

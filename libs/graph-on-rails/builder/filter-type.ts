@@ -23,7 +23,7 @@ export abstract class FilterType extends TypeBuilder {
   abstract async setFilterExpression( expression:any, args:any, field?:string, entity?:Entity ):Promise<void>;
 
   static async setFilterExpression( expression:any, entity:Entity, condition:any, field:string ){
-    const filterTypeName = entity.getFilterTypeName(field);
+    const filterTypeName = entity.getFilterTypeNameForAttribute(field);
     if( ! filterTypeName ) return;
     const filterType = entity.runtime.filterTypes[filterTypeName];
     if( ! filterType ) return;

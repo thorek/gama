@@ -17,6 +17,18 @@ export const domainConfiguration:DomainConfiguration = {
         fleet3: { name: 'Fleet3' },
       }
     },
+    Driver: { 
+      attributes: {
+        firstname: 'String',
+        lastname: 'String'
+      },
+      seeds: {
+        10: {
+          firstname: { eval: 'faker.name.firstName()' },
+          lastname: { eval: 'faker.name.lastName()' }
+        }
+      }
+    },
     Car: {
       attributes: {
         brand: 'String',
@@ -24,14 +36,15 @@ export const domainConfiguration:DomainConfiguration = {
         price: 'Int'
       },
       assocTo: 'Fleet',
+      assocToMany: 'Driver',
       assocFrom: 'Accessory',
       permissions: 'Fleet',
       seeds: {
-        fleet1Bmw: { brand: 'BMW', mileage: 10000, Fleet: 'fleet1' },
-        fleet1Porsche: { brand: 'Porsche', mileage: 20000, Fleet: 'fleet1' },
-        fleet2Bmw: { brand: 'BMW', mileage: 13000, Fleet: 'fleet2' },
-        fleet2Opel: { brand: 'Opel', mileage: 23000, Fleet: 'fleet2' },
-        fleet3Bmw: { brand: 'BMW', mileage: 45000, Fleet: 'fleet3' },
+        fleet1Bmw: { brand: 'BMW', mileage: 10000, Fleet: 'fleet1', Driver: { sample: 'Driver', size: 3 } },
+        fleet1Porsche: { brand: 'Porsche', mileage: 20000, Fleet: 'fleet1', Driver: { sample: 'Driver', size: 2 } },
+        fleet2Bmw: { brand: 'BMW', mileage: 13000, Fleet: 'fleet2', Driver: { sample: 'Driver', size: 1 } },
+        fleet2Opel: { brand: 'Opel', mileage: 23000, Fleet: 'fleet2', Driver: { sample: 'Driver', size: 2 } },
+        fleet3Bmw: { brand: 'BMW', mileage: 45000, Fleet: 'fleet3', Driver: { sample: 'Driver', size: 4 } }
       }
     },
     Accessory: {
@@ -55,7 +68,12 @@ export const domainConfiguration:DomainConfiguration = {
       assocTo: 'Fleet',
       assocFrom: 'Accessory',
       collection: 'cars',
-      foreignKey: 'carId'
+      foreignKey: 'carId',
+      typeQuery: () => ({brand: 'Demo Car Brand'}),
+      statsQuery: false,
+      createMutation: false,
+      updateMutation: false,
+      deleteMutation: false
     }
   }
 }

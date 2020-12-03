@@ -11,6 +11,58 @@ export type DomainConfiguration = {
   mutation?:{[name:string]:MutationConfigFn},
 }
 
+export type EntityConfig  = {
+  typeName?:string;
+
+  attributes?:{[name:string]:string|AttributeConfig};
+  assocTo?:string|(string|AssocToType)[];
+  assocToMany?:string|(string|AssocToManyType)[];
+  assocFrom?:string|string[]|AssocFromType[];
+
+  plural?:string
+  singular?:string;
+
+  collection?:string;
+  path?:string;
+
+  seeds?:{[seedId:string]:SeedType}|SeedType[]
+  permissions?:PermissionDelegate|EntityPermissionsType
+
+  union?:string[]
+  interface?:boolean
+  implements?:string|string[]
+
+  description?:string
+  extendEntity?:( runtime:Runtime ) => void | Promise<void>
+  validation?:( item:any, runtime:Runtime ) => ValidationReturnType
+  hooks?:EntityHooksType
+
+  foreignKey?:string
+  foreignKeys?:string
+  createInputTypeName?:string
+  updateInputTypeName?:string
+  filterTypeName?:string
+  sorterEnumName?:string
+  typeField?:string
+  typesEnumName?:string
+  deleteMutationName?:string
+  createMutationName?:string
+  updateMutationName?:string
+  mutationResultName?:string
+  typesQueryName?:string
+  typeQueryName?:string
+  statsQueryName?:string
+
+  typeQuery?:false|EntityResolverFn
+  typesQuery?:false|EntityResolverFn
+  createMutation?:false|EntityResolverFn
+  updateMutation?:false|EntityResolverFn
+  deleteMutation?:false|EntityResolverFn
+  statsQuery?:false|EntityResolverFn
+}
+
+export type EntityResolverFn = ( resolverCtx:ResolverContext, runtime:Runtime ) => any|any[]|Promise<any|any[]>
+
 export type ResolverContext = {
   root:any
   args:any
@@ -79,42 +131,14 @@ export type SeedEvalContextType = {
 
 export type SeedAttributeType =
   any|
-  (( evalContext:SeedEvalContextType) => any)|
-  {eval: string, share?: number}
+  {eval: string, share?: number} |
+  {sample: string, size?: number}|
+  (( evalContext:SeedEvalContextType) => any)
 
 export type SeedType = {
   [attribute:string]:SeedAttributeType
 }
 
-export type EntityConfig  = {
-  typeName?:string;
-
-  attributes?:{[name:string]:string|AttributeConfig};
-  assocTo?:string|(string|AssocToType)[];
-  assocToMany?:string|(string|AssocToManyType)[];
-  assocFrom?:string|string[]|AssocFromType[];
-
-  plural?:string
-  singular?:string;
-
-  collection?:string;
-  path?:string;
-
-  seeds?:{[seedId:string]:SeedType}|SeedType[]
-  permissions?:PermissionDelegate|EntityPermissionsType
-
-  union?:string[]
-  interface?:boolean
-  implements?:string|string[]
-
-  description?:string
-  extendEntity?:( runtime:Runtime ) => void | Promise<void>
-  validation?:( item:any, runtime:Runtime ) => ValidationReturnType
-  hooks?:EntityHooksType
-
-  foreignKey?:string
-  foreignKeys?:string
-}
 
 export type EntityPermissionsType = {
   [role:string]:boolean|PermissionExpressionFn|AssignedEntity|ActionPermissionType

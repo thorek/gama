@@ -61,14 +61,14 @@ export class MongoDbDataStore extends DataStore {
     const expression = await this.buildExpressionFromFilter( _.first(entities) as Entity, filter );
     const lookups:any[] = _.map( entities, entity => ({
       $lookup: {
-        from: entity.typesQuery,
+        from: entity.typesQueryName,
         pipeline: [
           { $addFields: { __typename: entity.typeName } },
         ],
-        as: entity.typesQuery
+        as: entity.typesQueryName
       }
     }));
-    const concatArrays = _.map( entities, entity => `$${entity.typesQuery}` );
+    const concatArrays = _.map( entities, entity => `$${entity.typesQueryName}` );
     const aggregateDefinition = _.compact( _.concat(
       { $limit: 1 },
       { $project: { _id: '$$REMOVE' } },

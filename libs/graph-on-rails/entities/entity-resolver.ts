@@ -31,6 +31,7 @@ export class EntityResolver extends EntityModule {
   get permissions() { return this.entity.entityPermissions }
 
   async resolveType( resolverCtx:ResolverContext ):Promise<any> {
+    if( _.isFunction( this.entity.typeQuery ) ) return this.entity.typeQuery( resolverCtx, this.runtime );
     const impl = async (resolverCtx:ResolverContext) => {
       const id = _.get( resolverCtx.args, 'id' );
       this.permissions.ensureTypeRead( id, resolverCtx );
@@ -41,6 +42,7 @@ export class EntityResolver extends EntityModule {
   }
 
   async resolveTypes( resolverCtx:ResolverContext ):Promise<any[]> {
+    if( _.isFunction( this.entity.typesQuery ) ) return this.entity.typesQuery( resolverCtx, this.runtime );
     const impl = async (resolverCtx:ResolverContext) => {
       await this.permissions.ensureTypesRead( resolverCtx );
       const filter = _.get( resolverCtx.args, 'filter');
@@ -53,6 +55,9 @@ export class EntityResolver extends EntityModule {
   }
 
   async saveType( resolverCtx:ResolverContext ):Promise<any> {
+    const id =_.get( resolverCtx.args, [this.entity.singular, 'id'] );
+    const customResolver = id ? this.entity.updateMutation : this.entity.createMutation;
+    if( _.isFunction( customResolver ) ) return customResolver( resolverCtx, this.runtime );
     const impl = async (resolverCtx:ResolverContext) => {
       await this.permissions.ensureSave( resolverCtx );
       const attributes = _.get( resolverCtx.args, this.entity.singular );
@@ -69,6 +74,7 @@ export class EntityResolver extends EntityModule {
   }
 
   async deleteType( resolverCtx:ResolverContext ):Promise<string[]> {
+    if( _.isFunction( this.entity.deleteMutation ) ) return this.entity.deleteMutation( resolverCtx, this.runtime );
     const impl = async (resolverCtx:ResolverContext) => {
       await this.permissions.ensureDelete( resolverCtx );
       const id = resolverCtx.args.id;
@@ -83,27 +89,23 @@ export class EntityResolver extends EntityModule {
     const id = _.get( resolverCtx.root, refEntity.foreignKey );
     if( _.isNil(id) ) return null;
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocTo( refEntity, resolverCtx, id );
-    if( ! await refEntity.entityPermissions.isIdPermitted( id, CRUD.READ, resolverCtx ) ) return null;
-    const enit = await refEntity.findById( id );
-    return this.resolve( enit, resolverCtx, refEntity );
+    const refResolverCtx = _.defaults( { args: { id } }, resolverCtx );
+    return refEntity.resolver.resolveType( refResolverCtx );
   }
 
   async resolveAssocToManyTypes( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocToMany( refEntity, resolverCtx );
     const ids = _.map( _.get( resolverCtx.root, refEntity.foreignKeys ), id => _.toString(id) );
-    await refEntity.entityPermissions.ensureTypeRead( ids, resolverCtx );
-    const enits = await refEntity.findByIds( ids );
-    return this.resolve( enits, resolverCtx, refEntity );
+    const refResolverCtx = _.defaults( { args: { filter: { id: ids } } }, resolverCtx );
+    return refEntity.resolver.resolveTypes( refResolverCtx );
   }
 
   async resolveAssocFromTypes( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any[]> {
     const id = _.toString(resolverCtx.root.id);
     const fieldName = refEntity.isAssocToMany( this.entity ) ? this.entity.foreignKeys : this.entity.foreignKey;
     if( refEntity.isPolymorph ) return this.resolvePolymorphAssocFromTypes( refEntity, fieldName, id, resolverCtx );
-    const filter = _.set( {}, fieldName, id );
-    await refEntity.entityPermissions.addPermissionToFilter( filter, resolverCtx );
-    const enits = await refEntity.accessor.findByFilter( filter );
-    return this.resolve( enits, resolverCtx, refEntity );
+    const refResolverCtx = _.defaults( { args: { filter: { fieldName: id } } }, resolverCtx );
+    return refEntity.resolver.resolveTypes( refResolverCtx );
   }
 
   async resolveStats( resolverCtx:ResolverContext ):Promise<any> {
@@ -159,10 +161,10 @@ export class EntityResolver extends EntityModule {
 
   private async resolvePolymorphAssocTo( refEntity:Entity, resolverCtx:ResolverContext, id:any ):Promise<any> {
     const polymorphType = this.runtime.entities[_.get( resolverCtx.root, refEntity.typeField )];
-    if( ! await polymorphType.entityPermissions.isIdPermitted( id, CRUD.READ, resolverCtx ) ) return ;
-    const enit = await polymorphType.findById( id );
-    _.set( enit.item, '__typename', polymorphType.typeName );
-    return this.resolve( enit, resolverCtx, polymorphType );
+    if( ! polymorphType ) return null;
+    const refResolverCtx = _.defaults( { args: { id } }, resolverCtx );
+    const resolved = await polymorphType.resolver.resolveType( refResolverCtx );
+    return resolved ? _.set( resolved, '__typename', polymorphType.typeName ) : null;
   }
 
   private async resolvePolymorphAssocToMany( refEntity:Entity, resolverCtx:ResolverContext ):Promise<any> {
@@ -173,11 +175,11 @@ export class EntityResolver extends EntityModule {
     const result = [];
     for( const entity of refEntity.entities ){
       const filter = _.set( {}, fieldName, id );
+      const refResolverCtx = _.defaults( { args: { filter } }, resolverCtx );
       refEntity.entityPermissions.addPermissionToFilter( filter, resolverCtx );
-      const enits = await refEntity.accessor.findByFilter( filter );
-      _.forEach( enits, enit => _.set(enit.item, '__typename', entity.typeName ) );
-      const items = await this.resolve( enits, resolverCtx, refEntity );
-      result.push( items );
+      const resolved = await refEntity.resolver.resolveTypes( refResolverCtx );
+      _.forEach( resolved, item => _.set( item, '__typename', entity.typeName ) );
+      result.push( resolved );
     }
     return _(result).flatten().compact().value();
   }
