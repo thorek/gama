@@ -529,7 +529,7 @@ entity:
         read: true
 ```
 
-So far a principal with the role "manager" might read and write any car item, a principal with the role "assistant" can read all car items. Let's assume you do not want to provide an "assistant" with the mileage of a car. While GAMA does not provide an explicit solution to this, there are two easy ways to achieve this. 
+So far a principal with the role "manager" might read and write any car item, a principal with the role "assistant" can read all car items. Let's assume you do not want to provide an "assistant" with the mileage of a car. While GAMA does not provide an explicit solution to this, there are many ways to achieve this. 
 
 ***Attribute Resolver***
 
@@ -590,12 +590,49 @@ entity:
     assocFrom: Accessory
     collection: cars
     foreignKey: carId
+    statsQuery: false,
+    createMutation: false
+    updateMutation: false
+    deleteMutation: false
     permissions: 
       assistant: 
         read: true
-
 ```
 
 In the definition of the so called _shadow entity_ `CarLimited` we use the same `collection` as for `Car` - and not as per convention "car_limiteds" - thus getting the same entity items in the queries for this entity. But we include only the attributes a user without the "manager" role should see. 
 
 The `assocFrom` relationship from `Accessory` would assume however to find its foreignKey - again as per convention - as "carLimitedId". But in the _datastore_ accessory items have `carId` as foreign key. So we also set this value to `carId` and now have a seperate entity that we can give seperate permissions with only a subset of the attributes of the "real" entity. 
+
+Even if it would be possible to have create, update and delete mutations we decided here to not include them in the schema, since the only purpose in this example is to grant read rights to the entity for the role "assistant". Having the according muatations in the schema could lead to confusion. 
+
+***Resolver Hooks***
+
+You could also use `afterTypeQuery` and `afterTypesQuery` hooks to hide or mask unwanted values from the resolved data based on the principal's roles. 
+
+```typescript
+const domainDefinition:DomainDefinition = {
+  entities: {
+    Car: {
+      attributes: {
+        brand: 'String',
+        color: 'String',
+        mileage: 'Int'
+        price: 'Int'
+      },
+      permission: {
+        manager: true, 
+        assistant: { read: true }        
+      },
+      hooks: {
+        afterTypeQuery: (resolved:any, {principal} ) =>
+          _.includes( principal.roles, 'assistant' ) ?
+            _.pick( resolved, ['id', 'brand'] ) : resolved,
+        afterTypesQuery: (resolved:any, {principal} ) =>
+          _.includes( principal.roles, 'assistant' ) ?
+            _.map( resolved, item => _.pick( item, ['id', 'brand'] ) ) : resolved
+      }
+    }
+  }
+}
+```
+For more details look at [Resolver Hooks](./resolver-hooks.md).

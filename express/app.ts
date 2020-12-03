@@ -7,7 +7,6 @@ import { gama } from './gama-app';
 
 require('dotenv').config();
 
-
 (async () => {
   const app = express();
   app.use('*', cors());

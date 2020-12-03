@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { DomainConfiguration } from "graph-on-rails";
+import { DomainConfiguration, ResolverHookContext } from "graph-on-rails";
 
 export const domainConfiguration:DomainConfiguration = {
   entity: {
@@ -38,13 +38,26 @@ export const domainConfiguration:DomainConfiguration = {
       assocTo: 'Fleet',
       assocToMany: 'Driver',
       assocFrom: 'Accessory',
-      permissions: 'Fleet',
+      permissions: {
+        manager: true,
+        assistant: {
+          read: true
+        }
+      },
       seeds: {
         fleet1Bmw: { brand: 'BMW', mileage: 10000, Fleet: 'fleet1', Driver: { sample: 'Driver', size: 3 } },
         fleet1Porsche: { brand: 'Porsche', mileage: 20000, Fleet: 'fleet1', Driver: { sample: 'Driver', size: 2 } },
         fleet2Bmw: { brand: 'BMW', mileage: 13000, Fleet: 'fleet2', Driver: { sample: 'Driver', size: 1 } },
         fleet2Opel: { brand: 'Opel', mileage: 23000, Fleet: 'fleet2', Driver: { sample: 'Driver', size: 2 } },
         fleet3Bmw: { brand: 'BMW', mileage: 45000, Fleet: 'fleet3', Driver: { sample: 'Driver', size: 4 } }
+      },
+      hooks: {
+        afterTypeQuery: (resolved:any, {runtime, resolverCtx} ) =>
+          runtime.principalHasRole( 'assistant', resolverCtx ) ?
+            _.pick( resolved, ['id', 'brand'] ) : resolved,
+        afterTypesQuery: (resolved:any, {runtime, resolverCtx} ) =>
+          runtime.principalHasRole( 'assistant', resolverCtx ) ?
+            _.map( resolved, item => _.pick( item, ['id', 'brand'] ) ) : resolved
       }
     },
     Accessory: {

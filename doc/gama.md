@@ -9,35 +9,23 @@ GAMA supports this development with an oppinionated approach based on the config
 (mainly entities and its relations to each other). 
 
 We believe - as Alan Kay puts it - "Simple things should be simple, complex things should be possible". Let's see
-the simplicity and power of a business-domain-configuration-based API creation by looking at an simple example. Or you can jump directly to a little more in-depth [tutorial](./tutorial/tutorial.md).
+the simplicity and power of a business-domain-configuration-based API creation by looking at an simple example. Or you can jump directly to a little more in-depth [tutorial](./tutorial.md).
 
 ## Example
+
+A defintion of a simple _entity_ could like like
 
 _YAML_
 ```yaml 
 entity:
   Car:
     attributes:
-      brand: string!
-      mileage: int
+      brand: String!
+      mileage: Int
 ```
 
-The same configuration in code 
+and will generate the following schema, incl. resolvers using (per default) a MongoDB to read and write data.
 
-```javascript
-export const example2:DomainConfiguration = {
-  entity:{
-    Car: {
-      attributes: {
-        brand: 'string!',
-        mileage: 'int'
-      }
-    }
-  }
-}
-```
-
-will create
 
 * a type definition
 * a query for the type (by id)

@@ -8,7 +8,11 @@ export const addPrincipalFromHeader = ( domainDefinition:DomainDefinition ) => {
 
 const addPrincipalToApolloContext = async (expressContext:{req:express.Request}, apolloContext:any) => {
   const token = expressContext.req.headers.authorization;
-  const principal = token ? JSON.parse( _.split( token, "'" ).join('"') ) : undefined;
-  _.set( apolloContext, 'principal', principal );
+  try {
+    const principal = token ? JSON.parse( _.split( token, "'" ).join('"') ) : undefined;
+    _.set( apolloContext, 'principal', principal );
+  } catch (error) {
+    // since this is a "hack" afterall fail silently is okay
+  }
 }
 
