@@ -1,5 +1,5 @@
 {
-  "name": "graph-on-rails-express",
+  "name": "gama-express",
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
@@ -17,7 +17,6 @@
     "dotenv": "^8.2.0",
     "es6-template-strings": "^2.0.1",
     "express-jwt": "^6.0.0",
-    "graph-on-rails": "file:../libs/graph-on-rails",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "yaml": "^1.7.2"
@@ -25,7 +24,6 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.7.0",
-    "@types/dotenv": "^8.2.0",
     "@types/express-jwt": "0.0.42",
     "@types/jest": "^25.2.3",
     "@types/jsonwebtoken": "^8.5.0",

@@ -12,21 +12,6 @@
       "webRoot": "${workspaceFolder}"
     },
     {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Current Jest Test",
-      "cwd": "${workspaceFolder}/gama-libs/graph-on-rails",
-      "args": [
-        "${workspaceRoot}/gama-libs/graph-on-rails/node_modules/.bin/jest",
-        "${fileBasenameNoExtension}",
-        "--config",
-        "${workspaceRoot}/gama-libs/graph-on-rails/jest.config.json",
-        "--detectOpenHandles"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
       "name": "Attach by Process ID",
       "processId": "${command:PickProcess}",
       "request": "attach",

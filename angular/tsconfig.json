@@ -17,12 +17,6 @@
       "esnext.asynciterable"
     ],
     "paths": {
-      "graph-on-rails": [
-        "./gama-libs/graph-on-rails"
-      ],
-      "graph-on-rails-mongodb": [
-        "./gama-libs/graph-on-rails-mongodb"
-      ],
       "gama-admin-ui": [
         "dist/gama-admin-ui/gama-admin-ui",
         "dist/gama-admin-ui"
