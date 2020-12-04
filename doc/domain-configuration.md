@@ -1,3 +1,10 @@
+---
+layout: page
+title: Domain Configuration
+permalink: /domain-configuration/
+nav_order: 10
+---
+
 # Domain Configuration 
 
 The generation of the GraphQL schema and the read/write access to data and functionality is defined by a 
@@ -27,7 +34,7 @@ types and resolvers.
 
 For detailed documentation see
 
-  * [Entity Configuration](./entity-configuration.md)
+  * [Entity Configuration](../entity-configuration)
   * [Attribute Configuration](./attribute-configuration.md)
   * [Enum Configuration](./enum-configuration.md)
   * [Custom Query Configuration](./custom-query-configuration.md)

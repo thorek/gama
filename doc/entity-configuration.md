@@ -1,3 +1,10 @@
+---
+layout: page
+title: Entity Configuration
+permalink: /entity-configuration/
+nav_order: 20
+---
+
 # Entity Configuration
 
 A business domain is mainly described by its entities and their relation to each other. Think of an _entity_ as any 
