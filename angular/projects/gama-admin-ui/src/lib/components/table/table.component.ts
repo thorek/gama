@@ -5,8 +5,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { AdminComponent } from 'src/admin/components/admin.component';
-import { AdminTableConfig, FieldConfigType, UiConfigType } from 'src/admin/lib/admin-config';
+import { AdminComponent } from '../../components/admin.component';
+import { AdminTableConfig, FieldConfigType, UiConfigType } from '../../lib/admin-config';
 
 @Component({
   selector: 'admin-table',

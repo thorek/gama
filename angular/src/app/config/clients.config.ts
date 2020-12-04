@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
-import { EntityConfigType } from 'src/admin/lib/admin-config';
+import _ from 'lodash';
+import { EntityConfigType } from 'gama-admin-ui';
 
 
 export const clientsConfig:EntityConfigType = {

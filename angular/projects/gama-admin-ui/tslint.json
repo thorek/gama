@@ -1,15 +1,16 @@
 {
+  "extends": "../../tslint.json",
   "rules": {
     "directive-selector": [
       true,
       "attribute",
-      "admin",
+      "gama",
       "camelCase"
     ],
     "component-selector": [
       true,
       "element",
-      "admin",
+      "gama",
       "kebab-case"
     ]
   }

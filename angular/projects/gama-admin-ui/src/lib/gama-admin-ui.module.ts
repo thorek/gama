@@ -39,7 +39,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
-import { AdminRoutingModule } from './admin-routing.module';
+import { AdminRoutingModule as GamaAdminRoutingModule } from './gama-admin-routing.module';
 import { BreadcrumComponent } from './components/breadcumb.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { CreateComponent } from './components/create/create.component';
@@ -60,7 +60,7 @@ import { AdminService } from './services/admin.service';
 registerLocaleData(en);
 
 export function initializeApp1(adminService:AdminService) {
-  return () => adminService.init( async ():Promise<AdminConfigType> => AdminModule.adminConfig );
+  return () => adminService.init( async ():Promise<AdminConfigType> => GamaAdminUIModule.adminConfig );
 }
 
 @NgModule({
@@ -80,7 +80,7 @@ export function initializeApp1(adminService:AdminService) {
     SafePipe
   ],
   imports: [
-    AdminRoutingModule,
+    GamaAdminRoutingModule,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -136,15 +136,15 @@ export function initializeApp1(adminService:AdminService) {
     { provide: APP_INITIALIZER ,useFactory: initializeApp1, deps: [AdminService], multi: true },
   ]
 })
-export class AdminModule {
+export class GamaAdminUIModule {
 
   static adminConfig:AdminConfigType;
 
-  public static forRoot(adminConfig:AdminConfigType): ModuleWithProviders<AdminModule> {
+  public static forRoot(adminConfig:AdminConfigType): ModuleWithProviders<GamaAdminUIModule> {
     return {
-      ngModule: AdminModule,
+      ngModule: GamaAdminUIModule,
       providers: (() => {
-        AdminModule.adminConfig = adminConfig;
+        GamaAdminUIModule.adminConfig = adminConfig;
         return [{
           provide: 'adminConfig',
           useValue: adminConfig

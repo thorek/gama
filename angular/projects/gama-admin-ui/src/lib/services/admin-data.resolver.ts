@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AdminData } from 'src/admin/lib/admin-data';
+import { AdminData } from '../lib/admin-data';
 import { AdminService } from './admin.service';
-import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType } from 'src/admin/lib/admin-config';
+import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType } from '../lib/admin-config';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
-import { IndexComponent } from 'src/admin/components/index/index.component';
-import { ShowComponent } from 'src/admin/components/show/show.component';
-import { EditComponent } from 'src/admin/components/edit/edit.component';
-import { CreateComponent } from 'src/admin/components/create/create.component';
+import { IndexComponent } from '../components/index/index.component';
+import { ShowComponent } from '../components/show/show.component';
+import { EditComponent } from '../components/edit/edit.component';
+import { CreateComponent } from '../components/create/create.component';
 import { Injectable } from '@angular/core';
 
 

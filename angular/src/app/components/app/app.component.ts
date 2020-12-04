@@ -1,8 +1,7 @@
-import * as _ from 'lodash';
-import * as inflection from 'inflection';
+import _ from 'lodash';
+import inflection from 'inflection';
 import { Component, OnInit } from '@angular/core';
-import { AdminService } from 'src/admin/services/admin.service';
-import { EntityConfigType } from 'src/admin/lib/admin-config';
+import { AdminService, EntityConfigType } from 'gama-admin-ui';
 
 import {Event,
 NavigationCancel,
@@ -12,7 +11,6 @@ NavigationStart,
 Router
 } from '@angular/router';
 import { LoginService } from 'src/app/services/login.service';
-import { timeStamp } from 'console';
 
 @Component({
   selector: 'app-root',

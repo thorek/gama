@@ -3,11 +3,11 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as _ from 'lodash';
 
 import { Subject } from 'rxjs';
-import { FieldConfigType, ViolationType } from 'src/admin/lib/admin-config';
-import { AdminData } from 'src/admin/lib/admin-data';
-import { AdminService } from 'src/admin/services/admin.service';
+import { FieldConfigType, ViolationType } from '../../lib/admin-config';
+import { AdminData } from '../../lib/admin-data';
+import { AdminService } from '../../services/admin.service';
 
-import { AdminComponent } from 'src/admin/components/admin.component';
+import { AdminComponent } from '../../components/admin.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({

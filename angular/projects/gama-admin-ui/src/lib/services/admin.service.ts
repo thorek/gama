@@ -8,7 +8,7 @@ import {
   AdminConfigType,
   EntityConfigType,
   SaveReturnType as SaveResultType,
-} from 'src/admin/lib/admin-config';
+} from '../lib/admin-config';
 
 import { MetaDataService } from './meta-data.service';
 
