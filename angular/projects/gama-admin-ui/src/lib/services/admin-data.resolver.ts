@@ -1,15 +1,17 @@
-import * as _ from 'lodash';
-import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AdminData } from '../lib/admin-data';
-import { AdminService } from './admin.service';
-import { EntityConfigType, UiConfigType, FieldConfigType, AssocConfigType } from '../lib/admin-config';
+import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
+import _ from 'lodash';
+
+import { CreateComponent } from '../components/create/create.component';
+import { EditComponent } from '../components/edit/edit.component';
 import { IndexComponent } from '../components/index/index.component';
 import { ShowComponent } from '../components/show/show.component';
-import { EditComponent } from '../components/edit/edit.component';
-import { CreateComponent } from '../components/create/create.component';
-import { Injectable } from '@angular/core';
+import { AssocConfigType, EntityConfigType, FieldConfigType, UiConfigType } from '../lib/admin-config';
+import { AdminData } from '../lib/admin-data';
+import { AdminService } from './admin.service';
+
 
 
 @Injectable({ providedIn: 'root' })
@@ -17,28 +19,33 @@ export class AdminDataResolver implements Resolve<AdminData> {
 
   constructor(
     private adminService:AdminService,
-    protected apollo:Apollo
+    protected apollo:Apollo,
+    private router:Router
     ) {}
 
   resolve(route:ActivatedRouteSnapshot, state:RouterStateSnapshot):Promise<AdminData> {
     return new Promise( async (resolve, reject) => {
-      const path = route.params['path'];
-      if( ! path ) resolve( null ); // dont know why but its calles when it shouldnt
-      const id = route.params['id'];
-      const parentPath = route.params['parent'];
-      const parentId = route.params['parentId'];
+      try {
+        const path = route.params['path'];
+        if( ! path ) resolve( null ); // dont know why but its calles when it shouldnt
+        const id = route.params['id'];
+        const parentPath = route.params['parent'];
+        const parentId = route.params['parentId'];
 
-      const parent = await this.getParentData( parentPath, parentId );
-      const entityConfig = this.adminService.getEntityConfig(path);
-      if( ! entityConfig ) reject( `no such config '${path}'` );
-      const load =
-        route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index, parent ) :
-        route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id, parent ) :
-        route.component === EditComponent ? this.loadItemData( entityConfig, entityConfig.form, id, parent ) :
-        route.component === CreateComponent ? this.loadDataForCreate( entityConfig, entityConfig.form, parent ) :
-        undefined;
-      const adminData = await load;
-      resolve( adminData );
+        const parent = await this.getParentData( parentPath, parentId );
+        const entityConfig = this.adminService.getEntityConfig(path);
+        if( ! entityConfig ) reject( `no such config '${path}'` );
+        const load =
+          route.component === IndexComponent ? this.loadItemsData( entityConfig, entityConfig.index, parent ) :
+          route.component === ShowComponent ? this.loadItemData( entityConfig, entityConfig.show, id, parent ) :
+          route.component === EditComponent ? this.loadItemData( entityConfig, entityConfig.form, id, parent ) :
+          route.component === CreateComponent ? this.loadDataForCreate( entityConfig, entityConfig.form, parent ) :
+          undefined;
+        const adminData = await load;
+        resolve( adminData );
+      } catch (error) {
+        this.router.navigate(['/admin/error'], {state: {error: JSON.stringify( error ) } } );
+      }
     });
   }
 
@@ -106,13 +113,13 @@ export class AdminDataResolver implements Resolve<AdminData> {
 
   protected async loadData( query:any ):Promise<any>{
     if( ! query ) return undefined;
-    return new Promise( resolve => {
+    return new Promise( (resolve, reject) => {
       this.apollo.watchQuery<any>( query )
       .valueChanges
       .subscribe(({ data, loading }) => {
         if( loading ) return;
         resolve( data );
-      }, error => console.error( error ) );
+      }, error => reject( error ) );
     });
   }
 
@@ -130,7 +137,7 @@ export class AdminDataResolver implements Resolve<AdminData> {
   }
 
   protected getFieldInFieldQuery( field:FieldConfigType ):string {
-    return field.type === 'File' ? `${field.name} { filename encoding mimetype }` : field.name;
+    return field.type === 'file' ? `${field.name} { filename encoding mimetype }` : field.name;
   }
 
   protected getAssocFields( entityConfig:EntityConfigType, assoc:AssocConfigType ):string|undefined {

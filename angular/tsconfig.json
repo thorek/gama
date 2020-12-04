@@ -18,8 +18,7 @@
     ],
     "paths": {
       "gama-admin-ui": [
-        "dist/gama-admin-ui/gama-admin-ui",
-        "dist/gama-admin-ui"
+        "projects/gama-admin-ui/src/public-api"
       ]
     },
     "allowSyntheticDefaultImports": true
